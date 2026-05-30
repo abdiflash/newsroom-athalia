@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Form Kontributor Berita</h2>
-                    <p class="text-xs text-slate-400">Gunakan email resmi Athalia untuk mengisi laporan lapangan.</p>
+                    <p class="text-xs text-slate-400">Penyimpanan folder hasil upload di Google Drive akan otomatis tersusun rapi.</p>
                 </div>
             </div>
 
@@ -68,17 +68,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kelas / Sasaran</label>
-                        <input type="text" id="formKelas" placeholder="Contoh: Kelas 3 / Reguler" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="formKelas" placeholder="Contoh: Kelas 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nilai Karakter (Value)</label>
-                        <input type="text" id="formNilai" placeholder="Contoh: Responsibilities / Caring" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="formNilai" placeholder="Contoh: Responsibilities" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cerita Narasi Berita (5W + 1H) *</label>
-                    <textarea id="formCerita" required rows="5" placeholder="Tuliskan detail cerita lengkap di sini..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"></textarea>
+                    <textarea id="formCerita" required rows="5" placeholder="Tuliskan cerita lengkap..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"></textarea>
                 </div>
 
                 <div>
@@ -87,7 +87,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Foto Kegiatan (Bisa pilih banyak sekaligus, maks 25) *</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Foto Kegiatan (Maks 25) *</label>
                     <input type="file" id="formFiles" multiple accept="image/*" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
@@ -158,45 +158,44 @@
                                 <input type="text" id="modalKelas" class="w-full border p-2 rounded-lg">
                             </div>
                             <div>
-                                <label class="block font-bold uppercase text-slate-500 mb-1">Nilai Karakter (Value)</label>
+                                <label class="block font-bold uppercase text-slate-500 mb-1">Nilai Karakter</label>
                                 <input type="text" id="modalNilai" class="w-full border p-2 rounded-lg">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block font-bold uppercase text-slate-500 mb-1">Narasi Berita (Bisa Diedit)</label>
+                            <label class="block font-bold uppercase text-slate-500 mb-1">Narasi Berita</label>
                             <textarea id="modalCerita" rows="4" class="w-full border p-2 rounded-lg whitespace-pre-wrap"></textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block font-bold uppercase text-slate-500 mb-1">Link Album Eksternal (Opsional)</label>
-                                <input type="text" id="modalLinkAlbum" class="w-full border p-2 rounded-lg" placeholder="https://drive.google.com/...">
+                                <label class="block font-bold uppercase text-slate-500 mb-1">Link Album (Opsional)</label>
+                                <input type="text" id="modalLinkAlbum" class="w-full border p-2 rounded-lg">
                             </div>
                             <div>
-                                <label class="block font-bold uppercase text-slate-500 mb-1">Link Video Youtube (Opsional)</label>
-                                <input type="text" id="modalLinkVideo" class="w-full border p-2 rounded-lg" placeholder="-">
+                                <label class="block font-bold uppercase text-slate-500 mb-1">Link Video (Opsional)</label>
+                                <input type="text" id="modalLinkVideo" class="w-full border p-2 rounded-lg">
                             </div>
                         </div>
 
                         <div class="border-t pt-3">
-                            <label class="block font-bold uppercase text-amber-600 mb-1"><i class="fa-regular fa-images"></i> Pilih Foto Utama Thumbnail (Maks 5 Foto Utama):</label>
-                            <p class="text-[10px] text-slate-400 mb-2">Foto terpilih akan dicopy otomatis oleh server ke dalam folder khusus thumbnail unit terkait.</p>
+                            <label class="block font-bold uppercase text-amber-600 mb-1"><i class="fa-regular fa-images"></i> Pilih Foto Utama (Maksimal 5 Foto Pilihan):</label>
                             <div id="photoSelectorGrid" class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border max-h-40 overflow-y-auto">
                                 </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 border-t pt-3 items-end">
                             <div>
-                                <label class="block font-bold uppercase text-red-600 mb-1"><i class="fa-solid fa-key"></i> PIN Otorisasi Wakasek *</label>
+                                <label class="block font-bold uppercase text-red-600 mb-1"><i class="fa-solid fa-key"></i> PIN Keamanan Wakasek *</label>
                                 <input type="password" id="modalPin" placeholder="Masukkan PIN" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest">
                             </div>
                             <div>
                                 <label class="block font-bold uppercase text-slate-500 mb-1">Set Status Berita</label>
                                 <select id="modalStatus" class="w-full border p-2 rounded-lg font-bold">
-                                    <option value="PENDING">PENDING (Antrean)</option>
-                                    <option value="TAYANG">TAYANG (Publikasikan)</option>
-                                    <option value="TOLAK">TOLAK (Arsipkan)</option>
+                                    <option value="PENDING">PENDING</option>
+                                    <option value="TAYANG">TAYANG</option>
+                                    <option value="TOLAK">TOLAK</option>
                                 </select>
                             </div>
                         </div>
@@ -204,7 +203,7 @@
 
                     <div class="bg-slate-50 p-4 border-t flex justify-end gap-2">
                         <button onclick="closeModal()" class="bg-slate-300 hover:bg-slate-400 font-bold px-4 py-2 rounded-xl text-xs transition">Batal</button>
-                        <button onclick="submitWakasekUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow"><i class="fa-solid fa-square-check"></i> Simpan Perubahan</button>
+                        <button onclick="submitWakasekUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow">Simpan Perubahan</button>
                     </div>
                 </div>
             </div>
@@ -213,7 +212,6 @@
     </div>
 
     <script>
-        // PASTIKAN URL WEB APP INI SAMA DENGAN API URL DI INDEX.HTML
         const API_URL = "https://script.google.com/macros/s/AKfycbz_vP7o_rA-TskC-YfOofXbK_S_Wj4vTbyh8Vunqas70n4_gOa8DkZ8_f1066_Tcln2/exec";
         let cacheBeritaRaw = [];
 
@@ -235,7 +233,6 @@
             }
         }
 
-        // PARSER BASE64 FILE UTK INPUT GURU
         function readFileAsBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -256,7 +253,7 @@
 
             const filesInput = document.getElementById("formFiles").files;
             if(filesInput.length > 25) {
-                alert("Maksimal foto yang diunggah dalam sekali lapor adalah 25 file.");
+                alert("Maksimal upload sekaligus adalah 25 file.");
                 btn.disabled = false; btn.innerText = "Kirim Data ke Wakasek";
                 return;
             }
@@ -288,7 +285,7 @@
                 const resJson = await response.json();
 
                 if(resJson.status === "success") {
-                    alert("Berita Berhasil Dikirim! Laporan masuk antrean peninjauan Wakasek.");
+                    alert("Berita Berhasil Dikirim ke Antrean Wakasek!");
                     document.getElementById("guruForm").reset();
                 } else {
                     alert("Gagal: " + resJson.message);
@@ -301,7 +298,6 @@
             }
         }
 
-        // LOAD DATA MONITORING INTERNAL WAKASEK
         async function loadBeritaWakasek() {
             const tbody = document.getElementById("wakasekTbody");
             tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 animate-pulse">Menarik data spreadsheet...</td></tr>`;
@@ -344,7 +340,6 @@
             }
         }
 
-        // BUKA MODAL KURASI & AMBIL PREVIEW ID FOTO DRIVE
         function openKurasiModal(rowNumber) {
             const item = cacheBeritaRaw.find(x => x.rowNumber === rowNumber);
             if(!item) return;
@@ -362,7 +357,6 @@
             document.getElementById("modalExistingLinkFoto").value = item.Link_Foto;
             document.getElementById("modalPin").value = "";
 
-            // Parsing file ID untuk selector preview foto kurasi
             const grid = document.getElementById("photoSelectorGrid");
             grid.innerHTML = "";
 
@@ -375,6 +369,8 @@
                         const fileId = match[1];
                         const wrapper = document.createElement("label");
                         wrapper.className = "relative block bg-white border rounded-lg overflow-hidden h-20 cursor-pointer hover:border-blue-500 transition shadow-sm";
+                        
+                        // DI SINI ADALAH PERBAIKAN STRING TEMPLATE LITERAL UNTUK VALUE ID FOTO DRIVE
                         wrapper.innerHTML = `
                             <img src="https://lh3.googleusercontent.com/d/${fileId}=s150" class="w-full h-full object-cover">
                             <input type="checkbox" value="${fileId}" class="absolute top-1 left-1 w-4 h-4 accent-blue-600 rounded">
@@ -384,7 +380,7 @@
                     }
                 });
             } else {
-                grid.innerHTML = `<p class="col-span-3 text-center py-4 text-slate-400">Tidak ada foto mentah yang terlampir.</p>`;
+                grid.innerHTML = `<p class="col-span-3 text-center py-4 text-slate-400">Tidak ada foto mentah terlampir.</p>`;
             }
 
             document.getElementById("kurasiModal").classList.remove("hidden");
@@ -394,17 +390,16 @@
             document.getElementById("kurasiModal").classList.add("hidden");
         }
 
-        // SUBMIT UPDATE DATA DARI WAKASEK KE SERVER
         async function submitWakasekUpdate() {
             const pin = document.getElementById("modalPin").value;
-            if(!pin) { alert("Masukkan PIN Keamanan Otorisasi!"); return; }
+            if(!pin) { alert("Masukkan PIN Keamanan!"); return; }
 
             const checkedBoxes = document.querySelectorAll("#photoSelectorGrid input[type='checkbox']:checked");
             let selectedIds = [];
             checkedBoxes.forEach(box => selectedIds.push(box.value));
 
             if(document.getElementById("modalStatus").value === "TAYANG" && selectedIds.length > 5) {
-                alert("Kurasi foto untuk thumbnail depan maksimal 5 foto pilihan saja!");
+                alert("Kurasi foto utama untuk thumbnail depan maksimal 5 foto saja!");
                 return;
             }
 
