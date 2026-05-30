@@ -7,12 +7,32 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; }
+        body { background-color: #f8f9fa; font-family: system-ui, -apple-system, sans-serif; }
         .navbar-brand { font-weight: bold; color: #0d3b66 !important; }
-        .card { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .nav-tabs .nav-link { color: #495057; font-weight: 500; }
-        .nav-tabs .nav-link.active { color: #0d3b66; font-weight: bold; border-bottom: 3px solid #0d3b66; }
-        .status-badge { font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
+        .nav-tabs .nav-link { color: #495057; font-weight: 500; border: none; }
+        .nav-tabs .nav-link.active { color: #0d3b66; font-weight: bold; border-bottom: 3px solid #0d3b66; background: transparent; }
+        .status-badge { font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
+        .cursor-pointer { cursor: pointer; }
+        
+        /* CSS Desain Grid Galeri Foto Pilihan Wakasek */
+        .thumb-select-card { position: relative; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; display: block; margin-bottom: 0; }
+        .thumb-select-card img { width: 100%; height: 110px; object-fit: cover; transition: transform 0.2s; }
+        .thumb-select-card img:hover { transform: scale(1.05); }
+        .thumb-select-card .checkbox-overlay { position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; font-size: 0.8rem; color: transparent; transition: all 0.2s; }
+        
+        .thumb-checkbox:checked + .thumb-select-card { border-color: #198754; box-shadow: 0 0 10px rgba(25,135,84,0.4); }
+        .thumb-checkbox:checked + .thumb-select-card .checkbox-overlay { background: #198754; color: white; border-color: #198754; }
+        .thumb-checkbox { display: none; }
+
+        /* Tombol Kaca Pembesar (Zoom) Pop-up */
+        .zoom-btn { position: absolute; bottom: 5px; left: 5px; background: rgba(0, 0, 0, 0.65); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; z-index: 10; transition: background 0.2s; }
+        .zoom-btn:hover { background: #0d6efd; }
+
+        /* Jendela Lightbox Foto Pembesaran */
+        .lightbox-modal { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+        .lightbox-content { max-width: 90%; max-height: 85%; border-radius: 6px; box-shadow: 0 0 25px rgba(0,0,0,0.5); object-fit: contain; }
+        .lightbox-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -26,21 +46,20 @@
 
 <div class="container my-5">
     <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#form-pane" type="button" role="tab"><i class="fa-solid fa-pen-to-square me-2"></i>Input Kegiatan Baru</button>
+        <li class="nav-item">
+            <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#form-pane" type="button" role="tab"><i class="fa-solid fa-user me-2"></i>1. Input Guru Lapangan (Maks 25 Foto)</button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" type="button" role="tab" onclick="loadMonitoringData()"><i class="fa-solid fa-list-check me-2"></i>Monitoring Status Berita</button>
+        <li class="nav-item">
+            <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" type="button" role="tab" onclick="loadMonitoringData()"><i class="fa-solid fa-user-shield me-2"></i>2. Review Room & Kurasi 5 Foto (Wakasek)</button>
         </li>
     </ul>
 
-    <div class="tab-content" id="dashboardTabsContent">
+    <div class="tab-content">
         <div class="tab-pane fade show active" id="form-pane" role="tabpanel">
             <div class="row justify-content-center">
                 <div class="col-lg-9">
                     <div class="card p-4">
                         <h4 class="mb-4 text-secondary"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i>Form Kontributor Berita</h4>
-                        
                         <form id="uploadForm">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
@@ -59,45 +78,37 @@
                                     <input type="date" class="form-control" id="tanggal" required>
                                 </div>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Nama / Judul Kegiatan *</label>
                                 <input type="text" class="form-control" id="namaKegiatan" placeholder="Contoh: Field Trip Sea World Kelas 3" required>
                             </div>
-
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">Kelas / Sasaran</label>
-                                    <input type="text" class="form-control" id="kelas" placeholder="Contoh: Kelas 3 / Reguler">
+                                    <input type="text" class="form-control" id="kelas" placeholder="Contoh: Kelas 3 / Umum">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">Nilai Karakter (Value)</label>
-                                    <input type="text" class="form-control" id="nilai" placeholder="Contoh: Responsibilities / Caring">
+                                    <input type="text" class="form-control" id="nilai" placeholder="Contoh: Respect / Responsibility">
                                 </div>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Cerita Narasi Berita (5W + 1H) *</label>
-                                <textarea class="form-control" id="cerita" rows="6" placeholder="Tuliskan detail berita di sini secara lengkap..." required></textarea>
+                                <textarea class="form-control" id="cerita" rows="6" placeholder="Tuliskan berita lengkap lapangan di sini..." required></textarea>
                             </div>
-
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Email Kontributor *</label>
+                                <label class="form-label fw-bold">Email Guru Lapangan *</label>
                                 <input type="email" class="form-control" id="email" placeholder="nama.guru@sekolahathalia.sch.id" required>
                             </div>
-
                             <div class="mb-4">
-                                <label class="form-label fw-bold">Pilih Foto Kegiatan (Bisa pilih banyak sekaligus) *</label>
-                                <input type="file" class="form-control" id="fotoFiles" accept="image/*" multiple required>
+                                <label class="form-label fw-bold">Pilih Berkas Foto Kegiatan (Maksimal 25 File) *</label>
+                                <input type="file" class="form-control" id="fotoFiles" accept="image/*" multiple required onchange="validateFileCount(this)">
+                                <div class="form-text text-danger mt-2 fw-bold" id="fileCountError" style="display:none;"><i class="fa-solid fa-triangle-exclamation me-1"></i> Batas Terlewati! Mohon pilih maksimal 25 foto terbaik saja.</div>
                             </div>
-
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
-                                    <i class="fa-solid fa-paper-plane me-2"></i>Kirim Data ke Wakasek
-                                </button>
+                                <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit"><i class="fa-solid fa-paper-plane me-2"></i>Kirim Berita ke Antrean Cloud</button>
                             </div>
                         </form>
-
                         <div id="statusAlert" class="alert d-none mt-4" role="alert"></div>
                     </div>
                 </div>
@@ -107,25 +118,22 @@
         <div class="tab-pane fade" id="list-pane" role="tabpanel">
             <div class="card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="text-secondary mb-0"><i class="fa-solid fa-folder-open text-warning me-2"></i>Status Antrean & Review Berita</h4>
-                    <button class="btn btn-outline-primary btn-sm" onclick="loadMonitoringData()"><i class="fa-solid fa-rotate me-1"></i> Refresh Data</button>
+                    <h4 class="text-secondary mb-0"><i class="fa-solid fa-list-check text-warning me-2"></i>Antrean Validasi Moderasi (Klik Baris Berita untuk Review)</h4>
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadMonitoringData()"><i class="fa-solid fa-rotate me-1"></i> Segarkan Antrean</button>
                 </div>
-                
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Tanggal Pelaksanaan</th>
+                                <th>Tanggal</th>
                                 <th>Unit</th>
                                 <th>Judul Kegiatan</th>
-                                <th>Nilai / Karakter</th>
-                                <th class="text-center">Status Berita</th>
+                                <th>Kontributor</th>
+                                <th class="text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody id="monitoringTableBody">
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">⌛ Sedang memuat data dari Google Sheet...</td>
-                            </tr>
+                            <tr><td colspan="5" class="text-center py-4 text-muted">⌛ Menghubungkan ke database cloud...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -134,21 +142,92 @@
     </div>
 </div>
 
-<script>
-    // ⚠️ GANTI DENGAN URL DEPLOYMENT APPS SCRIPT BAPAK YANG TERBARU
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycb...MasingMasingID.../exec";
+<div class="modal fade" id="reviewModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-user-shield me-2"></i>Koreksi Narasi & Kurasi Foto Website</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editRowNumber">
+                    <input type="hidden" id="editExistingLinkFoto">
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label fw-bold">Unit</label><input type="text" class="form-control bg-light" id="editUnit" readonly></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">Tanggal</label><input type="text" class="form-control bg-light" id="editTanggal" readonly></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold">Judul Kegiatan Berita</label><input type="text" class="form-control" id="editJudul" required></div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label fw-bold">Kelas</label><input type="text" class="form-control" id="editKelas"></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">Nilai Karakter</label><input type="text" class="form-control" id="editNilai"></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label fw-bold">Penyelarasan Cerita (5W + 1H)</label><textarea class="form-control" id="editCerita" rows="5" required></textarea></div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-success"><i class="fa-solid fa-images me-1"></i>Pilih Maksimal 5 Foto Terbaik untuk Web Utama (Gunakan tombol Zoom untuk perbesar):</label>
+                        <div class="row g-2" id="photoGalleryContainer"></div>
+                        <div class="form-text text-dark fw-bold mt-2" id="galleryCounterInfo">Terpilih: 0 / 5 foto</div>
+                    </div>
 
-    // 1. HANDLER SUBMIT FORM (POST)
+                    <div class="row mb-3">
+                        <div class="col-md-6"><label class="form-label fw-bold">Tautkan Link Album Foto Lainnya (Jika ada)</label><input type="url" class="form-control" id="editLinkAlbum" placeholder="https://drive.google.com/..."></div>
+                        <div class="col-md-6"><label class="form-label fw-bold">Tautkan Link Dokumentasi Video (Jika ada)</label><input type="url" class="form-control" id="editLinkVideo" placeholder="https://youtube.com/..."></div>
+                    </div>
+                    <div class="p-3 bg-light rounded border mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-primary"><i class="fa-solid fa-clipboard-check me-1"></i>Keputusan Publikasi</label>
+                                <select class="form-select fw-bold" id="editStatus" required>
+                                    <option value="PENDING">PENDING (Biarkan Diantrekan)</option>
+                                    <option value="TAYANG">TAYANG (ACC & Kloning ke Folder Thumbnail)</option>
+                                    <option value="TOLAK">TOLAK (Arsipkan Berita)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-danger"><i class="fa-solid fa-lock me-1"></i>Masukkan PIN Otorisasi Publikasi *</label>
+                                <input type="password" class="form-control text-center" id="wakasekPin" placeholder="PIN Rahasia Tim Publikasi" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success" id="btnSaveUpdate"><i class="fa-solid fa-square-check me-1"></i> Simpan & Eksekusi Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ⚠️ MASUKKAN URL DEPLOYMENT GOOGLE APPS SCRIPT BAPAK DI SINI
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycb...MasingMasingID.../exec";
+    let globalDataCache = [];
+
+    // LIMITER FOTO GURU (MAKSIMAL 25)
+    function validateFileCount(input) {
+        const errorDiv = document.getElementById('fileCountError');
+        const submitBtn = document.getElementById('btnSubmit');
+        if (input.files.length > 25) {
+            errorDiv.style.display = 'block';
+            submitBtn.disabled = true;
+        } else {
+            errorDiv.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+    }
+
+    // ALUR POST BARU DARI GURU
     document.getElementById('uploadForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const btnSubmit = document.getElementById('btnSubmit');
         const statusAlert = document.getElementById('statusAlert');
         
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sedang membuat folder & upload gambar...';
-        
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses upload foto lapangan ke Drive...';
         statusAlert.className = "alert alert-info mt-4";
-        statusAlert.innerHTML = "⌛ Menghubungkan ke Google Drive Server. Mohon tunggu...";
+        statusAlert.innerHTML = "⌛ Menghubungkan ke Server Cloud. Mohon tunggu...";
         statusAlert.classList.remove('d-none');
 
         const fileInput = document.getElementById('fotoFiles');
@@ -159,17 +238,11 @@
             const file = files[i];
             const promise = new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onloadend = function() {
-                    resolve({
-                        base64Data: reader.result.split(',')[1],
-                        mimeType: file.type
-                    });
-                };
+                reader.onloadend = () => resolve({ base64Data: reader.result.split(',')[1], mimeType: file.type });
                 reader.readAsDataURL(file);
             });
             filePromises.push(promise);
         }
-
         const filesData = await Promise.all(filePromises);
 
         const payload = {
@@ -185,73 +258,189 @@
             files: filesData
         };
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
+        fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         .then(() => {
             statusAlert.className = "alert alert-success mt-4";
-            statusAlert.innerHTML = "🎉 **Berhasil!** Data tersimpan. Folder arsip foto otomatis terbentuk di Google Drive dengan status awal **PENDING**.";
+            statusAlert.innerHTML = "🎉 **Berhasil Dikirim!** Sub-folder otomatis harian berhasil terbuat di Google Drive Unit. Status awal berita adalah **PENDING**.";
             document.getElementById('uploadForm').reset();
         })
         .catch(error => {
             statusAlert.className = "alert alert-danger mt-4";
-            statusAlert.innerHTML = "❌ Gagal mengirim data: " + error.toString();
+            statusAlert.innerHTML = "❌ Gagal mengunggah data: " + error.toString();
         })
         .finally(() => {
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Kirim Data ke Wakasek';
+            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Kirim Berita ke Antrean Cloud';
         });
     });
 
-    // 2. HANDLER AMBIL DATA MONITORING (GET INTERNAL)
+    // ALUR TARIK DATA ANTREAN (GET INTERNAL)
     function loadMonitoringData() {
         const tableBody = document.getElementById('monitoringTableBody');
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Mengambil data terbaru dari cloud...</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Menarik records antrean Google Sheet...</td></tr>';
 
-        // Ditambahkan parameter &internal=true agar record berstatus PENDING juga ikut ditarik ke Dashboard
-        fetch(`${SCRIPT_URL}?page=1&limit=50&internal=true`)
-        .then(response => response.json())
+        fetch(`${SCRIPT_URL}?internal=true`)
+        .then(res => res.json())
         .then(res => {
-            const dataArr = res.data;
-            if(!dataArr || dataArr.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada riwayat pengiriman data.</td></tr>';
+            globalDataCache = res.data;
+            if(!globalDataCache || globalDataCache.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada antrean berita masuk dari guru.</td></tr>';
                 return;
             }
-
             tableBody.innerHTML = "";
-            dataArr.forEach(item => {
-                // SINKRONISASI MANUAL DENGAN HEADER GOOGLE SHEET ASLI BAPAK
-                const tgl = item["Tanggal"] || "-";
-                const unitSekolah = item["Unit"] || "-";
-                const judul = item["Judul_Kegiatan"] || "-";
-                const karakter = item["Nilai"] || "-";
-                const stat = item["Status"] || "PENDING";
+            globalDataCache.forEach((item, index) => {
+                let badgeColor = "bg-warning text-dark";
+                if(item.Status === "TAYANG") badgeColor = "bg-success text-white";
+                if(item.Status === "TOLAK") badgeColor = "bg-danger text-white";
 
-                let badgeColor = "bg-warning text-dark"; 
-                if(stat.toUpperCase() === "TAYANG") badgeColor = "bg-success text-white";
-                if(stat.toUpperCase() === "TOLAK") badgeColor = "bg-danger text-white";
-
-                const rowHtml = `
-                    <tr>
-                        <td><i class="fa-regular fa-calendar text-muted me-2"></i>${tgl}</td>
-                        <td><span class="badge bg-secondary">${unitSekolah}</span></td>
-                        <td class="fw-bold text-dark">${judul}</td>
-                        <td><span class="text-muted italic">${karakter}</span></td>
-                        <td class="text-center"><span class="status-badge ${badgeColor}">${stat.toUpperCase()}</span></td>
+                tableBody.insertAdjacentHTML('beforeend', `
+                    <tr class="cursor-pointer" onclick="openReviewModal(${index})">
+                        <td><i class="fa-regular fa-calendar text-muted me-2"></i>${item.Tanggal}</td>
+                        <td><span class="badge bg-secondary">${item.Unit}</span></td>
+                        <td class="fw-bold text-dark">${item.Judul_Kegiatan}</td>
+                        <td class="text-muted" style="font-size:0.9rem">${item.Email_Kontributor}</td>
+                        <td class="text-center"><span class="status-badge ${badgeColor}">${item.Status}</span></td>
                     </tr>
-                `;
-                tableBody.insertAdjacentHTML('beforeend', rowHtml);
+                `);
             });
         })
-        .catch(err => {
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">⚠️ Gagal memuat data monitoring: ${err.toString()}</td></tr>`;
+        .catch(err => { tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">⚠️ Kendala koneksi API: ${err.toString()}</td></tr>`; });
+    }
+
+    // MEMBUKA WINDOW POP-UP REVIEW WAKASEK
+    let modalInstance;
+    function openReviewModal(index) {
+        const item = globalDataCache[index];
+        document.getElementById('editRowNumber').value = item.rowNumber;
+        document.getElementById('editExistingLinkFoto').value = item.Link_Foto;
+        document.getElementById('editUnit').value = item.Unit;
+        document.getElementById('editTanggal').value = item.Tanggal;
+        document.getElementById('editJudul').value = item.Judul_Kegiatan;
+        document.getElementById('editKelas').value = item.Kelas;
+        document.getElementById('editNilai').value = item.Nilai;
+        document.getElementById('editCerita').value = item.Cerita;
+        document.getElementById('editLinkAlbum').value = item.Link_Album === "-" ? "" : item.Link_Album;
+        document.getElementById('editLinkVideo').value = item.Link_Video === "-" ? "" : item.Link_Video;
+        document.getElementById('editStatus').value = item.Status || "PENDING";
+        document.getElementById('wakasekPin').value = "";
+
+        const container = document.getElementById('photoGalleryContainer');
+        container.innerHTML = "";
+        document.getElementById('galleryCounterInfo').innerHTML = "Terpilih: 0 / 5 foto";
+        
+        if (item.Link_Foto && item.Link_Foto !== "-") {
+            const urls = item.Link_Foto.split(",");
+            urls.forEach((url, i) => {
+                const trimmedUrl = url.trim();
+                const fileIdMatch = trimmedUrl.match(/id=([-\w]{25,})/) || trimmedUrl.match(/file\/d\/([-\w]{25,})/);
+                if (fileIdMatch) {
+                    const fileId = fileIdMatch[1];
+                    // Direct stream URL ke Google User Content Server
+                    const thumbSrc = `https://lh3.googleusercontent.com/d/${fileId}=s300`;
+                    const fullResSrc = `https://lh3.googleusercontent.com/d/${fileId}=s1080`;
+                    
+                    const htmlGaleri = `
+                        <div class="col-4 col-sm-3 position-relative">
+                            <button type="button" class="zoom-btn" onclick="zoomImage('${fullResSrc}')"><i class="fa-solid fa-magnifying-glass-plus"></i> Zoom</button>
+                            <input type="checkbox" class="thumb-checkbox" id="chk_${i}" value="${fileId}" onchange="checkMaxSelection()">
+                            <label for="chk_${i}" class="thumb-select-card">
+                                <img src="${thumbSrc}" onerror="this.src='https://placehold.co/150?text=Gambar+Drive'">
+                                <div class="checkbox-overlay"><i class="fa-solid fa-check"></i></div>
+                            </label>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', htmlGaleri);
+                }
+            });
+        } else {
+            container.innerHTML = "<div class='col-12 text-muted italic small p-2'>Tidak ada foto kiriman dari guru lapangan.</div>";
+        }
+
+        if(!modalInstance) modalInstance = new bootstrap.Modal(document.getElementById('reviewModal'));
+        modalInstance.show();
+    }
+
+    // PEMBATASAN MAKSIMAL 5 CENTANG FOTO SELEKSI WAKASEK
+    function checkMaxSelection() {
+        const checkboxes = document.querySelectorAll('.thumb-checkbox');
+        const checkedCount = document.querySelectorAll('.thumb-checkbox:checked').length;
+        document.getElementById('galleryCounterInfo').innerHTML = `Terpilih: ${checkedCount} / 5 foto`;
+
+        checkboxes.forEach(cb => {
+            if (!cb.checked && checkedCount >= 5) {
+                cb.disabled = true; // Kunci checkbox sisa jika porsi 5 sudah penuh
+            } else {
+                cb.disabled = false;
+            }
         });
     }
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    // MEMBUKA FOTO UKURAN BESAR (LIGHTBOX POP-UP)
+    function zoomImage(fullUrl) {
+        let lightbox = document.getElementById('globalLightbox');
+        if (!lightbox) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="globalLightbox" class="lightbox-modal" onclick="closeZoom()">
+                    <span class="lightbox-close" onclick="closeZoom()">×</span>
+                    <img class="lightbox-content" id="lightboxImg">
+                </div>
+            `);
+            lightbox = document.getElementById('globalLightbox');
+        }
+        document.getElementById('lightboxImg').src = fullUrl;
+        lightbox.style.display = 'flex';
+    }
+
+    function closeZoom() {
+        const lightbox = document.getElementById('globalLightbox');
+        if (lightbox) lightbox.style.display = 'none';
+    }
+
+    // POST MODERASI EXECUTOR WAKASEK
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btnSave = document.getElementById('btnSaveUpdate');
+        const checkedBoxes = document.querySelectorAll('.thumb-checkbox:checked');
+        let selectedIds = [];
+        checkedBoxes.forEach(cb => selectedIds.push(cb.value));
+
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memvalidasi PIN & Kloning File...';
+
+        const payload = {
+            action: "updateWakasek",
+            rowNumber: document.getElementById('editRowNumber').value,
+            existingLinkFoto: document.getElementById('editExistingLinkFoto').value,
+            unit: document.getElementById('editUnit').value,
+            tanggal: document.getElementById('editTanggal').value,
+            judul: document.getElementById('editJudul').value,
+            kelas: document.getElementById('editKelas').value,
+            nilai: document.getElementById('editNilai').value,
+            cerita: document.getElementById('editCerita').value,
+            linkAlbum: document.getElementById('editLinkAlbum').value || "-",
+            linkVideo: document.getElementById('editLinkVideo').value || "-",
+            statusBerita: document.getElementById('editStatus').value,
+            pin: document.getElementById('wakasekPin').value,
+            selectedFileIds: selectedIds
+        };
+
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(response => response.json())
+        .then(res => {
+            if (res.status === "success") {
+                alert("🎉 Sukses! Pembaruan terekam di Google Sheet dan folder Thumbnail sukses dikloning.");
+                modalInstance.hide();
+                loadMonitoringData();
+            } else {
+                alert("❌ Otorisasi Gagal: " + res.message);
+            }
+        })
+        .catch(err => alert("❌ Error Server: " + err.toString()))
+        .finally(() => {
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="fa-solid fa-square-check me-1"></i> Simpan & Eksekusi Data';
+        });
+    });
+</script>
 </body>
 </html>
