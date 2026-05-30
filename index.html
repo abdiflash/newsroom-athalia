@@ -111,13 +111,18 @@
         }
 
         function fixDriveLink(url) {
-            if (!url || url === "-" || url.trim() === "") return [];
-            return url.split(",").map(link => {
-                const clean = link.trim();
-                const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
-                return match ? `https://lh3.googleusercontent.com/d/$=$${match[1]}=s600` : clean;
-            });
-        }
+    if (!url || url === "-" || url.trim() === "") return [];
+    
+    // Memisahkan jika ada banyak link foto yang dipisah tanda koma
+    return url.split(",").map(link => {
+        const clean = link.trim();
+        // Regex untuk mengambil ID unik file dari Google Drive
+        const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
+        
+        // PERBAIKAN: Menggunakan ${match[1]} agar URL Google Drive dikonversi dengan benar menjadi gambar
+        return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s600` : clean;
+    });
+}
 
         // FUNGSI GESER FOTO (CAROUSEL SLIDER)
         function changeSlide(btn, direction) {
