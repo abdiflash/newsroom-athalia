@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Form Kontributor Berita</h2>
-                    <p class="text-xs text-slate-400">Folder foto di Google Drive otomatis terbuat berdasarkan format tanggal dan nama kegiatan.</p>
+                    <p class="text-xs text-slate-400">File foto akan otomatis terunggah ke Google Drive ekosistem Athalia.</p>
                 </div>
             </div>
 
@@ -62,23 +62,23 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama / Judul Kegiatan *</label>
-                    <input type="text" id="formJudul" required placeholder="Contoh: Perayaan Paskah Bersama SMA Athalia" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="formJudul" required placeholder="Contoh: Wisuda SMP Athalia Angkatan 17" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kelas / Sasaran</label>
-                        <input type="text" id="formKelas" placeholder="Contoh: Kelas 10 & 11" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="formKelas" placeholder="Contoh: kelas 9" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nilai Karakter (Value)</label>
-                        <input type="text" id="formNilai" placeholder="Contoh: Integrity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="formNilai" placeholder="Contoh: Caring & Sharing" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cerita Narasi Berita (5W + 1H) *</label>
-                    <textarea id="formCerita" required rows="5" placeholder="Tuliskan cerita berita..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"></textarea>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cerita Narasi Berita *</label>
+                    <textarea id="formCerita" required rows="4" placeholder="Tuliskan isi berita di sini..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"></textarea>
                 </div>
 
                 <div>
@@ -87,18 +87,18 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Foto Kegiatan (Maks 25) *</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Foto Kegiatan *</label>
                     <input type="file" id="formFiles" multiple accept="image/*" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> Kirim Data ke Wakasek
                 </button>
             </form>
         </section>
 
         <section id="monitorSection" class="hidden space-y-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center">
                 <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-folder-tree text-amber-500"></i> Peninjauan Berita Masuk</h2>
                 <button onclick="loadBeritaWakasek()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs px-4 py-2 rounded-lg transition flex items-center gap-1.5">
                     <i class="fa-solid fa-rotate"></i> Refresh Tabel Data
@@ -119,8 +119,7 @@
                                 <th class="p-3 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="wakasekTbody" class="divide-y font-medium text-slate-700">
-                            </tbody>
+                        <tbody id="wakasekTbody" class="divide-y font-medium text-slate-700"></tbody>
                     </table>
                 </div>
             </div>
@@ -181,14 +180,13 @@
 
                         <div class="border-t pt-3">
                             <label class="block font-bold uppercase text-amber-600 mb-1"><i class="fa-regular fa-images"></i> Pilih Foto Utama (Maksimal 5 Foto Pilihan):</label>
-                            <div id="photoSelectorGrid" class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border max-h-40 overflow-y-auto">
-                                </div>
+                            <div id="photoSelectorGrid" class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border max-h-40 overflow-y-auto"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 border-t pt-3 items-end">
                             <div>
-                                <label class="block font-bold uppercase text-red-600 mb-1"><i class="fa-solid fa-key"></i> PIN Keamanan Wakasek *</label>
-                                <input type="password" id="modalPin" placeholder="Masukkan PIN" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest">
+                                <label class="block font-bold uppercase text-red-600 mb-1"><i class="fa-solid fa-key"></i> PIN Otorisasi Tayang *</label>
+                                <input type="password" id="modalPin" placeholder="PIN Tim Publikasi" class="w-full border p-2 rounded-lg text-center font-bold tracking-widest">
                             </div>
                             <div>
                                 <label class="block font-bold uppercase text-slate-500 mb-1">Set Status Berita</label>
@@ -208,28 +206,27 @@
                 </div>
             </div>
         </section>
-
     </div>
 
     <script>
-        // LENGKAPI TAUTAN BERIKUT DENGAN URL WEB APP GOOGLE SCRIPT KAMU JUGA
-        const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyFp7eZgXGf0T3L96bHshgC6mGgXW_3m1R_example/exec"; 
+        
+        // AMAN: PIN ini khusus untuk Tim Publikasi agar tombol TAYANG bisa bekerja (Berbeda dari password masuk dashboard)
+        const PIN_PUBLIKASI = "9876"; 
+
         let cacheBeritaRaw = [];
 
         function switchTab(target) {
-            const fSec = document.getElementById("formSection");
-            const mSec = document.getElementById("monitorSection");
-            const fBtn = document.getElementById("tabFormBtn");
-            const mBtn = document.getElementById("tabMonitorBtn");
-
+            const fSec = document.getElementById("formSection"); const mSec = document.getElementById("monitorSection");
+            const fBtn = document.getElementById("tabFormBtn"); const mBtn = document.getElementById("tabMonitorBtn");
             if(target === 'form') {
                 fSec.classList.remove("hidden"); mSec.classList.add("hidden");
-                fBtn.className = "px-4 py-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
-                mBtn.className = "px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+                fBtn.className = "px-4 py-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2";
+                mBtn.className = "px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2";
             } else {
                 fSec.classList.add("hidden"); mSec.classList.remove("hidden");
-                mBtn.className = "px-4 py-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 transition flex items-center gap-2";
-                fBtn.className = "px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition flex items-center gap-2";
+                mBtn.className = "px-4 py-2 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2";
+                fBtn.className = "px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2";
                 loadBeritaWakasek();
             }
         }
@@ -237,10 +234,7 @@
         function readFileAsBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = () => {
-                    const base64String = reader.result.split(',')[1];
-                    resolve({ base64Data: base64String, mimeType: file.type });
-                };
+                reader.onload = () => resolve({ base64Data: reader.result.split(',')[1], mimeType: file.type });
                 reader.onerror = error => reject(error);
                 reader.readAsDataURL(file);
             });
@@ -248,21 +242,9 @@
 
         async function handleGuruSubmit(e) {
             e.preventDefault();
-            if(API_URL === "MASUKKAN_URL_WEB_APP_KAMU_DI_SINI") {
-                alert("Silakan isi konstanta API_URL di file upload.html terlebih dahulu!");
-                return;
-            }
-
             const btn = document.getElementById("submitBtn");
-            btn.disabled = true;
-            btn.innerText = "Sedang Memproses & Mengupload Foto...";
-
+            btn.disabled = true; btn.innerText = "Sedang Memproses & Mengupload Foto...";
             const filesInput = document.getElementById("formFiles").files;
-            if(filesInput.length > 25) {
-                alert("Maksimal upload sekaligus adalah 25 file.");
-                btn.disabled = false; btn.innerText = "Kirim Data ke Wakasek";
-                return;
-            }
 
             try {
                 let encodedFiles = [];
@@ -284,10 +266,7 @@
                     files: encodedFiles
                 };
 
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
                 const resJson = await response.json();
 
                 if(resJson.status === "success") {
@@ -299,13 +278,11 @@
             } catch(err) {
                 alert("Terjadi kesalahan jaringan: " + err.toString());
             } finally {
-                btn.disabled = false;
-                btn.innerText = "Kirim Data ke Wakasek";
+                btn.disabled = false; btn.innerText = "Kirim Data ke Wakasek";
             }
         }
 
         async function loadBeritaWakasek() {
-            if(API_URL === "MASUKKAN_URL_WEB_APP_KAMU_DI_SINI") return;
             const tbody = document.getElementById("wakasekTbody");
             tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 animate-pulse">Menarik data spreadsheet...</td></tr>`;
 
@@ -331,13 +308,13 @@
                         <td class="p-3 text-center font-bold text-slate-400">${item.rowNumber}</td>
                         <td class="p-3 font-bold">${item.Unit}</td>
                         <td class="p-3 text-slate-500">${item.Tanggal}</td>
-                        <td class="p-3 font-semibold text-slate-800 line-clamp-1">${item.Judul_Kegiatan}</td>
+                        <td class="p-3 font-semibold text-slate-800">${item.Judul_Kegiatan}</td>
                         <td class="p-3 text-slate-400">${item.Email_Kontributor || '-'}</td>
                         <td class="p-3 text-center">
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${colorStatus}">${item.Status}</span>
                         </td>
                         <td class="p-3 text-center">
-                            <button onclick="openKurasiModal(${item.rowNumber})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-2.5 py-1 rounded-md shadow-sm transition"><i class="fa-solid fa-user-gear"></i> Kurasi</button>
+                            <button onclick="openKurasiModal(${item.rowNumber})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-2.5 py-1 rounded-md transition"><i class="fa-solid fa-user-gear"></i> Kurasi</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -376,9 +353,8 @@
                         const fileId = match[1];
                         const wrapper = document.createElement("label");
                         wrapper.className = "relative block bg-white border rounded-lg overflow-hidden h-20 cursor-pointer hover:border-blue-500 transition shadow-sm";
-                        
                         wrapper.innerHTML = `
-                            <img src="https://lh3.googleusercontent.com/d/${fileId}=s150" class="w-full h-full object-cover">
+                            <img src="https://lh3.googleusercontent.com/d/$=$${fileId}=s150" class="w-full h-full object-cover">
                             <input type="checkbox" value="${fileId}" class="absolute top-1 left-1 w-4 h-4 accent-blue-600 rounded">
                             <span class="absolute bottom-0 right-0 bg-black/60 text-[9px] text-white px-1">F-${i+1}</span>
                         `;
@@ -388,31 +364,33 @@
             } else {
                 grid.innerHTML = `<p class="col-span-3 text-center py-4 text-slate-400">Tidak ada foto mentah terlampir.</p>`;
             }
-
             document.getElementById("kurasiModal").classList.remove("hidden");
         }
 
-        function closeModal() {
-            document.getElementById("kurasiModal").classList.add("hidden");
-        }
+        function closeModal() { document.getElementById("kurasiModal").classList.add("hidden"); }
 
         async function submitWakasekUpdate() {
-            const pin = document.getElementById("modalPin").value;
-            if(!pin) { alert("Masukkan PIN Keamanan!"); return; }
+            const inputPin = document.getElementById("modalPin").value;
+            
+            // VALIDASI: Memastikan hanya PIN Publikasi khusus yang boleh meloloskan status TAYANG
+            if(inputPin !== PIN_PUBLIKASI) {
+                alert("PIN Otorisasi Tim Publikasi Salah! Transmisi ditolak.");
+                return;
+            }
 
             const checkedBoxes = document.querySelectorAll("#photoSelectorGrid input[type='checkbox']:checked");
             let selectedIds = [];
             checkedBoxes.forEach(box => selectedIds.push(box.value));
 
             if(document.getElementById("modalStatus").value === "TAYANG" && selectedIds.length > 5) {
-                alert("Kurasi foto utama untuk thumbnail depan maksimal 5 foto saja!");
+                alert("Kurasi foto utama maksimal 5 foto saja!");
                 return;
             }
 
             const payload = {
                 action: "updateWakasek",
                 rowNumber: document.getElementById("modalRowNumber").value,
-                pin: pin,
+                pin: inputPin,
                 unit: document.getElementById("modalUnit").value,
                 tanggal: document.getElementById("modalTanggal").value,
                 judul: document.getElementById("modalJudul").value,
@@ -427,18 +405,14 @@
             };
 
             try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
                 const res = await response.json();
 
                 if(res.status === "success") {
-                    alert(res.message);
-                    closeModal();
-                    loadBeritaWakasek();
+                    alert("Status berita berhasil diperbarui di server!");
+                    closeModal(); loadBeritaWakasek();
                 } else {
-                    alert("Ditolak: " + res.message);
+                    alert("Ditolak Server: " + res.message);
                 }
             } catch(err) {
                 alert("Error transmisi data: " + err.toString());
