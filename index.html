@@ -21,9 +21,9 @@
                 </h1>
                 <p class="text-xs text-slate-300 italic mt-0.5">More Impact - More Value</p>
             </div>
-            <a href="upload.html" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <button onclick="masukanPassword()" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
                 <i class="fa-solid fa-gauge"></i> Dashboard Wakasek
-            </a>
+            </button>
         </div>
     </header>
 
@@ -41,7 +41,7 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </span>
-                <input type="text" id="searchInput" placeholder="Cari berita lalu tekan Enter..." 
+                <input type="text" id="searchInput" placeholder="Cari berita (judul, cerita, tanggal D) + Enter..." 
                     class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
             </div>
 
@@ -100,14 +100,24 @@
     </footer>
 
     <script>
-        // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
+        // LENGKAPI TAUTAN BERIKUT DENGAN URL WEB APP GOOGLE SCRIPT KAMU
         const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
-        
 
         let currentPage = 1;
         const itemsLimit = 9;
 
-        // PERBAIKAN UTAMA: SINTAKS TEMPLATE LITERAL UNTUK PARSER ID DRIVE KINI SUDAH SINKRON
+        // FUNGSI SECURITY: Meminta password sebelum masuk halaman upload/dashboard
+        function masukanPassword() {
+            const pass = prompt("Masukkan Password Akses Dashboard Wakasek:");
+            // Silakan ganti "1234" dengan password bebas yang kamu inginkan
+            if (pass === "1234") {
+                window.location.href = "upload.html";
+            } else if (pass !== null) {
+                alert("Password Salah! Akses ditolak.");
+            }
+        }
+
+        // PERBAIKAN SINTAKS RESOLVER GAMBAR GOOGLE DRIVE
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return "";
             const cleanUrl = url.split(",")[0].trim();
@@ -119,6 +129,11 @@
         }
 
         async function fetchNews() {
+            if(API_URL === "MASUKKAN_URL_WEB_APP_KAMU_DI_SINI") {
+                alert("Pemberitahuan: Silakan ganti 'MASUKKAN_URL_WEB_APP_KAMU_DI_SINI' di file index.html dengan URL Web App Google Apps Script Anda!");
+                return;
+            }
+
             const grid = document.getElementById("newsGrid");
             const loader = document.getElementById("loadingState");
             const empty = document.getElementById("emptyState");
@@ -202,7 +217,7 @@
 
             } catch (error) {
                 loader.classList.add("hidden");
-                alert("Gagal memuat data. Periksa apakah URL Web App Script Anda sudah benar!");
+                alert("Gagal memuat data dari server Newsroom.");
             }
         }
 
