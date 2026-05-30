@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">Form Kontributor Berita</h2>
-                    <p class="text-xs text-slate-400">Penyimpanan folder hasil upload di Google Drive akan otomatis tersusun rapi.</p>
+                    <p class="text-xs text-slate-400">Folder foto di Google Drive otomatis terbuat berdasarkan format tanggal dan nama kegiatan.</p>
                 </div>
             </div>
 
@@ -62,23 +62,23 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama / Judul Kegiatan *</label>
-                    <input type="text" id="formJudul" required placeholder="Contoh: Field Trip Sea World Kelas 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="formJudul" required placeholder="Contoh: Perayaan Paskah Bersama SMA Athalia" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kelas / Sasaran</label>
-                        <input type="text" id="formKelas" placeholder="Contoh: Kelas 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="formKelas" placeholder="Contoh: Kelas 10 & 11" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nilai Karakter (Value)</label>
-                        <input type="text" id="formNilai" placeholder="Contoh: Responsibilities" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="formNilai" placeholder="Contoh: Integrity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Cerita Narasi Berita (5W + 1H) *</label>
-                    <textarea id="formCerita" required rows="5" placeholder="Tuliskan cerita lengkap..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"></textarea>
+                    <textarea id="formCerita" required rows="5" placeholder="Tuliskan cerita berita..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap"></textarea>
                 </div>
 
                 <div>
@@ -212,6 +212,7 @@
     </div>
 
     <script>
+        // LENGKAPI TAUTAN BERIKUT DENGAN URL WEB APP GOOGLE SCRIPT KAMU JUGA
         const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
         let cacheBeritaRaw = [];
 
@@ -247,6 +248,11 @@
 
         async function handleGuruSubmit(e) {
             e.preventDefault();
+            if(API_URL === "MASUKKAN_URL_WEB_APP_KAMU_DI_SINI") {
+                alert("Silakan isi konstanta API_URL di file upload.html terlebih dahulu!");
+                return;
+            }
+
             const btn = document.getElementById("submitBtn");
             btn.disabled = true;
             btn.innerText = "Sedang Memproses & Mengupload Foto...";
@@ -299,6 +305,7 @@
         }
 
         async function loadBeritaWakasek() {
+            if(API_URL === "MASUKKAN_URL_WEB_APP_KAMU_DI_SINI") return;
             const tbody = document.getElementById("wakasekTbody");
             tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 animate-pulse">Menarik data spreadsheet...</td></tr>`;
 
@@ -370,7 +377,6 @@
                         const wrapper = document.createElement("label");
                         wrapper.className = "relative block bg-white border rounded-lg overflow-hidden h-20 cursor-pointer hover:border-blue-500 transition shadow-sm";
                         
-                        // DI SINI ADALAH PERBAIKAN STRING TEMPLATE LITERAL UNTUK VALUE ID FOTO DRIVE
                         wrapper.innerHTML = `
                             <img src="https://lh3.googleusercontent.com/d/${fileId}=s150" class="w-full h-full object-cover">
                             <input type="checkbox" value="${fileId}" class="absolute top-1 left-1 w-4 h-4 accent-blue-600 rounded">
