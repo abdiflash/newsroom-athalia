@@ -325,47 +325,57 @@
         }
 
         function openKurasiModal(rowNumber) {
-            const item = cacheBeritaRaw.find(x => x.rowNumber === rowNumber);
-            if(!item) return;
+    const item = cacheBeritaRaw.find(x => x.rowNumber === rowNumber);
+    if(!item) return;
 
-            document.getElementById("modalRowNumber").value = item.rowNumber;
-            document.getElementById("modalUnit").value = item.Unit;
-            document.getElementById("modalTanggal").value = item.Tanggal;
-            document.getElementById("modalJudul").value = item.Judul_Kegiatan;
-            document.getElementById("modalKelas").value = item.Kelas;
-            document.getElementById("modalNilai").value = item.Nilai;
-            document.getElementById("modalCerita").value = item.Cerita;
-            document.getElementById("modalLinkAlbum").value = item.Link_Album || "-";
-            document.getElementById("modalLinkVideo").value = item.Link_Video || "-";
-            document.getElementById("modalStatus").value = item.Status;
-            document.getElementById("modalExistingLinkFoto").value = item.Link_Foto;
-            document.getElementById("modalPin").value = "";
+    document.getElementById("modalRowNumber").value = item.rowNumber;
+    document.getElementById("modalUnit").value = item.Unit;
+    document.getElementById("modalTanggal").value = item.Tanggal;
+    document.getElementById("modalJudul").value = item.Judul_Kegiatan;
+    document.getElementById("modalKelas").value = item.Kelas;
+    document.getElementById("modalNilai").value = item.Nilai;
+    document.getElementById("modalCerita").value = item.Cerita;
+    document.getElementById("modalLinkAlbum").value = item.Link_Album || "-";
+    document.getElementById("modalLinkVideo").value = item.Link_Video || "-";
+    document.getElementById("modalStatus").value = item.Status;
+    document.getElementById("modalExistingLinkFoto").value = item.Link_Foto;
+    document.getElementById("modalPin").value = "";
 
-            const grid = document.getElementById("photoSelectorGrid");
-            grid.innerHTML = "";
+    const grid = document.getElementById("photoSelectorGrid");
+    grid.innerHTML = "";
 
-            if(item.Link_Foto && item.Link_Foto !== "-") {
-                const arrLinks = item.Link_Foto.split(",");
-                arrLinks.forEach((link, i) => {
-                    const cleanLink = link.trim();
-                    const match = cleanLink.match(/id=([-\w]{25,})/) || cleanLink.match(/file\/d\/([-\w]{25,})/);
-                    if(match) {
-                        const fileId = match[1];
-                        const wrapper = document.createElement("label");
-                        wrapper.className = "relative block bg-white border rounded-lg overflow-hidden h-20 cursor-pointer hover:border-blue-500 transition shadow-sm";
-                        wrapper.innerHTML = `
-                            <img src="https://lh3.googleusercontent.com/d/$=$${fileId}=s150" class="w-full h-full object-cover">
-                            <input type="checkbox" value="${fileId}" class="absolute top-1 left-1 w-4 h-4 accent-blue-600 rounded">
-                            <span class="absolute bottom-0 right-0 bg-black/60 text-[9px] text-white px-1">F-${i+1}</span>
-                        `;
-                        grid.appendChild(wrapper);
-                    }
-                });
-            } else {
-                grid.innerHTML = `<p class="col-span-3 text-center py-4 text-slate-400">Tidak ada foto mentah terlampir.</p>`;
+    if(item.Link_Foto && item.Link_Foto !== "-") {
+        const arrLinks = item.Link_Foto.split(",");
+        arrLinks.forEach((link, i) => {
+            const cleanLink = link.trim();
+            
+            // PERBAIKAN: Regex yang lebih kuat, mendukung huruf besar/kecil (Case-Insensitive 'i') 
+            // serta mengekstrak ID dari berbagai format link sharing Google Drive
+            const match = cleanLink.match(/(?:id=|\/d\/)([-\w]{25,})/i);
+            
+            if(match && match[1]) {
+                const fileId = match[1];
+                const wrapper = document.createElement("label");
+                wrapper.className = "relative block bg-white border rounded-lg overflow-hidden h-20 cursor-pointer hover:border-blue-500 transition shadow-sm";
+                
+                // Menggunakan endpoint resmi googleusercontent yang mendukung rendering lintas domain (CORS aman)
+                wrapper.innerHTML = `
+                    <img src="https://lh3.googleusercontent.com/d/${fileId}=s150" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=150'">
+                    <input type="checkbox" value="${fileId}" class="absolute top-1 left-1 w-4 h-4 accent-blue-600 rounded">
+                    <span class="absolute bottom-0 right-0 bg-black/60 text-[9px] text-white px-1">F-${i+1}</span>
+                `;
+                grid.appendChild(wrapper);
             }
-            document.getElementById("kurasiModal").classList.remove("hidden");
-        }
+        });
+    }
+
+    // Jika setelah di-loop ternyata tidak ada ID yang cocok / grid masih kosong
+    if (grid.innerHTML === "") {
+        grid.innerHTML = `<p class="col-span-3 text-center py-4 text-slate-400">Format link foto di Google Sheet tidak dikenali.</p>`;
+    }
+
+    document.getElementById("kurasiModal").classList.remove("hidden");
+}
 
         function closeModal() { document.getElementById("kurasiModal").classList.add("hidden"); }
 
