@@ -21,7 +21,7 @@
                 </h1>
                 <p class="text-xs text-slate-300 italic mt-0.5">More Impact - More Value</p>
             </div>
-            <button onclick="masukanPassword()" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+            <button onclick="masukanPasswordDashboard()" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
                 <i class="fa-solid fa-gauge"></i> Dashboard Wakasek
             </button>
         </div>
@@ -41,7 +41,7 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </span>
-                <input type="text" id="searchInput" placeholder="Cari berita (judul, cerita, tanggal D) + Enter..." 
+                <input type="text" id="searchInput" placeholder="Cari berita + Enter..." 
                     class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
             </div>
 
@@ -84,15 +84,10 @@
         <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
             <i class="fa-regular fa-folder-open text-slate-300 text-5xl mb-3"></i>
             <p class="text-slate-600 font-medium text-base">Tidak Ada Berita Ditemukan</p>
-            <p class="text-slate-400 text-xs mt-1">Coba ubah filter kata kunci pencarian Anda.</p>
         </div>
 
-        <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            </div>
-
-        <div id="paginationPanel" class="mt-12 flex justify-center items-center gap-2">
-            </div>
-
+        <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="paginationPanel" class="mt-12 flex justify-center items-center gap-2"></div>
     </main>
 
     <footer class="bg-white border-t border-slate-200 mt-20 py-6 text-center text-xs text-slate-400 font-medium">
@@ -100,49 +95,61 @@
     </footer>
 
     <script>
-        // LENGKAPI TAUTAN BERIKUT DENGAN URL WEB APP GOOGLE SCRIPT KAMU
-        const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyFp7eZgXGf0T3L96bHshgC6mGgXW_3m1R_example/exec"; 
 
         let currentPage = 1;
         const itemsLimit = 9;
 
-        // FUNGSI SECURITY: Meminta password sebelum masuk halaman upload/dashboard
-        function masukanPassword() {
+        // KREDENSIAL LAPIS 1: Sandi masuk ke dashboard kurasi
+        function masukanPasswordDashboard() {
             const pass = prompt("Masukkan Password Akses Dashboard Wakasek:");
-            // Silakan ganti "1234" dengan password bebas yang kamu inginkan
-            if (pass === "1234") {
+            if (pass === "rahasiawakasek") { 
                 window.location.href = "upload.html";
             } else if (pass !== null) {
                 alert("Password Salah! Akses ditolak.");
             }
         }
 
-        // PERBAIKAN SINTAKS RESOLVER GAMBAR GOOGLE DRIVE
         function fixDriveLink(url) {
-            if (!url || url === "-" || url.trim() === "") return "";
-            const cleanUrl = url.split(",")[0].trim();
-            const fileIdMatch = cleanUrl.match(/id=([-\w]{25,})/) || cleanUrl.match(/file\/d\/([-\w]{25,})/);
-            if (fileIdMatch) {
-                return `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=s600`;
-            }
-            return cleanUrl;
+            if (!url || url === "-" || url.trim() === "") return [];
+            return url.split(",").map(link => {
+                const clean = link.trim();
+                const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
+                return match ? `https://lh3.googleusercontent.com/d/$=$${match[1]}=s600` : clean;
+            });
+        }
+
+        // FUNGSI GESER FOTO (CAROUSEL SLIDER)
+        function changeSlide(btn, direction) {
+            const container = btn.parentElement;
+            const images = container.querySelectorAll('.carousel-img');
+            const badge = container.querySelector('.carousel-badge-idx');
+            
+            let activeIdx = -1;
+            images.forEach((img, idx) => {
+                if(!img.classList.contains('hidden')) activeIdx = idx;
+            });
+
+            if(activeIdx === -1) return;
+
+            images[activeIdx].classList.add('hidden');
+            let nextIdx = activeIdx + direction;
+            
+            if(nextIdx >= images.length) nextIdx = 0;
+            if(nextIdx < 0) nextIdx = images.length - 1;
+
+            images[nextIdx].classList.remove('hidden');
+            if(badge) badge.innerText = nextIdx + 1;
         }
 
         async function fetchNews() {
-            if(API_URL === "MASUKKAN_URL_WEB_APP_KAMU_DI_SINI") {
-                alert("Pemberitahuan: Silakan ganti 'MASUKKAN_URL_WEB_APP_KAMU_DI_SINI' di file index.html dengan URL Web App Google Apps Script Anda!");
-                return;
-            }
-
             const grid = document.getElementById("newsGrid");
             const loader = document.getElementById("loadingState");
             const empty = document.getElementById("emptyState");
             const pager = document.getElementById("paginationPanel");
 
-            grid.innerHTML = "";
-            pager.innerHTML = "";
-            loader.classList.remove("hidden");
-            empty.classList.add("hidden");
+            grid.innerHTML = ""; pager.innerHTML = "";
+            loader.classList.remove("hidden"); empty.classList.add("hidden");
 
             const unit = document.getElementById("unitFilter").value;
             const tahun = document.getElementById("tahunFilter").value;
@@ -153,29 +160,49 @@
             try {
                 const response = await fetch(finalUrl);
                 const result = await response.json();
-                
                 loader.classList.add("hidden");
 
                 if (!result.data || result.data.length === 0) {
-                    empty.classList.remove("hidden");
-                    return;
+                    empty.classList.remove("hidden"); return;
                 }
 
-                result.data.forEach(item => {
-                    const thumbUrl = fixDriveLink(item.Link_Foto) || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
-                    const totalFoto = item.Link_Foto && item.Link_Foto !== "-" ? item.Link_Foto.split(",").length : 0;
+                result.data.forEach((item, cardIdx) => {
+                    const arrPhotos = fixDriveLink(item.Link_Foto);
+                    const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
+                    
+                    // Generate HTML Kumpulan image tag untuk slider
+                    let imagesHtml = "";
+                    if(arrPhotos.length === 0) {
+                        imagesHtml = `<img src="${defaultImg}" class="w-full h-full object-cover carousel-img">`;
+                    } else {
+                        arrPhotos.forEach((src, idx) => {
+                            imagesHtml += `<img src="${src}" class="w-full h-full object-cover carousel-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
+                        });
+                    }
 
                     const card = document.createElement("div");
                     card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition duration-300";
                     card.innerHTML = `
-                        <div class="relative bg-slate-100 h-48 w-full overflow-hidden">
-                            <img src="${thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600'">
-                            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-700 uppercase shadow-sm">
+                        <div class="relative bg-slate-100 h-48 w-full overflow-hidden group">
+                            ${imagesHtml}
+                            
+                            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-700 uppercase shadow-sm z-10">
                                 ${item.Unit} | TA ${item.Tahun_Ajaran || '-'}
                             </div>
-                            ${totalFoto > 0 ? `
-                                <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1">
-                                    <i class="fa-regular fa-images"></i> ${totalFoto} FOTO
+
+                            ${arrPhotos.length > 1 ? `
+                                <button onclick="changeSlide(this, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <button onclick="changeSlide(this, 1)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                                <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1 z-10">
+                                    <i class="fa-regular fa-images"></i> <span class="carousel-badge-idx">1</span>/${arrPhotos.length} FOTO
+                                </div>
+                            ` : arrPhotos.length === 1 ? `
+                                <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10">
+                                    1 FOTO
                                 </div>
                             ` : ''}
                         </div>
@@ -186,7 +213,6 @@
                                 <p class="text-xs text-slate-500 font-medium mb-3">Kelas: ${item.Kelas || '-'}</p>
                                 <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-4 mb-4">${item.Cerita}</p>
                             </div>
-                            
                             <div class="pt-4 border-t border-slate-50 flex flex-col gap-3">
                                 <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
                                     <span><i class="fa-regular fa-calendar-days mr-1"></i> ${item.Tanggal}</span>
@@ -195,26 +221,15 @@
                                     </button>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2 mt-1">
-                                    ${item.Link_Album && item.Link_Album !== "-" ? `
-                                        <a href="${item.Link_Album}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-images"></i> Lihat Album
-                                        </a>
-                                    ` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
-                                    
-                                    ${item.Link_Video && item.Link_Video !== "-" ? `
-                                        <a href="${item.Link_Video}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-video"></i> Video
-                                        </a>
-                                    ` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
+                                    ${item.Link_Album && item.Link_Album !== "-" ? `<a href="${item.Link_Album}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
+                                    ${item.Link_Video && item.Link_Video !== "-" ? `<a href="${item.Link_Video}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
                                 </div>
                             </div>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
-
                 renderPagination(result.totalPages, result.currentPage);
-
             } catch (error) {
                 loader.classList.add("hidden");
                 alert("Gagal memuat data dari server Newsroom.");
@@ -226,32 +241,28 @@
             if (total <= 1) return;
 
             const prevBtn = document.createElement("button");
-            prevBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${current === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+            prevBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
             prevBtn.innerHTML = '<i class="fa-solid fa-angle-left"></i>';
             if (current > 1) prevBtn.onclick = () => { currentPage--; fetchNews(); };
             panel.appendChild(prevBtn);
 
             for (let i = 1; i <= total; i++) {
                 const numBtn = document.createElement("button");
-                numBtn.className = `w-8 h-8 rounded-lg border text-xs font-bold transition ${i === current ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+                numBtn.className = `w-8 h-8 rounded-lg border text-xs font-bold ${i === current ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
                 numBtn.innerText = i;
                 numBtn.onclick = () => { currentPage = i; fetchNews(); };
                 panel.appendChild(numBtn);
             }
 
             const nextBtn = document.createElement("button");
-            nextBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${current === total ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+            nextBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === total ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
             nextBtn.innerHTML = '<i class="fa-solid fa-angle-right"></i>';
             if (current < total) nextBtn.onclick = () => { currentPage++; fetchNews(); };
             panel.appendChild(nextBtn);
         }
 
         function copyCaption(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Caption narasi berita berhasil disalin!");
-            }).catch(() => {
-                alert("Gagal menyalin teks.");
-            });
+            navigator.clipboard.writeText(text).then(() => alert("Caption narasi berita berhasil disalin!"));
         }
 
         function escapeHtml(text) {
@@ -261,10 +272,7 @@
 
         document.getElementById("unitFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("tahunFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
-        document.getElementById("searchInput").addEventListener("keydown", (e) => {
-            if (e.key === "Enter") { currentPage = 1; fetchNews(); }
-        });
-
+        document.getElementById("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { currentPage = 1; fetchNews(); } });
         window.addEventListener("DOMContentLoaded", fetchNews);
     </script>
 </body>
