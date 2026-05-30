@@ -22,7 +22,7 @@
                 <p class="text-xs text-slate-300 italic mt-0.5">More Impact - More Value</p>
             </div>
             <a href="upload.html" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                <i class="fa-solid shadow-sm fa-gauge"></i> Dashboard Wakasek
+                <i class="fa-solid fa-gauge"></i> Dashboard Wakasek
             </a>
         </div>
     </header>
@@ -96,20 +96,20 @@
     </main>
 
     <footer class="bg-white border-t border-slate-200 mt-20 py-6 text-center text-xs text-slate-400 font-medium">
-        &copy; 2026 Sekolah Kristen Athalia. All Rights Reserved.
+        © 2026 Sekolah Kristen Athalia. All Rights Reserved.
     </footer>
 
     <script>
-        // GANTI DENGAN WEB APP URL INDUK MACRO ANDA YANG SUDAH DI-DEPLOY TERBARU
+        // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
         const API_URL = "https://script.google.com/macros/s/AKfycbz_vP7o_rA-TskC-YfOofXbK_S_Wj4vTbyh8Vunqas70n4_gOa8DkZ8_f1066_Tcln2/exec";
 
         let currentPage = 1;
         const itemsLimit = 9;
 
-        // PARSER DRIVE LINK AGAR RESOLUSI GAMBAR STABIL & AMAN
+        // PERBAIKAN UTAMA: SINTAKS TEMPLATE LITERAL UNTUK PARSER ID DRIVE KINI SUDAH SINKRON
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return "";
-            const cleanUrl = url.split(",")[0].trim(); // Ambil foto pertama saja jika ada banyak
+            const cleanUrl = url.split(",")[0].trim();
             const fileIdMatch = cleanUrl.match(/id=([-\w]{25,})/) || cleanUrl.match(/file\/d\/([-\w]{25,})/);
             if (fileIdMatch) {
                 return `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}=s600`;
@@ -145,16 +145,15 @@
                     return;
                 }
 
-                // Render Item ke dalam Grid
                 result.data.forEach(item => {
-                    const thumbUrl = fixDriveLink(item.Link_Foto) || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600&auto=format&fit=crop';
+                    const thumbUrl = fixDriveLink(item.Link_Foto) || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
                     const totalFoto = item.Link_Foto && item.Link_Foto !== "-" ? item.Link_Foto.split(",").length : 0;
 
                     const card = document.createElement("div");
                     card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition duration-300";
                     card.innerHTML = `
                         <div class="relative bg-slate-100 h-48 w-full overflow-hidden">
-                            <img src="${thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover">
+                            <img src="${thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600'">
                             <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-700 uppercase shadow-sm">
                                 ${item.Unit} | TA ${item.Tahun_Ajaran || '-'}
                             </div>
@@ -182,13 +181,13 @@
                                 <div class="grid grid-cols-2 gap-2 mt-1">
                                     ${item.Link_Album && item.Link_Album !== "-" ? `
                                         <a href="${item.Link_Album}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-gallery-thumbnails"></i> Lihat Album
+                                            <i class="fa-solid fa-images"></i> Lihat Album
                                         </a>
                                     ` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
                                     
                                     ${item.Link_Video && item.Link_Video !== "-" ? `
                                         <a href="${item.Link_Video}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-video"></i> Video Dokumenter
+                                            <i class="fa-solid fa-video"></i> Video
                                         </a>
                                     ` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
                                 </div>
@@ -198,12 +197,11 @@
                     grid.appendChild(card);
                 });
 
-                // Render Komponen Navigasi Pagination
                 renderPagination(result.totalPages, result.currentPage);
 
             } catch (error) {
                 loader.classList.add("hidden");
-                alert("Gagal memuat data dari Newsroom server. Pastikan Web App Script Anda aktif!");
+                alert("Gagal memuat data. Periksa apakah URL Web App Script Anda sudah benar!");
             }
         }
 
@@ -211,14 +209,12 @@
             const panel = document.getElementById("paginationPanel");
             if (total <= 1) return;
 
-            // Tombol Prev
             const prevBtn = document.createElement("button");
             prevBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${current === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
             prevBtn.innerHTML = '<i class="fa-solid fa-angle-left"></i>';
             if (current > 1) prevBtn.onclick = () => { currentPage--; fetchNews(); };
             panel.appendChild(prevBtn);
 
-            // Angka Halaman
             for (let i = 1; i <= total; i++) {
                 const numBtn = document.createElement("button");
                 numBtn.className = `w-8 h-8 rounded-lg border text-xs font-bold transition ${i === current ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
@@ -227,7 +223,6 @@
                 panel.appendChild(numBtn);
             }
 
-            // Tombol Next
             const nextBtn = document.createElement("button");
             nextBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${current === total ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
             nextBtn.innerHTML = '<i class="fa-solid fa-angle-right"></i>';
@@ -237,25 +232,23 @@
 
         function copyCaption(text) {
             navigator.clipboard.writeText(text).then(() => {
-                alert("Caption narasi berita berhasil disalin ke clipboard!");
+                alert("Caption narasi berita berhasil disalin!");
             }).catch(() => {
-                alert("Gagal menyalin text.");
+                alert("Gagal menyalin teks.");
             });
         }
 
         function escapeHtml(text) {
             if(!text) return '';
-            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+            return text.replace(/'/g, "\\'").replace(/"/g, '"').replace(/\n/g, '\\n');
         }
 
-        // Listener Event Pemicu
         document.getElementById("unitFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("tahunFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("searchInput").addEventListener("keydown", (e) => {
             if (e.key === "Enter") { currentPage = 1; fetchNews(); }
         });
 
-        // Inisialisasi Pertama
         window.addEventListener("DOMContentLoaded", fetchNews);
     </script>
 </body>
