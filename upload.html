@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Publikasi - Athalia Newsroom</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: bold; color: #0d3b66 !important; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .nav-tabs .nav-link { color: #495057; font-weight: 500; }
+        .nav-tabs .nav-link.active { color: #0d3b66; font-weight: bold; border-bottom: 3px solid #0d3b66; }
+        .status-badge { font-size: 0.8rem; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#"><i class="fa-solid fa-gauge-high text-primary me-2"></i> Athalia Publikasi Dashboard</a>
+        <a href="index.html" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-globe me-1"></i> Lihat Web Utama</a>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#form-pane" type="button" role="tab"><i class="fa-solid fa-pen-to-square me-2"></i>Input Kegiatan Baru</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-pane" type="button" role="tab" onclick="loadMonitoringData()"><i class="fa-solid fa-list-check me-2"></i>Monitoring Status Berita</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="dashboardTabsContent">
+        <div class="tab-pane fade show active" id="form-pane" role="tabpanel">
+            <div class="row justify-content-center">
+                <div class="col-lg-9">
+                    <div class="card p-4">
+                        <h4 class="mb-4 text-secondary"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i>Form Kontributor Berita</h4>
+                        
+                        <form id="uploadForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Unit Sekolah *</label>
+                                    <select class="form-select" id="unit" required>
+                                        <option value="" disabled selected>-- Pilih Unit --</option>
+                                        <option value="KB-TK">KB-TK</option>
+                                        <option value="SD">SD</option>
+                                        <option value="SMP">SMP</option>
+                                        <option value="SMA">SMA</option>
+                                        <option value="UMUM">UMUM</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Tanggal Pelaksanaan *</label>
+                                    <input type="date" class="form-control" id="tanggal" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nama / Judul Kegiatan *</label>
+                                <input type="text" class="form-control" id="namaKegiatan" placeholder="Contoh: Field Trip Sea World Kelas 3" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Kelas / Sasaran</label>
+                                    <input type="text" class="form-control" id="kelas" placeholder="Contoh: Kelas 3 / Reguler">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Nilai Karakter (Value)</label>
+                                    <input type="text" class="form-control" id="nilai" placeholder="Contoh: Responsibilities / Caring">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cerita Narasi Berita (5W + 1H) *</label>
+                                <textarea class="form-control" id="cerita" rows="6" placeholder="Tuliskan detail berita di sini secara lengkap..." required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email Kontributor *</label>
+                                <input type="email" class="form-control" id="email" placeholder="nama.guru@sekolahathalia.sch.id" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Pilih Foto Kegiatan (Bisa pilih banyak sekaligus) *</label>
+                                <input type="file" class="form-control" id="fotoFiles" accept="image/*" multiple required>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Kirim Data ke Wakasek
+                                </button>
+                            </div>
+                        </form>
+
+                        <div id="statusAlert" class="alert d-none mt-4" role="alert"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="list-pane" role="tabpanel">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="text-secondary mb-0"><i class="fa-solid fa-folder-open text-warning me-2"></i>Status Antrean & Review Berita</h4>
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadMonitoringData()"><i class="fa-solid fa-rotate me-1"></i> Refresh Data</button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tanggal Pelaksanaan</th>
+                                <th>Unit</th>
+                                <th>Judul Kegiatan</th>
+                                <th>Nilai / Karakter</th>
+                                <th class="text-center">Status Berita</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monitoringTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">⌛ Sedang memuat data dari Google Sheet...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ⚠️ GANTI DENGAN URL DEPLOYMENT APPS SCRIPT BAPAK YANG TERBARU
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycb...MasingMasingID.../exec";
+
+    // 1. HANDLER SUBMIT FORM (POST)
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btnSubmit = document.getElementById('btnSubmit');
+        const statusAlert = document.getElementById('statusAlert');
+        
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sedang membuat folder & upload gambar...';
+        
+        statusAlert.className = "alert alert-info mt-4";
+        statusAlert.innerHTML = "⌛ Menghubungkan ke Google Drive Server. Mohon tunggu...";
+        statusAlert.classList.remove('d-none');
+
+        const fileInput = document.getElementById('fotoFiles');
+        const files = fileInput.files;
+        const filePromises = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const promise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    resolve({
+                        base64Data: reader.result.split(',')[1],
+                        mimeType: file.type
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+            filePromises.push(promise);
+        }
+
+        const filesData = await Promise.all(filePromises);
+
+        const payload = {
+            unit: document.getElementById('unit').value,
+            namaKegiatan: document.getElementById('namaKegiatan').value,
+            tanggal: document.getElementById('tanggal').value,
+            email: document.getElementById('email').value,
+            data5W1H: {
+                kelas: document.getElementById('kelas').value,
+                nilai: document.getElementById('nilai').value,
+                cerita: document.getElementById('cerita').value
+            },
+            files: filesData
+        };
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            statusAlert.className = "alert alert-success mt-4";
+            statusAlert.innerHTML = "🎉 **Berhasil!** Data tersimpan. Folder arsip foto otomatis terbentuk di Google Drive dengan status awal **PENDING**.";
+            document.getElementById('uploadForm').reset();
+        })
+        .catch(error => {
+            statusAlert.className = "alert alert-danger mt-4";
+            statusAlert.innerHTML = "❌ Gagal mengirim data: " + error.toString();
+        })
+        .finally(() => {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Kirim Data ke Wakasek';
+        });
+    });
+
+    // 2. HANDLER AMBIL DATA MONITORING (GET INTERNAL)
+    function loadMonitoringData() {
+        const tableBody = document.getElementById('monitoringTableBody');
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Mengambil data terbaru dari cloud...</td></tr>';
+
+        // Ditambahkan parameter &internal=true agar record berstatus PENDING juga ikut ditarik ke Dashboard
+        fetch(`${SCRIPT_URL}?page=1&limit=50&internal=true`)
+        .then(response => response.json())
+        .then(res => {
+            const dataArr = res.data;
+            if(!dataArr || dataArr.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada riwayat pengiriman data.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = "";
+            dataArr.forEach(item => {
+                // SINKRONISASI MANUAL DENGAN HEADER GOOGLE SHEET ASLI BAPAK
+                const tgl = item["Tanggal"] || "-";
+                const unitSekolah = item["Unit"] || "-";
+                const judul = item["Judul_Kegiatan"] || "-";
+                const karakter = item["Nilai"] || "-";
+                const stat = item["Status"] || "PENDING";
+
+                let badgeColor = "bg-warning text-dark"; 
+                if(stat.toUpperCase() === "TAYANG") badgeColor = "bg-success text-white";
+                if(stat.toUpperCase() === "TOLAK") badgeColor = "bg-danger text-white";
+
+                const rowHtml = `
+                    <tr>
+                        <td><i class="fa-regular fa-calendar text-muted me-2"></i>${tgl}</td>
+                        <td><span class="badge bg-secondary">${unitSekolah}</span></td>
+                        <td class="fw-bold text-dark">${judul}</td>
+                        <td><span class="text-muted italic">${karakter}</span></td>
+                        <td class="text-center"><span class="status-badge ${badgeColor}">${stat.toUpperCase()}</span></td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', rowHtml);
+            });
+        })
+        .catch(err => {
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">⚠️ Gagal memuat data monitoring: ${err.toString()}</td></tr>`;
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
