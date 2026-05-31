@@ -107,16 +107,21 @@
             }
         }
 
-        // FUNGSI KHUSUS KOMPRESOR NATIVE GOOGLE DRIVE (BEBAS JEDA FLICKER)
+        // FUNGSI KOMPRESOR HYBRID CEPAT (MENDUKUNG FOLDER THUMBNAIL & FOLDER KEGIATAN)
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
             
             return url.split(",").map(link => {
                 const clean = link.trim(); 
                 
+                // Jika url sudah berupa link eksternal googleusercontent kompresi matang, langsung return tanpa diproses ulang
+                if (clean.includes("googleusercontent.com")) {
+                    return clean;
+                }
+                
                 const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
                 
-                // Menggunakan endpoint native generator direktori thumbnail tanpa redirect rute internal
+                // Jika berasal dari folder kegiatan asli (drive.google.com), potong paksa menggunakan skema instan s400
                 return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400` : clean;
             });
         }
