@@ -149,27 +149,36 @@
             });
         }
 
+        // FUNGSI BARU: Mengubah format DD/MM/YYYY menjadi objek Date asli JavaScript agar pensortiran 100% akurat
+        function parseTanggalKeObject(timestampStr) {
+            if (!timestampStr || timestampStr === "-") return new Date(0);
+            let dateString = timestampStr.toString().trim().split(" ")[0]; // Ambil bagian tanggal saja, abaikan jam bawaan
+            
+            if (dateString.includes("/")) {
+                const dateParts = dateString.split("/");
+                if (dateParts.length === 3) {
+                    const day = parseInt(dateParts[0], 10);
+                    const monthIdx = parseInt(dateParts[1], 10) - 1;
+                    const year = parseInt(dateParts[2], 10);
+                    return new Date(year, monthIdx, day);
+                }
+            }
+            const d = new Date(timestampStr);
+            return !isNaN(d.getTime()) ? d : new Date(0);
+        }
+
+        // DIKOREKSI: Jam resmi dihapus total dari tampilan website sesuai request Anda
         function formatKompasDateTime(timestampStr) {
             try {
                 if (!timestampStr || timestampStr === "-") return "";
                 
-                // Merapikan data input ke tipe string murni
                 let dateString = timestampStr.toString().trim();
-                let jamMenit = "";
                 
-                // Pisahkan komponen jika data mengandung informasi jam (misal: "31/05/2026 15:30:00")
+                // Jika mengandung jam (spasi), potong dan ambil tanggalnya saja
                 if (dateString.includes(" ")) {
-                    const parts = dateString.split(" ");
-                    dateString = parts[0]; // Ambil bagian tanggalnya saja "DD/MM/YYYY"
-                    if (parts[1]) {
-                        const timeParts = parts[1].split(":");
-                        if (timeParts.length >= 2) {
-                            jamMenit = ` | ${timeParts[0]}:${timeParts[1]} WIB`;
-                        }
-                    }
+                    dateString = dateString.split(" ")[0]; 
                 }
                 
-                // Validasi pemisah tanda garis miring (/) bawaan Google Sheet terstandar
                 if (dateString.includes("/")) {
                     const dateParts = dateString.split("/");
                     if (dateParts.length === 3) {
@@ -180,25 +189,20 @@
                         const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
                                            "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
                         
-                        // Proteksi jika indeks bulan melompat di luar batas normal array
                         if (monthIdx >= 0 && monthIdx <= 11) {
-                            return `${day} ${namaBulan[monthIdx]} ${year}${jamMenit}`;
+                            return `${day} ${namaBulan[monthIdx]} ${year}`; // Jam ditiadakan
                         }
                     }
                 }
                 
-                // Jalur alternatif jika data yang masuk masih berupa ISO string objek Date asli
                 const d = new Date(timestampStr);
                 if (!isNaN(d.getTime())) {
                     const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
                                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                    let m = d.getMinutes();
-                    let h = d.getHours();
-                    let jamFormat = ` | ${(h < 10 ? '0' : '') + h}:${(m < 10 ? '0' : '') + m} WIB`;
-                    return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}${jamFormat}`;
+                    return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}`; // Jam ditiadakan
                 }
 
-                return timestampStr;
+                return dateString;
             } catch(e) {
                 console.error("Gagal memproses parsing tanggal:", e);
                 return timestampStr;
@@ -206,7 +210,7 @@
         }
 
         function changeSlide(btn, direction, event) {
-            if(event) event.stopPropagation(); // Mencegah modal terbuka saat klik tombol slide panah
+            if(event) event.stopPropagation(); 
             const container = btn.parentElement;
             const images = container.querySelectorAll('.carousel-img');
             const badge = container.querySelector('.carousel-badge-idx');
@@ -266,15 +270,23 @@
 
                 if (!result.data || result.data.length === 0) {
                     loader.classList.add("hidden");
-                    empty.remove("hidden"); 
+                    empty.classList.remove("hidden"); 
                     return;
                 }
 
-                globalNewsData = result.data; 
+                // FIX URUTAN BERITA: Kita lakukan sorting ulang secara paksa di frontend menggunakan objek Date asli.
+                let sortedData = result.data;
+                sortedData.sort((a, b) => {
+                    const dateA = parseTanggalKeObject(a.Tanggal);
+                    const dateB = parseTanggalKeObject(b.Tanggal);
+                    return sort === "DESC" ? dateB - dateA : dateA - dateB;
+                });
+
+                globalNewsData = sortedData; 
                 const imagePromises = [];
                 const cardsData = [];
 
-                result.data.forEach((item, index) => {
+                globalNewsData.forEach((item, index) => {
                     const arrPhotos = fixDriveLink(item.Link_Foto);
                     const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
                     const mainImgUrl = arrPhotos.length > 0 ? arrPhotos[0] : defaultImg;
@@ -303,7 +315,6 @@
                 loader.classList.add("hidden");
 
                 cardsData.forEach(({ item, arrPhotos, imagesHtml, index }) => {
-                    // DIKOREKSI: Menggunakan item.Tanggal (Kolom D) bukan item.Timestamp
                     const formattedTime = formatKompasDateTime(item.Tanggal);
                     
                     const card = document.createElement("div");
@@ -336,7 +347,7 @@
                                 
                                 <div class="flex flex-col gap-0.5 mb-3 text-[11px] text-slate-400 font-medium border-b border-slate-100 pb-2">
                                     <span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${item.Unit} Athalia</span>
-                                    <span><i class="fa-regular fa-clock mr-1"></i>${formattedTime}</span>
+                                    <span><i class="fa-regular fa-calendar mr-1"></i>${formattedTime}</span>
                                 </div>
                                 
                                 <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-1"><strong>SERPONG, ATHALIA NEWSROOM –</strong> ${item.Cerita}</p>
@@ -374,8 +385,7 @@
             document.getElementById("modalTitle").innerText = data.Judul_Kegiatan;
             document.getElementById("modalContributor").innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${data.Unit} Athalia`;
             
-            // DIKOREKSI: Menggunakan data.Tanggal (Kolom D) bukan data.Timestamp
-            document.getElementById("modalTime").innerHTML = `<i class="fa-regular fa-clock mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
+            document.getElementById("modalTime").innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
             
             document.getElementById("modalTA").innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
             document.getElementById("modalStory").innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
