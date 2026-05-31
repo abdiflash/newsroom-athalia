@@ -39,7 +39,7 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </span>
-                <input type="text" id="searchInput" placeholder="Cari berita + Enter..." 
+                <input type="text" id="searchInput" placeholder="Cari berita + Enter..."  
                     class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
             </div>
 
@@ -263,9 +263,8 @@
             const unit = document.getElementById("unitFilter").value;
             const tahun = document.getElementById("tahunFilter").value;
             const search = document.getElementById("searchInput").value;
-            const sort = document.getElementById("sortFilter").value; // <-- Ambil Nilai Sort Baru dari Dropdown Filter
+            const sort = document.getElementById("sortFilter").value; 
 
-            // PERBAIKAN 2: Menyertakan parameter &sort secara dinamis saat melakukan pemanggilan ke backend Apps Script
             const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&page=${currentPage}&limit=${itemsLimit}`;
 
             try {
@@ -274,7 +273,7 @@
 
                 if (!result.data || result.data.length === 0) {
                     loader.classList.add("hidden");
-                    empty.classList.remove("hidden"); 
+                    empty.remove("hidden"); 
                     return;
                 }
 
@@ -311,7 +310,8 @@
                 loader.classList.add("hidden");
 
                 cardsData.forEach(({ item, arrPhotos, imagesHtml, index }) => {
-                    const formattedTime = formatKompasDateTime(item.Timestamp);
+                    // DIKOREKSI: Menggunakan item.Tanggal (Kolom D) bukan item.Timestamp
+                    const formattedTime = formatKompasDateTime(item.Tanggal);
                     
                     const card = document.createElement("div");
                     card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md cursor-pointer group transition duration-300";
@@ -380,7 +380,10 @@
             document.getElementById("modalValue").innerText = data.Nilai || 'GENERAL';
             document.getElementById("modalTitle").innerText = data.Judul_Kegiatan;
             document.getElementById("modalContributor").innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${data.Unit} Athalia`;
-            document.getElementById("modalTime").innerHTML = `<i class="fa-regular fa-clock mr-1"></i>${formatKompasDateTime(data.Timestamp)}`;
+            
+            // DIKOREKSI: Menggunakan data.Tanggal (Kolom D) bukan data.Timestamp
+            document.getElementById("modalTime").innerHTML = `<i class="fa-regular fa-clock mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
+            
             document.getElementById("modalTA").innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
             document.getElementById("modalStory").innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
 
@@ -488,7 +491,6 @@
 
         document.getElementById("unitFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("tahunFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
-        // PERBAIKAN 3: Menambahkan Event Listener pada dropdown Urutan Baru agar langsung memicu reload data otomatis saat diganti
         document.getElementById("sortFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { currentPage = 1; fetchNews(); } });
         window.addEventListener("DOMContentLoaded", fetchNews);
