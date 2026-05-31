@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATHALIA Newsroom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <header class="bg-[#1e3a8a] text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="text-center sm:text-left">
+                <h1 class="text-2xl font-bold tracking-tight flex items-center justify-center sm:justify-start gap-2">
+                    <span class="text-white">ATHALIA</span> <span class="text-slate-300 font-light text-xl">NEWSROOM</span>
+                </h1>
+                <p class="text-xs text-slate-300 italic mt-0.5">More Impact - More Value</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        
+        <div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-xl mb-6 shadow-sm flex items-start gap-3">
+            <i class="fa-solid fa-user-shield text-blue-600 text-lg mt-0.5"></i>
+            <p class="text-xs text-blue-800 leading-relaxed font-medium">
+                <strong>PRIVASI:</strong> Akses foto album penuh memerlukan login email resmi sekolah <span class="underline text-blue-900">@sekolahathalia.sch.id</span>.
+            </p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-8 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="relative md:col-span-4">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </span>
+                <input type="text" id="searchInput" placeholder="Cari berita + Enter..." 
+                    class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+            </div>
+
+            <div class="flex items-center gap-2 md:col-span-3">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Unit:</label>
+                <select id="unitFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                    <option value="ALL">Semua Unit</option>
+                    <option value="KB-TK">KB-TK</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA">SMA</option>
+                    <option value="UMUM">UMUM</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2 md:col-span-3">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Tahun:</label>
+                <select id="tahunFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                    <option value="ALL">Semua Tahun</option>
+                    <option value="2027">2027</option>
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2 md:col-span-2">
+                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Urutan:</label>
+                <div class="w-full px-3 py-2 text-sm bg-slate-100 border border-slate-200 text-slate-600 rounded-xl text-center font-medium">
+                    Terbaru
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingState" class="hidden py-20 flex flex-col items-center justify-center gap-3">
+            <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-sm text-slate-500 font-medium animate-pulse">Menghubungkan ke server Athalia...</p>
+        </div>
+
+        <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
+            <i class="fa-regular fa-folder-open text-slate-300 text-5xl mb-3"></i>
+            <p class="text-slate-600 font-medium text-base">Tidak Ada Berita Ditemukan</p>
+        </div>
+
+        <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="paginationPanel" class="mt-12 flex justify-center items-center gap-2"></div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-20 py-6 text-center text-xs text-slate-400 font-medium">
+        © 2026 Sekolah Kristen Athalia. All Rights Reserved.
+    </footer>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec"; 
+
+        let currentPage = 1;
+        const itemsLimit = 9;
+
+        // FUNGSI KOMPRESOR HYBRID
+        function fixDriveLink(url) {
+            if (!url || url === "-" || url.trim() === "") return [];
+            
+            return url.split(",").map(link => {
+                const clean = link.trim(); 
+                if (clean.includes("googleusercontent.com")) {
+                    return clean;
+                }
+                const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
+                return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400` : clean;
+            });
+        }
+
+        // FUNGSI FORMAT TANGGAL & JAM ALA KOMPAS.COM
+        function formatKompasDateTime(timestampStr) {
+            try {
+                if(!timestampStr || timestampStr === "-") return "";
+                
+                // Mengatasi format lokal "DD/MM/YYYY HH:mm:ss"
+                const parts = timestampStr.split(" ");
+                const dateParts = parts[0].split("/");
+                
+                const day = parseInt(dateParts[0], 10);
+                const monthIdx = parseInt(dateParts[1], 10) - 1;
+                const year = dateParts[2];
+                
+                const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                
+                let jamMenit = "";
+                if(parts[1]) {
+                    const timeParts = parts[1].split(":");
+                    jamMenit = ` | ${timeParts[0]}:${timeParts[1]} WIB`;
+                }
+                
+                return `${day} ${namaBulan[monthIdx]} ${year}${jamMenit}`;
+            } catch(e) {
+                return timestampStr; // Fallback jika format diluar dugaan
+            }
+        }
+
+        function changeSlide(btn, direction) {
+            const container = btn.parentElement;
+            const images = container.querySelectorAll('.carousel-img');
+            const badge = container.querySelector('.carousel-badge-idx');
+            
+            let activeIdx = -1;
+            images.forEach((img, idx) => {
+                if(!img.classList.contains('hidden')) activeIdx = idx;
+            });
+
+            if(activeIdx === -1) return;
+
+            images[activeIdx].classList.add('hidden');
+            let nextIdx = activeIdx + direction;
+            
+            if(nextIdx >= images.length) nextIdx = 0;
+            if(nextIdx < 0) nextIdx = images.length - 1;
+
+            images[nextIdx].classList.remove('hidden');
+            if(badge) badge.innerText = nextIdx + 1;
+        }
+
+        async function fetchNews() {
+            const grid = document.getElementById("newsGrid");
+            const loader = document.getElementById("loadingState");
+            const empty = document.getElementById("emptyState");
+            const pager = document.getElementById("paginationPanel");
+
+            grid.innerHTML = ""; pager.innerHTML = "";
+            loader.classList.remove("hidden"); empty.classList.add("hidden");
+
+            const unit = document.getElementById("unitFilter").value;
+            const tahun = document.getElementById("tahunFilter").value;
+            const search = document.getElementById("searchInput").value;
+
+            const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&page=${currentPage}&limit=${itemsLimit}`;
+
+            try {
+                const response = await fetch(finalUrl);
+                const result = await response.json();
+
+                if (!result.data || result.data.length === 0) {
+                    loader.classList.add("hidden");
+                    empty.classList.remove("hidden"); 
+                    return;
+                }
+
+                const imagePromises = [];
+                const cardsData = [];
+
+                result.data.forEach((item) => {
+                    const arrPhotos = fixDriveLink(item.Link_Foto);
+                    const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
+                    const mainImgUrl = arrPhotos.length > 0 ? arrPhotos[0] : defaultImg;
+
+                    const imgPromise = new Promise((resolve) => {
+                        const img = new Image();
+                        img.src = mainImgUrl;
+                        img.onload = () => resolve();
+                        img.onerror = () => resolve();
+                    });
+                    imagePromises.push(imgPromise);
+
+                    let imagesHtml = "";
+                    if(arrPhotos.length === 0) {
+                        imagesHtml = `<img src="${defaultImg}" class="w-full h-full object-cover carousel-img">`;
+                    } else {
+                        arrPhotos.forEach((src, idx) => {
+                            imagesHtml += `<img src="${src}" class="w-full h-full object-cover carousel-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
+                        });
+                    }
+
+                    cardsData.push({ item, arrPhotos, imagesHtml });
+                });
+
+                // Tunggu pramuat memori gambar selesai
+                await Promise.all(imagePromises);
+                loader.classList.add("hidden");
+
+                cardsData.forEach(({ item, arrPhotos, imagesHtml }) => {
+                    const formattedTime = formatKompasDateTime(item.Timestamp);
+                    
+                    const card = document.createElement("div");
+                    card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition duration-300";
+                    card.innerHTML = `
+                        <div class="relative bg-slate-100 h-48 w-full overflow-hidden group">
+                            ${imagesHtml}
+                            
+                            ${arrPhotos.length > 1 ? `
+                                <button onclick="changeSlide(this, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <button onclick="changeSlide(this, 1)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                                <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1 z-10">
+                                    <i class="fa-regular fa-images"></i> <span class="carousel-badge-idx">1</span>/${arrPhotos.length} FOTO
+                                </div>
+                            ` : arrPhotos.length === 1 ? `
+                                <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10">
+                                    1 FOTO
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">${item.Nilai || 'GENERAL'}</span>
+                                <h3 class="text-base font-bold text-slate-800 leading-snug mb-1 line-clamp-2">${item.Judul_Kegiatan}</h3>
+                                
+                                <div class="flex flex-col gap-0.5 mb-3 text-[11px] text-slate-400 font-medium border-b border-slate-100 pb-2">
+                                    <span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${item.Unit} Athalia</span>
+                                    <span><i class="fa-regular fa-clock mr-1"></i>${formattedTime}</span>
+                                </div>
+
+                                <p class="text-xs text-slate-500 font-medium mb-2">Kelas: ${item.Kelas || '-'}</p>
+                                
+                                <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-4"><strong>SERPONG, ATHALIA NEWSROOM –</strong> ${item.Cerita}</p>
+                            </div>
+                            <div class="pt-4 border-t border-slate-50 flex flex-col gap-3">
+                                <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
+                                    <span><i class="fa-regular fa-calendar-days mr-1"></i> TA: ${item.Tahun_Ajaran || '-'}</span>
+                                    <button onclick="copyCaption('${escapeHtml(item.Cerita)}')" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md transition">
+                                        <i class="fa-regular fa-copy"></i> SALIN CAPTION
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mt-1">
+                                    ${item.Link_Album && item.Link_Album !== "-" ? `<a href="${item.Link_Album}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
+                                    ${item.Link_Video && item.Link_Video !== "-" ? `<a href="${item.Link_Video}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                renderPagination(result.totalPages, result.currentPage);
+            } catch (error) {
+                loader.classList.add("hidden");
+                alert("Gagal memuat data dari server Newsroom.");
+            }
+        }
+
+        function renderPagination(total, current) {
+            const panel = document.getElementById("paginationPanel");
+            if (total <= 1) return;
+
+            const prevBtn = document.createElement("button");
+            prevBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+            prevBtn.innerHTML = '<i class="fa-solid fa-angle-left"></i>';
+            if (current > 1) prevBtn.onclick = () => { currentPage--; fetchNews(); };
+            panel.appendChild(prevBtn);
+
+            for (let i = 1; i <= total; i++) {
+                const numBtn = document.createElement("button");
+                numBtn.className = `w-8 h-8 rounded-lg border text-xs font-bold ${i === current ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+                numBtn.innerText = i;
+                numBtn.onclick = () => { currentPage = i; fetchNews(); };
+                panel.appendChild(numBtn);
+            }
+
+            const nextBtn = document.createElement("button");
+            nextBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === total ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+            nextBtn.innerHTML = '<i class="fa-solid fa-angle-right"></i>';
+            if (current < total) nextBtn.onclick = () => { currentPage++; fetchNews(); };
+            panel.appendChild(nextBtn);
+        }
+
+        function copyCaption(text) {
+            navigator.clipboard.writeText(text).then(() => alert("Caption narasi berita berhasil disalin!"));
+        }
+
+        function escapeHtml(text) {
+            if(!text) return '';
+            return text.replace(/'/g, "\\'").replace(/"/g, '"').replace(/\n/g, '\\n');
+        }
+
+        document.getElementById("unitFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
+        document.getElementById("tahunFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
+        document.getElementById("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { currentPage = 1; fetchNews(); } });
+        window.addEventListener("DOMContentLoaded", fetchNews);
+    </script>
+</body>
+</html>
