@@ -97,7 +97,6 @@
         let currentPage = 1;
         const itemsLimit = 9;
 
-        // KREDENSIAL LAPIS 1: Tetap dipertahankan di background code jika sewaktu-waktu ingin Anda panggil via Console
         function masukanPasswordDashboard() {
             const pass = prompt("Masukkan Password Akses Dashboard Wakasek:");
             if (pass === "rahasiawakasek") { 
@@ -107,26 +106,20 @@
             }
         }
 
-        // FUNGSI KOMPRESOR HYBRID CEPAT (MENDUKUNG FOLDER THUMBNAIL & FOLDER KEGIATAN)
+        // FUNGSI KOMPRESOR HYBRID
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
             
             return url.split(",").map(link => {
                 const clean = link.trim(); 
-                
-                // Jika url sudah berupa link eksternal googleusercontent kompresi matang, langsung return tanpa diproses ulang
                 if (clean.includes("googleusercontent.com")) {
                     return clean;
                 }
-                
                 const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
-                
-                // Jika berasal dari folder kegiatan asli (drive.google.com), potong paksa menggunakan skema instan s400
                 return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400` : clean;
             });
         }
 
-        // FUNGSI GESER FOTO (CAROUSEL SLIDER)
         function changeSlide(btn, direction) {
             const container = btn.parentElement;
             const images = container.querySelectorAll('.carousel-img');
@@ -167,17 +160,34 @@
             try {
                 const response = await fetch(finalUrl);
                 const result = await response.json();
-                loader.classList.add("hidden");
 
                 if (!result.data || result.data.length === 0) {
-                    empty.classList.remove("hidden"); return;
+                    loader.classList.add("hidden");
+                    empty.classList.remove("hidden"); 
+                    return;
                 }
 
-                result.data.forEach((item, cardIdx) => {
+                // Array untuk menampung semua Promise preloading gambar utama kartu berita
+                const imagePromises = [];
+                const cardsData = [];
+
+                result.data.forEach((item) => {
                     const arrPhotos = fixDriveLink(item.Link_Foto);
                     const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
                     
-                    // Generate HTML Kumpulan image tag untuk slider
+                    // Ambil URL gambar pertama yang akan langsung tampil di layar depan
+                    const mainImgUrl = arrPhotos.length > 0 ? arrPhotos[0] : defaultImg;
+
+                    // Daftarkan ke Promise Preloader agar diunduh di background sebelum loader ditutup
+                    const imgPromise = new Promise((resolve) => {
+                        const img = new Image();
+                        img.src = mainImgUrl;
+                        img.onload = () => resolve();
+                        img.onerror = () => resolve(); // Tetap jalan jika gambar rusak
+                    });
+                    imagePromises.push(imgPromise);
+
+                    // Simpan data HTML bentukan ke memori sementara
                     let imagesHtml = "";
                     if(arrPhotos.length === 0) {
                         imagesHtml = `<img src="${defaultImg}" class="w-full h-full object-cover carousel-img">`;
@@ -187,16 +197,25 @@
                         });
                     }
 
+                    cardsData.push({ item, arrPhotos, imagesHtml });
+                });
+
+                // TAHAPAN KRUSIAL: Tunggu sampai seluruh asset gambar utama selesai diunduh oleh browser
+                await Promise.all(imagePromises);
+
+                // Setelah data dan gambar siap 100%, matikan animasi loading
+                loader.classList.add("hidden");
+
+                // Render semua card ke dalam grid secara serentak (Foto & Teks muncul bersamaan tanpa kedipan)
+                cardsData.forEach(({ item, arrPhotos, imagesHtml }) => {
                     const card = document.createElement("div");
                     card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition duration-300";
                     card.innerHTML = `
                         <div class="relative bg-slate-100 h-48 w-full overflow-hidden group">
                             ${imagesHtml}
-                            
                             <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-700 uppercase shadow-sm z-10">
                                 ${item.Unit} | TA ${item.Tahun_Ajaran || '-'}
                             </div>
-
                             ${arrPhotos.length > 1 ? `
                                 <button onclick="changeSlide(this, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
                                     <i class="fa-solid fa-chevron-left"></i>
@@ -236,6 +255,7 @@
                     `;
                     grid.appendChild(card);
                 });
+
                 renderPagination(result.totalPages, result.currentPage);
             } catch (error) {
                 loader.classList.add("hidden");
