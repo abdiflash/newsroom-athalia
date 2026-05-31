@@ -105,9 +105,9 @@
                     <span id="modalTA" class="text-slate-400 mt-1 block">Tahun Ajaran</span>
                 </div>
 
-                <div id="modalCarouselContainer" class="relative w-full bg-slate-100 rounded-xl overflow-hidden shadow-sm h-72 sm:h-96">
-                    <div id="modalImagesWrapper" class="w-full h-full">
-                        </div>
+                <div id="modalCarouselContainer" class="relative w-full bg-slate-100 rounded-xl overflow-hidden shadow-sm h-auto max-h-[65vh] flex items-center justify-center">
+                    <div id="modalImagesWrapper" class="w-full h-full flex items-center justify-center bg-slate-900">
+                    </div>
                     <button onclick="changeModalSlide(-1)" id="modalPrevBtn" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition z-10">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
@@ -134,7 +134,7 @@
     </div>
 
     <footer class="bg-white border-t border-slate-200 mt-20 py-6 text-center text-xs text-slate-400 font-medium">
-        © 2026 Sekolah Kristen Athalia. All Rights Reserved.
+        © 2026 Sekolah Athalia. All Rights Reserved.
     </footer>
 
     <script>
@@ -193,7 +193,6 @@
             if(badge) badge.innerText = nextIdx + 1;
         }
 
-        // PERBAIKAN: Fungsi kontrol navigasi geser khusus untuk komponen di dalam modal pop-up
         function changeModalSlide(direction) {
             const container = document.getElementById("modalImagesWrapper");
             const images = container.querySelectorAll('.modal-slider-img');
@@ -240,7 +239,7 @@
                     return;
                 }
 
-                globalNewsData = result.data; // Simpan data ke memori lokal browser
+                globalNewsData = result.data; 
                 const imagePromises = [];
                 const cardsData = [];
 
@@ -277,7 +276,6 @@
                     
                     const card = document.createElement("div");
                     card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md cursor-pointer group transition duration-300";
-                    // Menambahkan event click untuk membuka modal artikel penuh
                     card.setAttribute("onclick", `openModal(${index})`);
                     
                     card.innerHTML = `
@@ -336,7 +334,6 @@
             }
         }
 
-        // PERBAIKAN: Fungsi penanganan pembukaan modal pop-up yang disempurnakan dengan multi-image slider
         function openModal(index) {
             const data = globalNewsData[index];
             if(!data) return;
@@ -348,7 +345,6 @@
             document.getElementById("modalTA").innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
             document.getElementById("modalStory").innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
 
-            // Reset komponen slider internal modal
             const wrapper = document.getElementById("modalImagesWrapper");
             wrapper.innerHTML = "";
             document.getElementById("modalBadgeIdx").innerText = "1";
@@ -357,18 +353,19 @@
             const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
             
             if (arrPhotos.length === 0) {
-                wrapper.innerHTML = `<img src="${defaultImg}" class="w-full h-full object-cover modal-slider-img mx-auto">`;
+                // KOREKSI 2: h-full diganti h-auto max-h-[65vh] agar responsif mengikuti bentuk asli foto
+                wrapper.innerHTML = `<img src="${defaultImg}" class="w-full h-auto max-h-[65vh] object-contain modal-slider-img mx-auto">`;
                 document.getElementById("modalPrevBtn").classList.add("hidden");
                 document.getElementById("modalNextBtn").classList.add("hidden");
                 document.getElementById("modalCarouselBadge").classList.add("hidden");
             } else {
                 arrPhotos.forEach((src, idx) => {
-                    wrapper.innerHTML += `<img src="${src}" class="w-full h-full object-contain bg-slate-900 modal-slider-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
+                    // KOREKSI 3: h-full diganti h-auto max-h-[65vh] pada looping gambar slider modal
+                    wrapper.innerHTML += `<img src="${src}" class="w-full h-auto max-h-[65vh] object-contain modal-slider-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
                 });
                 
                 document.getElementById("modalBadgeTotal").innerText = arrPhotos.length;
 
-                // Tampilkan atau sembunyikan tombol kontrol panah berdasarkan jumlah foto
                 if (arrPhotos.length > 1) {
                     document.getElementById("modalPrevBtn").classList.remove("hidden");
                     document.getElementById("modalNextBtn").classList.remove("hidden");
@@ -381,10 +378,8 @@
                 }
             }
 
-            // Atur tombol Salin Caption di dalam modal
             document.getElementById("modalCopyBtn").setAttribute("onclick", `copyCaption('${escapeHtml(data.Cerita)}')`);
 
-            // Atur Tombol Album Eksternal
             const albumBtn = document.getElementById("modalAlbumBtn");
             if(data.Link_Album && data.Link_Album !== "-") {
                 albumBtn.href = data.Link_Album;
@@ -393,7 +388,6 @@
                 albumBtn.classList.add("hidden");
             }
 
-            // Atur Tombol Video Eksternal
             const videoBtn = document.getElementById("modalVideoBtn");
             if(data.Link_Video && data.Link_Video !== "-") {
                 videoBtn.href = data.Link_Video;
@@ -402,7 +396,6 @@
                 videoBtn.classList.add("hidden");
             }
 
-            // Tampilkan Modal dengan efek transisi halus
             const modal = document.getElementById("newsModal");
             document.body.classList.add("modal-open");
             modal.classList.remove("hidden");
@@ -412,7 +405,6 @@
             }, 10);
         }
 
-        // FUNGSI UNTUK MENUTUP MODAL POP-UP
         function closeModal(event) {
             const modal = document.getElementById("newsModal");
             modal.classList.add("opacity-0");
