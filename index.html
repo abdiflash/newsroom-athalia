@@ -107,7 +107,7 @@
             }
         }
 
-        // FUNGSI KHUSUS KOMPRESOR FOTO UTAMA UNTUK THUMBNAIL (S400)
+        // FUNGSI FIX DRIVE LINK DENGAN ENDPOINT LH3 GOOGLEUSERCONTENT (KOMPRESI OTOMATIS)
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
             
@@ -116,8 +116,8 @@
                 
                 const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
                 
-                // Menggunakan endpoint resmi googleusercontent dengan resolusi otomatis s400
-                return match ? `http://googleusercontent.com/profile/picture/d/${match[1]}=s400` : clean;
+                // Menggunakan endpoint lh3.googleusercontent.com/d/{ID}=s400 untuk kompresi instan
+                return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s400` : clean;
             });
         }
 
