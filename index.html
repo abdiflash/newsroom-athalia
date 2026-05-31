@@ -247,6 +247,7 @@
 
         function changeModalSlide(direction) {
             const container = document.getElementById("modalImagesWrapper");
+            if (!container) return;
             const images = container.querySelectorAll('.modal-slider-img');
             if (images.length <= 1) return;
             
@@ -263,7 +264,8 @@
             if(nextIdx < 0) nextIdx = images.length - 1;
             
             images[nextIdx].classList.remove('hidden');
-            document.getElementById("modalBadgeIdx").innerText = nextIdx + 1;
+            const badgeIdx = document.getElementById("modalBadgeIdx");
+            if(badgeIdx) badgeIdx.innerText = nextIdx + 1;
         }
 
         async function fetchNews() {
@@ -397,7 +399,7 @@
 
                 renderPagination(result.totalPages, result.currentPage);
             } catch (error) {
-                loader.classList.add("hidden");
+                if (loader) loader.classList.add("hidden");
                 alert("Gagal memuat data dari server Newsroom.");
             }
         }
@@ -406,77 +408,113 @@
             const data = globalNewsData[index];
             if(!data) return;
 
-            document.getElementById("modalValue").innerText = data.Nilai || 'GENERAL';
-            document.getElementById("modalTitle").innerText = data.Judul_Kegiatan;
-            document.getElementById("modalContributor").innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${data.Unit} Athalia`;
+            // PENGAMAN DOM: Validasi eksistensi elemen sebelum diisi datanya
+            const modalValue = document.getElementById("modalValue");
+            if(modalValue) modalValue.innerText = data.Nilai || 'GENERAL';
+
+            const modalTitle = document.getElementById("modalTitle");
+            if(modalTitle) modalTitle.innerText = data.Judul_Kegiatan;
+
+            const modalContributor = document.getElementById("modalContributor");
+            if(modalContributor) modalContributor.innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${data.Unit} Athalia`;
             
-            document.getElementById("modalTime").innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
+            const modalTime = document.getElementById("modalTime");
+            if(modalTime) modalTime.innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
             
-            document.getElementById("modalTA").innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
-            document.getElementById("modalStory").innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
+            const modalTA = document.getElementById("modalTA");
+            if(modalTA) modalTA.innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
+
+            const modalStory = document.getElementById("modalStory");
+            if(modalStory) modalStory.innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
 
             const wrapper = document.getElementById("modalImagesWrapper");
-            wrapper.innerHTML = "";
-            document.getElementById("modalBadgeIdx").innerText = "1";
+            if(wrapper) wrapper.innerHTML = "";
+
+            // PERBAIKAN UTAMA: Kembalikan cetakan HTML struktur awal badge agar ID-nya tidak hilang di-click selanjutnya
+            const carouselBadge = document.getElementById("modalCarouselBadge");
+            if(carouselBadge) {
+                carouselBadge.innerHTML = `<i class="fa-regular fa-images"></i> <span id="modalBadgeIdx">1</span>/<span id="modalBadgeTotal">1</span> FOTO`;
+            }
+
+            const badgeIdx = document.getElementById("modalBadgeIdx");
+            if(badgeIdx) badgeIdx.innerText = "1";
 
             const arrPhotos = fixDriveLink(data.Link_Foto);
             const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
             
             if (arrPhotos.length === 0) {
-                wrapper.innerHTML = `<img src="${defaultImg}" class="w-full h-full object-cover modal-slider-img">`;
-                document.getElementById("modalPrevBtn").classList.add("hidden");
-                document.getElementById("modalNextBtn").classList.add("hidden");
-                document.getElementById("modalCarouselBadge").classList.add("hidden");
+                if(wrapper) wrapper.innerHTML = `<img src="${defaultImg}" class="w-full h-full object-cover modal-slider-img">`;
+                const prevBtn = document.getElementById("modalPrevBtn");
+                if(prevBtn) prevBtn.classList.add("hidden");
+                const nextBtn = document.getElementById("modalNextBtn");
+                if(nextBtn) nextBtn.classList.add("hidden");
+                if(carouselBadge) carouselBadge.classList.add("hidden");
             } else {
                 arrPhotos.forEach((src, idx) => {
-                    wrapper.innerHTML += `<img src="${src}" class="w-full h-full object-cover modal-slider-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
+                    if(wrapper) wrapper.innerHTML += `<img src="${src}" class="w-full h-full object-cover modal-slider-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
                 });
                 
-                document.getElementById("modalBadgeTotal").innerText = arrPhotos.length;
+                const badgeTotal = document.getElementById("modalBadgeTotal");
+                if(badgeTotal) badgeTotal.innerText = arrPhotos.length;
+
+                const prevBtn = document.getElementById("modalPrevBtn");
+                const nextBtn = document.getElementById("modalNextBtn");
 
                 if (arrPhotos.length > 1) {
-                    document.getElementById("modalPrevBtn").classList.remove("hidden");
-                    document.getElementById("modalNextBtn").classList.remove("hidden");
-                    document.getElementById("modalCarouselBadge").classList.remove("hidden");
+                    if(prevBtn) prevBtn.classList.remove("hidden");
+                    if(nextBtn) nextBtn.classList.remove("hidden");
+                    if(carouselBadge) carouselBadge.classList.remove("hidden");
                 } else {
-                    document.getElementById("modalPrevBtn").classList.add("hidden");
-                    document.getElementById("modalNextBtn").classList.add("hidden");
-                    document.getElementById("modalCarouselBadge").classList.remove("hidden");
-                    document.getElementById("modalCarouselBadge").innerHTML = `<i class="fa-regular fa-images"></i> 1 FOTO`;
+                    if(prevBtn) prevBtn.classList.add("hidden");
+                    if(nextBtn) nextBtn.classList.add("hidden");
+                    if(carouselBadge) {
+                        carouselBadge.classList.remove("hidden");
+                        carouselBadge.innerHTML = `<i class="fa-regular fa-images"></i> 1 FOTO`;
+                    }
                 }
             }
 
-            document.getElementById("modalCopyBtn").setAttribute("onclick", `copyCaption('${escapeHtml(data.Cerita)}')`);
+            const copyBtn = document.getElementById("modalCopyBtn");
+            if(copyBtn) copyBtn.setAttribute("onclick", `copyCaption('${escapeHtml(data.Cerita)}')`);
 
             const albumBtn = document.getElementById("modalAlbumBtn");
-            if(data.Link_Album && data.Link_Album !== "-") {
-                albumBtn.href = data.Link_Album;
-                albumBtn.classList.remove("hidden");
-            } else {
-                albumBtn.classList.add("hidden");
+            if(albumBtn) {
+                if(data.Link_Album && data.Link_Album !== "-") {
+                    albumBtn.href = data.Link_Album;
+                    albumBtn.classList.remove("hidden");
+                } else {
+                    albumBtn.classList.add("hidden");
+                }
             }
 
             const videoBtn = document.getElementById("modalVideoBtn");
-            if(data.Link_Video && data.Link_Video !== "-") {
-                videoBtn.href = data.Link_Video;
-                videoBtn.classList.remove("hidden");
-            } else {
-                videoBtn.classList.add("hidden");
+            if(videoBtn) {
+                if(data.Link_Video && data.Link_Video !== "-") {
+                    videoBtn.href = data.Link_Video;
+                    videoBtn.classList.remove("hidden");
+                } else {
+                    videoBtn.classList.add("hidden");
+                }
             }
 
             const modal = document.getElementById("newsModal");
-            document.body.classList.add("modal-open");
-            modal.classList.remove("hidden");
-            setTimeout(() => {
-                modal.classList.remove("opacity-0");
-                modal.querySelector("div").classList.remove("scale-95");
-            }, 10);
+            if(modal) {
+                document.body.classList.add("modal-open");
+                modal.classList.remove("hidden");
+                setTimeout(() => {
+                    modal.classList.remove("opacity-0");
+                    const internalDiv = modal.querySelector("div");
+                    if(internalDiv) internalDiv.classList.remove("scale-95");
+                }, 10);
+            }
         }
 
         function closeModal(event) {
             const modal = document.getElementById("newsModal");
+            if (!modal) return;
             modal.classList.add("opacity-0");
-            modal.querySelector("div").classList.add("scale-95");
+            const internalDiv = modal.querySelector("div");
+            if(internalDiv) internalDiv.classList.add("scale-95");
             document.body.classList.remove("modal-open");
             setTimeout(() => {
                 modal.classList.add("hidden");
@@ -485,7 +523,7 @@
 
         function renderPagination(total, current) {
             const panel = document.getElementById("paginationPanel");
-            if (total <= 1) return;
+            if (!panel || total <= 1) return;
 
             const prevBtn = document.createElement("button");
             prevBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
@@ -525,12 +563,9 @@
         
         window.addEventListener("DOMContentLoaded", fetchNews);
 
-        // SOLUSI 1: Event Delegation untuk mendeteksi klik kartu berita secara permanen (Halaman 1, 2, 3, dst)
         document.getElementById("newsGrid").addEventListener("click", (e) => {
-            // Jika yang diklik adalah tombol/tautan internal (Salin Caption, Lihat Album, Video, Panah Carousel), biarkan event aslinya berjalan
             if (e.target.closest('button') || e.target.closest('a')) return;
             
-            // Cari elemen kartu terdekat yang membawa data-index
             const card = e.target.closest('[data-index]');
             if (card) {
                 const index = card.getAttribute("data-index");
