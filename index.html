@@ -107,7 +107,7 @@
             }
         }
 
-        // BAGIAN YANG DIPERBAIKI: Menggunakan resolusi s400 & struktur string literal ES6 yang valid
+        // FUNGSI KHUSUS KOMPRESOR FOTO UTAMA UNTUK THUMBNAIL (S400)
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
             
@@ -116,7 +116,7 @@
                 
                 const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
                 
-                // Berhasil diperbaiki ke endpoint kompresi otomatis googleusercontent s400
+                // Menggunakan endpoint resmi googleusercontent dengan resolusi otomatis s400
                 return match ? `http://googleusercontent.com/profile/picture/d/${match[1]}=s400` : clean;
             });
         }
