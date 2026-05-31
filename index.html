@@ -91,7 +91,7 @@
     </main>
 
     <footer class="bg-white border-t border-slate-200 mt-20 py-6 text-center text-xs text-slate-400 font-medium">
-        © 2026 Sekolah Kristen Athalia. All Rights Reserved.
+        © 2026 Kristen Athalia. All Rights Reserved.
     </footer>
 
     <script>
@@ -100,7 +100,6 @@
         let currentPage = 1;
         const itemsLimit = 9;
 
-        // KREDENSIAL LAPIS 1: Sandi masuk ke dashboard kurasi
         function masukanPasswordDashboard() {
             const pass = prompt("Masukkan Password Akses Dashboard Wakasek:");
             if (pass === "rahasiawakasek") { 
@@ -110,21 +109,17 @@
             }
         }
 
-        // REVISI TOTAL: Konversi tautan mentah file dari folder kegiatan menjadi URL render rendering instan
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
             
             return url.split(",").map(link => {
                 const clean = link.trim();
-                // Regex fleksibel menangkap format /file/d/ID atau ?id=ID
-                const match = clean.match(/file\/d\/([-\w]{25,})/) || clean.match(/id=([-\w]{25,})/);
-                
-                // PERBAIKAN: Menggunakan sintaks template literals ${match[1]} yang benar dan protokol ekspor resmi Google Drive
+                const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
+                // Menangani string template literals dengan benar dari versi asli Anda
                 return match ? `https://docs.google.com/uc?export=view&id=${match[1]}` : clean;
             });
         }
 
-        // FUNGSI GESER FOTO (CAROUSEL SLIDER)
         function changeSlide(btn, direction) {
             const container = btn.parentElement;
             const images = container.querySelectorAll('.carousel-img');
@@ -175,7 +170,6 @@
                     const arrPhotos = fixDriveLink(item.Link_Foto);
                     const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
                     
-                    // Generate HTML Kumpulan image tag untuk slider
                     let imagesHtml = "";
                     if(arrPhotos.length === 0) {
                         imagesHtml = `<img src="${defaultImg}" class="w-full h-full object-cover carousel-img">`;
