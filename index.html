@@ -36,7 +36,7 @@
                     class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
             </div>
 
-            <div class="flex items-center gap-2 md:col-span-3">
+            <div class="flex items-center gap-2 md:col-span-4">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Unit:</label>
                 <select id="unitFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
                     <option value="ALL">Semua Unit</option>
@@ -48,7 +48,7 @@
                 </select>
             </div>
 
-            <div class="flex items-center gap-2 md:col-span-3">
+            <div class="flex items-center gap-2 md:col-span-4">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Tahun:</label>
                 <select id="tahunFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
                     <option value="ALL">Semua Tahun</option>
@@ -56,14 +56,6 @@
                     <option value="2026">2026</option>
                     <option value="2025">2025</option>
                     <option value="2024">2024</option>
-                </select>
-            </div>
-
-            <div class="flex items-center gap-2 md:col-span-2">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Urutan:</label>
-                <select id="sortFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                    <option value="DESC">Terbaru</option>
-                    <option value="ASC">Terlama</option>
                 </select>
             </div>
         </div>
@@ -289,7 +281,7 @@
             const unit = document.getElementById("unitFilter").value;
             const tahun = document.getElementById("tahunFilter").value;
             const search = document.getElementById("searchInput").value;
-            const sort = document.getElementById("sortFilter").value; 
+            const sort = "DESC"; 
 
             const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&page=${currentPage}&limit=${itemsLimit}`;
 
@@ -532,7 +524,6 @@
 
         document.getElementById("unitFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("tahunFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
-        document.getElementById("sortFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { currentPage = 1; fetchNews(); } });
         window.addEventListener("DOMContentLoaded", fetchNews);
     </script>
