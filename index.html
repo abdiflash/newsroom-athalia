@@ -157,20 +157,56 @@
 
         function formatKompasDateTime(timestampStr) {
             try {
-                if(!timestampStr || timestampStr === "-") return "";
-                const parts = timestampStr.split(" ");
-                const dateParts = parts[0].split("/");
-                const day = parseInt(dateParts[0], 10);
-                const monthIdx = parseInt(dateParts[1], 10) - 1;
-                const year = dateParts[2];
-                const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                if (!timestampStr || timestampStr === "-") return "";
+                
+                // Merapikan data input ke tipe string murni
+                let dateString = timestampStr.toString().trim();
                 let jamMenit = "";
-                if(parts[1]) {
-                    const timeParts = parts[1].split(":");
-                    jamMenit = ` | ${timeParts[0]}:${timeParts[1]} WIB`;
+                
+                // Pisahkan komponen jika data mengandung informasi jam (misal: "31/05/2026 15:30:00")
+                if (dateString.includes(" ")) {
+                    const parts = dateString.split(" ");
+                    dateString = parts[0]; // Ambil bagian tanggalnya saja "DD/MM/YYYY"
+                    if (parts[1]) {
+                        const timeParts = parts[1].split(":");
+                        if (timeParts.length >= 2) {
+                            jamMenit = ` | ${timeParts[0]}:${timeParts[1]} WIB`;
+                        }
+                    }
                 }
-                return `${day} ${namaBulan[monthIdx]} ${year}${jamMenit}`;
+                
+                // Validasi pemisah tanda garis miring (/) bawaan Google Sheet terstandar
+                if (dateString.includes("/")) {
+                    const dateParts = dateString.split("/");
+                    if (dateParts.length === 3) {
+                        const day = parseInt(dateParts[0], 10);
+                        const monthIdx = parseInt(dateParts[1], 10) - 1;
+                        const year = dateParts[2];
+                        
+                        const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                                           "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                        
+                        // Proteksi jika indeks bulan melompat di luar batas normal array
+                        if (monthIdx >= 0 && monthIdx <= 11) {
+                            return `${day} ${namaBulan[monthIdx]} ${year}${jamMenit}`;
+                        }
+                    }
+                }
+                
+                // Jalur alternatif jika data yang masuk masih berupa ISO string objek Date asli
+                const d = new Date(timestampStr);
+                if (!isNaN(d.getTime())) {
+                    const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                                       "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                    let m = d.getMinutes();
+                    let h = d.getHours();
+                    let jamFormat = ` | ${(h < 10 ? '0' : '') + h}:${(m < 10 ? '0' : '') + m} WIB`;
+                    return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}${jamFormat}`;
+                }
+
+                return timestampStr;
             } catch(e) {
+                console.error("Gagal memproses parsing tanggal:", e);
                 return timestampStr;
             }
         }
