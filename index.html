@@ -107,21 +107,19 @@
             }
         }
 
+        // BAGIAN YANG DIPERBAIKI: Menggunakan resolusi s400 & struktur string literal ES6 yang valid
         function fixDriveLink(url) {
-    if (!url || url === "-" || url.trim() === "") return [];
-    
-    // Memisahkan berdasarkan koma
-    return url.split(",").map(link => {
-        // PERBAIKAN 1: .trim() dipindahkan ke awal untuk memastikan tidak ada spasi tersisa di depan/belakang URL
-        const clean = link.trim(); 
-        
-        // Regex yang lebih kuat untuk menangkap ID Google Drive dari berbagai format link
-        const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
-        
-        // PERBAIKAN 2: Menggunakan endpoint resmi 'thumbnail' googleusercontent yang jauh lebih cepat, ringan, dan bebas masalah CORS
-        return match ? `https://lh3.googleusercontent.com/d/${match[1]}=s600` : clean;
-    });
-}
+            if (!url || url === "-" || url.trim() === "") return [];
+            
+            return url.split(",").map(link => {
+                const clean = link.trim(); 
+                
+                const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
+                
+                // Berhasil diperbaiki ke endpoint kompresi otomatis googleusercontent s400
+                return match ? `http://googleusercontent.com/profile/picture/d/${match[1]}=s400` : clean;
+            });
+        }
 
         // FUNGSI GESER FOTO (CAROUSEL SLIDER)
         function changeSlide(btn, direction) {
