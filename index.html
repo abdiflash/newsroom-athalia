@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .modal-open { overflow: hidden; }
     </style>
@@ -68,9 +68,10 @@
 
             <div class="flex items-center gap-2 md:col-span-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Urutan:</label>
-                <div class="w-full px-3 py-2 text-sm bg-slate-100 border border-slate-200 text-slate-600 rounded-xl text-center font-medium">
-                    Terbaru
-                </div>
+                <select id="sortFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                    <option value="DESC">Terbaru</option>
+                    <option value="ASC">Terlama</option>
+                </select>
             </div>
         </div>
 
@@ -262,8 +263,10 @@
             const unit = document.getElementById("unitFilter").value;
             const tahun = document.getElementById("tahunFilter").value;
             const search = document.getElementById("searchInput").value;
+            const sort = document.getElementById("sortFilter").value; // <-- Ambil Nilai Sort Baru dari Dropdown Filter
 
-            const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&page=${currentPage}&limit=${itemsLimit}`;
+            // PERBAIKAN 2: Menyertakan parameter &sort secara dinamis saat melakukan pemanggilan ke backend Apps Script
+            const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&page=${currentPage}&limit=${itemsLimit}`;
 
             try {
                 const response = await fetch(finalUrl);
@@ -389,14 +392,12 @@
             const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
             
             if (arrPhotos.length === 0) {
-                // KOREKSI 2: h-full diganti h-auto max-h-[65vh] agar responsif mengikuti bentuk asli foto
                 wrapper.innerHTML = `<img src="${defaultImg}" class="w-full h-auto max-h-[65vh] object-contain modal-slider-img mx-auto">`;
                 document.getElementById("modalPrevBtn").classList.add("hidden");
                 document.getElementById("modalNextBtn").classList.add("hidden");
                 document.getElementById("modalCarouselBadge").classList.add("hidden");
             } else {
                 arrPhotos.forEach((src, idx) => {
-                    // KOREKSI 3: h-full diganti h-auto max-h-[65vh] pada looping gambar slider modal
                     wrapper.innerHTML += `<img src="${src}" class="w-full h-auto max-h-[65vh] object-contain modal-slider-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
                 });
                 
@@ -487,6 +488,8 @@
 
         document.getElementById("unitFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("tahunFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
+        // PERBAIKAN 3: Menambahkan Event Listener pada dropdown Urutan Baru agar langsung memicu reload data otomatis saat diganti
+        document.getElementById("sortFilter").addEventListener("change", () => { currentPage = 1; fetchNews(); });
         document.getElementById("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { currentPage = 1; fetchNews(); } });
         window.addEventListener("DOMContentLoaded", fetchNews);
     </script>
