@@ -136,7 +136,7 @@
 
         let currentPage = 1;
         const itemsLimit = 9;
-        let globalNewsData = []; // Menyimpan data batch aktif untuk pencarian modal offline
+        let globalNewsData = [];
 
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
@@ -149,38 +149,51 @@
             });
         }
 
-        // 🛠️ DI-UPDATE: Mendukung format baru YYYY-MM-DD agar Terlama & Terbaru 100% akurat
+        // 🛠️ PERBAIKAN: Parser Date yang kebal terhadap semua format (termasuk M/D/YYYY)
         function parseTanggalKeObject(timestampStr) {
             if (!timestampStr || timestampStr === "-") return new Date(0);
+            
+            // Coba native JavaScript parser terlebih dahulu
+            const d = new Date(timestampStr);
+            if (!isNaN(d.getTime())) return d;
+
             let dateString = timestampStr.toString().trim().split(" ")[0]; 
             
-            // Cek jika mendeteksi format baru YYYY-MM-DD (menggunakan strip)
+            // Format YYYY-MM-DD
             if (dateString.includes("-")) {
                 const dateParts = dateString.split("-");
                 if (dateParts.length === 3) {
-                    const year = parseInt(dateParts[0], 10);
-                    const monthIdx = parseInt(dateParts[1], 10) - 1;
-                    const day = parseInt(dateParts[2], 10);
-                    return new Date(year, monthIdx, day);
+                    return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
                 }
             }
 
-            // Fallback untuk format lama DD/MM/YYYY
+            // Format DD/MM/YYYY atau MM/DD/YYYY dari Spreadsheet
             if (dateString.includes("/")) {
                 const dateParts = dateString.split("/");
                 if (dateParts.length === 3) {
-                    const day = parseInt(dateParts[0], 10);
-                    const monthIdx = parseInt(dateParts[1], 10) - 1;
-                    const year = parseInt(dateParts[2], 10);
+                    let val1 = parseInt(dateParts[0], 10);
+                    let val2 = parseInt(dateParts[1], 10);
+                    let year = parseInt(dateParts[2], 10);
+                    
+                    let monthIdx, day;
+                    if (val1 > 12) { // Pasti DD/MM/YYYY
+                        day = val1;
+                        monthIdx = val2 - 1;
+                    } else if (val2 > 12) { // Pasti MM/DD/YYYY
+                        day = val2;
+                        monthIdx = val1 - 1;
+                    } else { // Asumsi default Indonesia DD/MM/YYYY
+                        day = val1;
+                        monthIdx = val2 - 1;
+                    }
+                    
                     return new Date(year, monthIdx, day);
                 }
             }
             
-            const d = new Date(timestampStr);
-            return !isNaN(d.getTime()) ? d : new Date(0);
+            return new Date(0);
         }
 
-        // 🛠️ DI-UPDATE: Memastikan konversi teks nama bulan Indonesia bekerja mulus untuk format YYYY-MM-DD maupun DD/MM/YYYY
         function formatKompasDateTime(timestampStr) {
             try {
                 if (!timestampStr || timestampStr === "-") return "";
@@ -189,7 +202,11 @@
                 const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
                                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
                 
-                // Handling jika format baru YYYY-MM-DD
+                const d = new Date(timestampStr);
+                if (!isNaN(d.getTime())) {
+                    return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}`;
+                }
+
                 if (dateString.includes("-")) {
                     const dateParts = dateString.split("-");
                     if (dateParts.length === 3) {
@@ -202,7 +219,6 @@
                     }
                 }
                 
-                // Handling jika format lama DD/MM/YYYY
                 if (dateString.includes("/")) {
                     const dateParts = dateString.split("/");
                     if (dateParts.length === 3) {
@@ -213,11 +229,6 @@
                             return `${day} ${namaBulan[monthIdx]} ${year}`;
                         }
                     }
-                }
-                
-                const d = new Date(timestampStr);
-                if (!isNaN(d.getTime())) {
-                    return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}`;
                 }
 
                 return dateString;
@@ -292,8 +303,17 @@
                     return;
                 }
 
-                // 🛠️ DI-UPDATE: Logika pembanding internal frontend dipastikan mengurusi hitungan waktu riil (millisecond) objek Date
                 let sortedData = result.data;
+
+                // 🛠️ PERBAIKAN: Double filter sisi Frontend untuk pastikan tahun 100% akurat 
+                if (tahun !== "ALL") {
+                    sortedData = sortedData.filter(item => {
+                        const d = parseTanggalKeObject(item.Tanggal);
+                        return d.getFullYear().toString() === tahun;
+                    });
+                }
+
+                // 🛠️ PERBAIKAN: Pengurutan Terbaru/Terlama yang lebih solid
                 sortedData.sort((a, b) => {
                     const dateA = parseTanggalKeObject(a.Tanggal).getTime();
                     const dateB = parseTanggalKeObject(b.Tanggal).getTime();
