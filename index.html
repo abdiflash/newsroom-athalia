@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Kurasi - Athalia Newsroom</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <style>
+    .modal { transition: opacity 0.25s ease; }
+    body.modal-active { overflow: hidden; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+  <div class="container mx-auto p-4 sm:p-6">
+    <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-200">
+      <div class="flex flex-col sm:flex-row justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Newsroom Validation Board</h1>
+          <p class="text-sm text-gray-500">Daftar artikel masuk yang memerlukan validasi Wakasek dan Publikasi.</p>
+        </div>
+        <button onclick="loadAntreanData()" class="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-xs transition duration-150">
+          🔄 Segarkan Antrean
+        </button>
+      </div>
+    </div>
+
+    <div id="loadingState" class="text-center py-12 bg-white rounded-xl shadow-xs border border-gray-200">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600 font-medium">Sedang menyinkronkan data dengan sistem Google Cloud Spreadsheet...</p>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-12 bg-white rounded-xl shadow-xs border border-gray-200">
+      <p class="text-gray-500 font-medium text-lg">Hore! Antrean bersih. Tidak ada berita berkategori PENDING atau ACC WAKASEK.</p>
+    </div>
+
+    <div id="tableContainer" class="hidden bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Judul Artikel</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status saat ini</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="antreanList" class="bg-white divide-y divide-gray-200">
+            </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="kurasiModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+    <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"></div>
+    <div class="modal-container bg-white w-11/12 md:max-w-3xl mx-auto rounded-xl shadow-lg z-50 overflow-y-auto max-h-[90vh]">
+      
+      <div class="modal-content py-4 text-left px-6">
+        <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+          <p class="text-xl font-bold text-gray-800" id="modalHeaderTitle">Validasi Artikel</p>
+          <button onclick="toggleModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-semibold">&times;</button>
+        </div>
+
+        <div id="modalLoading" class="text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p class="text-sm text-gray-500 mt-2">Membuka folder lampiran internal Drive...</p>
+        </div>
+
+        <div id="modalBody" class="hidden space-y-4 mt-4">
+          <input type="hidden" id="modalRow">
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-xs font-bold text-gray-500 uppercase">Unit</label><p id="viewUnit" class="text-sm font-semibold text-gray-800"></p></div>
+            <div><label class="text-xs font-bold text-gray-500 uppercase">Tanggal</label><p id="viewTanggal" class="text-sm font-semibold text-gray-800"></p></div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Judul Berita</label>
+            <input type="text" id="editJudul" class="w-full p-2 border rounded-md text-sm focus:ring-blue-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Kelas</label>
+              <input type="text" id="editKelas" class="w-full p-2 border rounded-md text-sm focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nilai Karakter</label>
+              <input type="text" id="editNilai" class="w-full p-2 border rounded-md text-sm focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Narasi Utama</label>
+            <textarea id="editCerita" rows="4" class="w-full p-2 border rounded-md text-sm focus:ring-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Pilih Foto Thumbnail Berita (Maksimal 3)</label>
+            <div id="photoContainer" class="grid grid-cols-3 gap-2 border p-2 rounded-md max-h-40 overflow-y-auto bg-gray-50"></div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link Album Foto Tambahan</label>
+              <input type="text" id="editAlbum" class="w-full p-2 border rounded-md text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link Video Dokumentasi</label>
+              <input type="text" id="editVideo" class="w-full p-2 border rounded-md text-sm">
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-200 flex flex-col space-y-3">
+            <div class="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-100">
+              <span class="text-sm font-semibold text-blue-800">🔒 Khusus Otoritas Wakasek Unit:</span>
+              <button onclick="submitKurasi('ACC WAKASEK')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-md text-xs shadow-xs">
+                Berikan Catatan ACC WAKASEK
+              </button>
+            </div>
+
+            <div class="bg-green-50 p-3 rounded-lg border border-green-100 space-y-2">
+              <span class="block text-sm font-semibold text-green-800">📢 Publikasikan Berita (Tim Publikasi):</span>
+              <div class="flex space-x-2">
+                <input type="password" id="inputPin" placeholder="Masukkan PIN 4 Digit" class="w-1/3 p-2 border rounded-md text-sm">
+                <button onclick="submitKurasi('TAYANG')" class="w-2/3 bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-md text-xs shadow-xs">
+                  Validasi PIN & Tayangkan Berita Sekarang
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =================================================================================
+    // WAJIB GANTI: Masukkan URL Web App Google Apps Script Anda yang Baru Ditayangkan
+    // =================================================================================
+    const API_URL = "https://script.google.com/a/macros/sekolahathalia.sch.id/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+
+    window.onload = function() {
+      loadAntreanData();
+    };
+
+    function loadAntreanData() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('tableContainer').classList.add('hidden');
+      document.getElementById('emptyState').classList.add('hidden');
+
+      fetch(`${API_URL}?action=getAntrean`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('loadingState').classList.add('hidden');
+          if (data.length === 0) {
+            document.getElementById('emptyState').classList.remove('hidden');
+            return;
+          }
+
+          let html = "";
+          data.forEach(item => {
+            let badgeColor = item.status === "ACC WAKASEK" ? "bg-blue-100 text-blue-800" : "bg-yellow-100 text-yellow-800";
+            html += `
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">${item.unit}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.tanggal}</td>
+                <td class="px-6 py-4 text-sm text-gray-900 font-medium">${item.judul}</td>
+                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 py-1 text-xs font-bold rounded-full ${badgeColor}">${item.status}</span></td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <button onclick="openCurationModal(${item.row})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-xs font-semibold shadow-xs">Buka Berita</button>
+                </td>
+              </tr>
+            `;
+          });
+          document.getElementById('antreanList').innerHTML = html;
+          document.getElementById('tableContainer').classList.remove('hidden');
+        })
+        .catch(err => {
+          alert("Koneksi gagal terhubung ke Google Apps Script Engine.");
+          console.error(err);
+        });
+    }
+
+    function openCurationModal(rowId) {
+      toggleModal();
+      document.getElementById('modalLoading').classList.remove('hidden');
+      document.getElementById('modalBody').classList.add('hidden');
+      document.getElementById('modalRow').value = rowId;
+      document.getElementById('inputPin').value = "";
+
+      fetch(`${API_URL}?action=getDetail&rowId=${rowId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "error") {
+            alert("Gagal memuat: " + data.message);
+            toggleModal();
+            return;
+          }
+
+          document.getElementById('viewUnit').innerText = data.unit;
+          document.getElementById('viewTanggal').innerText = data.tanggal;
+          document.getElementById('editJudul').value = data.judul;
+          document.getElementById('editKelas').value = data.kelas;
+          document.getElementById('editNilai').value = data.nilai;
+          document.getElementById('editCerita').value = data.cerita;
+          document.getElementById('editAlbum').value = data.linkAlbum;
+          document.getElementById('editVideo').value = data.linkVideo;
+
+          let photoHtml = "";
+          if(data.fotos && data.fotos.length > 0) {
+            data.fotos.forEach((foto, i) => {
+              photoHtml += `
+                <label class="block border p-1 rounded-sm relative bg-white cursor-pointer select-none">
+                  <img src="${foto.url}" class="h-16 w-full object-cover rounded-xs mb-1">
+                  <div class="flex items-center space-x-1">
+                    <input type="checkbox" name="selectedPhotos" value="${foto.url}" class="rounded text-blue-600 focus:ring-blue-400">
+                    <span class="text-[10px] text-gray-500 truncate block w-16">Foto ${i+1}</span>
+                  </div>
+                </label>
+              `;
+            });
+          } else {
+            photoHtml = `<p class="col-span-3 text-xs text-center py-4 text-gray-400">Tidak ada lampiran foto di Google Drive.</p>`;
+          }
+          document.getElementById('photoContainer').innerHTML = photoHtml;
+
+          document.getElementById('modalLoading').classList.add('hidden');
+          document.getElementById('modalBody').classList.remove('hidden');
+        });
+    }
+
+    function submitKurasi(targetStatus) {
+      const rowId = document.getElementById('modalRow').value;
+      const pin = document.getElementById('inputPin').value;
+
+      let checkedUrls = [];
+      document.querySelectorAll('input[name="selectedPhotos"]:checked').forEach(cb => {
+        checkedUrls.push(cb.value);
+      });
+
+      if (targetStatus === "TAYANG" && !pin) {
+        alert("PIN Keamanan wajib diisi untuk menerbitkan berita!");
+        return;
+      }
+
+      if (targetStatus === "TAYANG" && checkedUrls.length === 0) {
+        if (!confirm("Peringatan: Anda tidak memilih foto thumbnail. Berita akan ditayangkan tanpa gambar utama. Lanjutkan?")) return;
+      }
+
+      const payload = {
+        action: "kurasiBerita",
+        rowNumber: rowId,
+        status: targetStatus,
+        pin: pin,
+        judul: document.getElementById('editJudul').value,
+        kelas: document.getElementById('editKelas').value,
+        nilai: document.getElementById('editNilai').value,
+        cerita: document.getElementById('editCerita').value,
+        linkAlbum: document.getElementById('editAlbum').value,
+        linkVideo: document.getElementById('editVideo').value,
+        selectedUrls: checkedUrls
+      };
+
+      fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors", // Mengizinkan request lintas domain (Cross-Origin) tanpa pre-flight CORS
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        alert(`Perintah pembaruan status ke [${targetStatus}] berhasil dikirim ke server!`);
+        toggleModal();
+        setTimeout(loadAntreanData, 1000);
+      })
+      .catch(err => {
+        alert("Eror saat mengirim data kurasi.");
+        console.error(err);
+      });
+    }
+
+    function toggleModal() {
+      const body = document.querySelector('body');
+      const modal = document.querySelector('.modal');
+      modal.classList.toggle('opacity-0');
+      modal.classList.toggle('pointer-events-none');
+      body.classList.toggle('modal-active');
+    }
+  </script>
+</body>
+</html>
