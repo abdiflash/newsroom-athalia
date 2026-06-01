@@ -246,68 +246,83 @@
         });
 
         function prosesUploadGuru(event) {
-            event.preventDefault();
+    event.preventDefault();
+    
+    // 1. Ambil email yang terdeteksi otomatis dari input read-only
+    const emailInput = document.getElementById("emailContributor").value.trim().toLowerCase();
+    
+    // 2. Cegat langsung di frontend jika bukan domain sekolah
+    if (!emailInput.endsWith("@sekolahathalia.sch.id")) {
+        alert("❌ Akses Ditolak! Akun aktif browser Anda (" + emailInput + ") bukan email resmi @sekolahathalia.sch.id. Silakan beralih akun Google di browser Anda.");
+        return;
+    }
+
+    const btn = document.getElementById("btnSubmitGuru");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses Foto Laporan...';
+
+    // 3. Konversi file gambar menjadi format Base64
+    let filePromises = Array.from(inputFoto.files).map(file => {
+        return new Promise((resolve) => {
+            let reader = new FileReader();
+            reader.onloadend = function() {
+                resolve({
+                    base64: reader.result.split(',')[1],
+                    type: file.type,
+                    name: file.name
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    Promise.all(filePromises).then(fotosArray => {
+        const payload = {
+            action: "submitGuru",
+            unit: document.getElementById("unit").value,
+            tanggal: document.getElementById("tanggal").value,
+            judul: document.getElementById("judul").value.trim(),
+            kelas: document.getElementById("kelas").value.trim(),
+            nilai: document.getElementById("nilai").value.trim(),
+            email: emailInput,
+            cerita: document.getElementById("cerita").value.trim(),
+            fotos: fotosArray
+        };
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mengirim data ke Cloud...';
+
+        // 4. KIRIM MENGGUNAKAN API RESMI GOOGLE (Lebih aman dari bypass & bebas kendala CORS)
+        if (typeof google !== "undefined" && google.script && google.script.run) {
             
-            const emailInput = document.getElementById("emailContributor").value.trim().toLowerCase();
-            if (!emailInput.endsWith("@sekolahathalia.sch.id")) {
-                alert("❌ Akses Ditolak! Akun aktif browser Anda (" + emailInput + ") bukan email resmi @sekolahathalia.sch.id");
-                return;
-            }
-
-            const btn = document.getElementById("btnSubmitGuru");
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses Foto Laporan...';
-
-            let filePromises = Array.from(inputFoto.files).map(file => {
-                return new Promise((resolve) => {
-                    let reader = new FileReader();
-                    reader.onloadend = function() {
-                        resolve({
-                            base64: reader.result.split(',')[1],
-                            type: file.type,
-                            name: file.name
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
-
-            Promise.all(filePromises).then(fotosArray => {
-                const payload = {
-                    action: "submitGuru",
-                    unit: document.getElementById("unit").value,
-                    tanggal: document.getElementById("tanggal").value,
-                    judul: document.getElementById("judul").value.trim(),
-                    kelas: document.getElementById("kelas").value.trim(),
-                    nilai: document.getElementById("nilai").value.trim(),
-                    email: emailInput,
-                    cerita: document.getElementById("cerita").value.trim(),
-                    fotos: fotosArray
-                };
-
-                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mengirim data ke Cloud...';
-
-                fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                })
-                .then(() => {
-                    alert("Sukses! Laporan kegiatan Anda sudah masuk ke ruang antrean.");
-                    document.getElementById("formGuru").reset();
-                    document.getElementById("previewJumlah").classList.add("hidden");
+            // Definisikan fungsi penanganan ketika Google Sheets BERHASIL menerima data
+            google.script.run
+                .withSuccessHandler((responseString) => {
+                    let res = JSON.parse(responseString);
+                    if (res.status === "success") {
+                        alert("Sukses! Laporan kegiatan Anda sudah masuk ke ruang antrean.");
+                        document.getElementById("formGuru").reset();
+                        document.getElementById("previewJumlah").classList.add("hidden");
+                    } else {
+                        alert("Gagal menyimpan: " + res.message);
+                    }
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Laporan ke Sistem';
                 })
-                .catch(err => {
-                    alert("Gagal kirim: " + err.toString());
+                // Definisikan fungsi penanganan jika terjadi error sistem/hak akses Google
+                .withFailureHandler((err) => {
+                    alert("Sistem Mencegat Pengiriman: Pastikan Anda menggunakan akun @sekolahathalia.sch.id (" + err.toString() + ")");
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Laporan ke Sistem';
-                });
-            });
+                })
+                .doPost(payload); // Memanggil fungsi utama doPost di code.gs secara langsung
+                
+        } else {
+            alert("Koneksi ke Google Script terputus. Silakan refresh halaman.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Laporan ke Sistem';
         }
-
+    });
+}
         function muatAntreanPending() {
             if (!statusLoginEditor) return;
             const loading = document.getElementById("loadingWakasek");
