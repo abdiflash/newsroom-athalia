@@ -90,7 +90,7 @@
 
   <script>
     // URL Web App GAS milikmu
-    const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+    const API_URL = "https://script.google.com/a/macros/sekolahathalia.sch.id/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
     
     let semuaBeritaArr = [];
 
@@ -99,7 +99,7 @@
     };
 
     function muatBeritaSitus() {
-      // Menggunakan .text() untuk membaca plain text hasil bypass CORS
+      // Menggunakan .text() untuk membaca respons teks mentah agar lolos CORS browser
       fetch(`${API_URL}?action=getBeritaTayang`)
         .then(res => {
           if (!res.ok) throw new Error("Network response error");
