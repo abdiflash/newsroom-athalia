@@ -3,47 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kurasi Berita - Wakasek</title>
+    <title>Portal Kurasi Berita Newsroom</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .image-checkbox { position: relative; cursor: pointer; }
         .image-checkbox input[type="checkbox"] { display: none; }
         .image-checkbox img { border: 4px solid transparent; transition: all 0.2s ease; }
-        .image-checkbox input[type="checkbox"]:checked + img { border-color: #3b82f6; transform: scale(0.98); }
+        .image-checkbox input[type="checkbox"]:checked + img { border-color: #2563eb; transform: scale(0.96); }
         .image-checkbox .checked-badge { display: none; }
         .image-checkbox input[type="checkbox"]:checked ~ .checked-badge { display: flex; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 min-h-screen pb-12">
+<body class="bg-gray-100 text-gray-800 min-h-screen pb-16">
 
     <header class="bg-blue-600 text-white shadow-md mb-8">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-user-shield text-2xl font-bold"></i>
-                <h1 class="text-xl font-bold tracking-wide">Portal Kurasi Berita Sekolah (Wakasek)</h1>
+                <i class="fa-solid fa-newspaper text-2xl"></i>
+                <h1 class="text-xl font-bold tracking-wide">Sistem Kurasi Berita Sekolah</h1>
             </div>
-            <div class="bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium">
-                <i class="fa-solid fa-clock-history mr-2"></i>Mode: Peninjauan Antrean PENDING
+            <div class="bg-blue-700 px-4 py-1.5 rounded-lg text-sm font-medium">
+                <i class="fa-solid fa-user-shield mr-1"></i> Mode Portal: Wakil Kepala Sekolah & Publikasi
             </div>
         </div>
     </header>
 
     <main class="max-w-5xl mx-auto px-4 space-y-8">
         
-        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <section class="bg-white p-6 rounded-xl shadow-xs border border-gray-200">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-700 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-blue-500"></i> Antrean Berita yang Perlu Ditinjau
+                <h2 class="text-base font-bold text-gray-700 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-amber-500"></i> Antrean Berita Berstatus PENDING
                 </h2>
-                <button onclick="muatAntreanPending()" id="btnRefreshAntrean" class="px-4 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-lg transition-all border border-blue-200 cursor-pointer flex items-center gap-1">
-                    <i class="fa-solid fa-rotate"></i> Refresh Antrean
+                <button onclick="muatAntreanPending()" id="btnRefreshAntrean" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-lg border border-blue-200 transition-all cursor-pointer">
+                    <i class="fa-solid fa-rotate mr-1"></i> Refresh Antrean
                 </button>
             </div>
 
-            <div id="loadingAntrean" class="text-center py-12">
-                <i class="fa-solid fa-circle-notch animate-spin text-3xl text-blue-500 mb-2"></i>
-                <p class="text-sm text-gray-500 font-medium">Sedang memproses antrean berita dari Google Sheet...</p>
+            <div id="loadingAntrean" class="text-center py-10">
+                <i class="fa-solid fa-spinner animate-spin text-2xl text-blue-500 mb-2"></i>
+                <p class="text-xs text-gray-500 font-medium">Memuat data dari antrean spreadsheet...</p>
             </div>
 
             <div id="wrapperTabelAntrean" class="overflow-x-auto hidden">
@@ -53,8 +53,8 @@
                             <th class="p-3 text-center">Baris</th>
                             <th class="p-3">Unit</th>
                             <th class="p-3">Tanggal</th>
-                            <th class="p-3">Judul Kegiatan Berita</th>
-                            <th class="p-3 text-center">Aksi Kurasi</th>
+                            <th class="p-3">Judul Kegiatan</th>
+                            <th class="p-3 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="bodyTabelAntrean" class="divide-y divide-gray-100 font-medium text-gray-700">
@@ -63,105 +63,113 @@
             </div>
         </section>
 
-        <section id="areaFormKurasi" class="hidden space-y-6 scroll-mt-6">
-            <form id="formKurasiBerita" onsubmit="simpanPerubahanKurasi(event)" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="bg-amber-50 border-b border-amber-200 px-6 py-4 flex justify-between items-center">
-                    <span class="text-sm font-bold text-amber-800 uppercase tracking-wide">
-                        <i class="fa-solid fa-pen-to-square mr-1"></i> Sedang Mengedit Data Baris: <span id="labelRowNumber" class="bg-amber-200 px-2 py-0.5 rounded text-amber-900">#</span>
-                    </span>
-                    <span id="badgeUnit" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider">-</span>
+        <section id="areaFormKurasi" class="hidden">
+            <form id="formKurasiBerita" onsubmit="simpanPerubahanKurasi(event)" class="space-y-6">
+                
+                <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
+                    <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 flex justify-between items-center">
+                        <span class="text-sm font-bold text-blue-800 uppercase tracking-wide">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> EDITOR BERITA BARIS: <span id="labelRowNumber" class="bg-blue-200 px-2 py-0.5 rounded text-blue-900">#</span>
+                        </span>
+                        <span id="badgeUnit" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider">-</span>
+                    </div>
+
+                    <div class="p-6 space-y-5">
+                        <input type="hidden" id="targetRowHidden">
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Judul Kegiatan</label>
+                                <input type="text" id="judul" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Tanggal Kegiatan</label>
+                                <input type="date" id="tanggal" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm font-medium">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Kelas / Sasaran</label>
+                                <input type="text" id="kelas" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nilai Karakter Inti</label>
+                                <input type="text" id="nilai" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Narasi Berita (Cerita)</label>
+                            <textarea id="cerita" rows="5" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm leading-relaxed"></textarea>
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-5">
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">
+                                <i class="fa-solid fa-images text-blue-500 mr-1"></i> Pilih Foto Utama (Thumbnail Website)
+                            </label>
+                            <p class="text-xs text-gray-400 mb-3">*Centang atau pilih maksimal 5 foto terbaik yang akan tampil di halaman depan website.</p>
+                            
+                            <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                                </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-gray-100 pt-5">
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1"><i class="fa-solid fa-folder-open text-emerald-500 mr-1"></i> Link Dokumentasi Tambahan (Optional)</label>
+                                <input type="url" id="linkAlbum" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1"><i class="fa-brands fa-youtube text-red-500 mr-1"></i> Link Video Dokumentasi (Optional)</label>
+                                <input type="url" id="linkVideo" placeholder="https://youtube.com/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono">
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" onclick="batalEdit()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg text-xs transition-all cursor-pointer">Batal</button>
+                            <button type="submit" id="btnSimpan" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Data Berita
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="p-6 space-y-6">
-                    <input type="hidden" id="targetRowHidden">
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Judul Kegiatan</label>
-                            <input type="text" id="judul" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Tanggal Kegiatan</label>
-                            <input type="date" id="tanggal" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                        </div>
+                <div class="bg-amber-50 rounded-xl shadow-xs border border-amber-200 overflow-hidden">
+                    <div class="bg-amber-100/70 border-b border-amber-200 px-6 py-3 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-700"></i>
+                        <h3 class="text-xs font-bold uppercase text-amber-800 tracking-wider">Otorisasi Validasi & Penerbitan (Khusus Tim Publikasi)</h3>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Kelas / Sasaran</label>
-                            <input type="text" id="kelas" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Nilai Karakter Inti</label>
-                            <input type="text" id="nilai" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Narasi Berita (Cerita)</label>
-                        <textarea id="cerita" rows="6" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed"></textarea>
-                    </div>
-
-                    <div class="border-t border-gray-200 pt-6">
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Pilih Foto Utama (Thumbnail Website)</label>
-                        <p class="text-xs text-gray-400 mb-4">*Centang hingga maksimal 5 foto terbaik yang akan dipajang di galeri depan.</p>
-                        <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
-                        <div id="areaExistingLink" class="mt-4 text-xs bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-200 hidden">
-                            <i class="fa-solid fa-link mr-1"></i> <strong>Link Foto Saat Ini:</strong> <span id="textExistingLink" class="break-all font-mono"></span>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-6">
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-2"><i class="fa-solid fa-images mr-1 text-green-500"></i> Link Dokumentasi Tambahan (Optional)</label>
-                            <input type="url" id="linkAlbum" placeholder="http://..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-2"><i class="fa-brands fa-youtube mr-1 text-red-500"></i> Link Video Dokumentasi (Optional)</label>
-                            <input type="url" id="linkVideo" placeholder="https://youtube.com/..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
-                        </div>
-                    </div>
-
-                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-100 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                            <label for="status" class="block text-xs font-bold uppercase text-blue-700 mb-2">Keputusan Validasi Status</label>
-                            <select id="status" class="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700">
-                                <option value="PENDING">PENDING (Tetap di Antrean Tinjau)</option>
-                                <option value="TAYANG">TAYANG (Terbitkan ke Web)</option>
-                                <option value="TOLAK">TOLAK (Arsipkan / Tolak Berita)</option>
+                            <label for="status" class="block text-xs font-bold uppercase text-amber-900 mb-1">Keputusan Validasi Status Berita</label>
+                            <select id="status" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg font-bold text-gray-700 text-sm">
+                                <option value="PENDING">PENDING (Tetap Berada di Antrean Tinjau)</option>
+                                <option value="TAYANG">TAYANG (Terbitkan Berita Langsung ke Website)</option>
+                                <option value="TOLAK">TOLAK (Arsipkan / Tolak Pengajuan Berita)</option>
                             </select>
                         </div>
                         <div>
-                            <label for="pin" class="block text-xs font-bold uppercase text-blue-700 mb-2">PIN Keamanan Verifikasi (Khusus Tim Publikasi)</label>
-                            <input type="password" id="pin" placeholder="Isi hanya jika status diubah TAYANG" class="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-widest text-center text-lg">
+                            <label for="pin" class="block text-xs font-bold uppercase text-amber-900 mb-1">PIN Keamanan Verifikasi Tim</label>
+                            <input type="password" id="pin" placeholder="Masukkan PIN Rahasia Publikasi untuk Mengubah Menjadi TAYANG" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg font-mono text-center text-sm tracking-widest">
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
-                    <button type="button" onclick="batalEdit()" class="px-5 py-2.5 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg text-sm transition-all cursor-pointer">Batal</button>
-                    <button type="submit" id="btnSimpan" class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Simpan Hasil Kurasi
-                    </button>
-                </div>
             </form>
         </section>
     </main>
 
     <script>
-        // ==========================================================
-        // SILAHKAN MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-        // ==========================================================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+        const WEB_APP_URL = "URL_WEB_APP_GAS_ANDA_DISINI";
 
-        let globalExistingLinkFoto = "-";
+        let rawUrlsArrayFromSheet = []; 
 
-        // Auto-run saat pertama kali halaman dibuka oleh Wakasek
         document.addEventListener("DOMContentLoaded", function() {
             muatAntreanPending();
         });
 
-        // FUNGSI UTAMA 1: Ambil semua data PENDING untuk dipasang di tabel antrean
+        // 1. Ambil data baris berstatus PENDING dari Web App
         function muatAntreanPending() {
             const loader = document.getElementById("loadingAntrean");
             const tableWrapper = document.getElementById("wrapperTabelAntrean");
@@ -171,133 +179,106 @@
             loader.classList.remove("hidden");
             tableWrapper.classList.add("hidden");
             btnRefresh.disabled = true;
-            btnRefresh.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Loading...';
 
-            // Menembak internal=true&limit=100 agar Apps Script mengeluarkan data mentah status internal
-            const urlFetch = `${WEB_APP_URL}?internal=true&limit=150`;
-
-            fetch(urlFetch)
+            fetch(`${WEB_APP_URL}?internal=true&limit=100`)
                 .then(response => response.json())
                 .then(res => {
                     btnRefresh.disabled = false;
-                    btnRefresh.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh Antrean';
                     loader.classList.add("hidden");
-
                     tbody.innerHTML = "";
 
-                    // Filter manual di sisi frontend: Ambil baris yang Statusnya mengandung kata "PENDING"
                     const dataPending = res.data ? res.data.filter(item => {
                         const s = item["Status"] ? item["Status"].toString().toUpperCase() : "";
                         return s.includes("PENDING");
                     }) : [];
 
                     if (dataPending.length === 0) {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="5" class="text-center py-10 text-gray-400 font-medium">
-                                    <i class="fa-solid fa-circle-check text-green-500 text-2xl block mb-2"></i>
-                                    Hebat! Tidak ada antrean berita berstatus PENDING saat ini.
-                                </td>
-                            </tr>
-                        `;
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-400 text-xs font-medium"><i class="fa-solid fa-check-circle text-green-500 text-lg block mb-1"></i>Antrean kosong! Semua berita sudah ditinjau.</td></tr>`;
                         tableWrapper.classList.remove("hidden");
                         return;
                     }
 
-                    // Tampilkan data ke tabel
                     dataPending.forEach(item => {
                         const tr = document.createElement("tr");
-                        tr.className = "border-b border-gray-100 hover:bg-gray-50/80 transition-all text-gray-600";
+                        tr.className = "border-b border-gray-100 hover:bg-gray-50 transition-all text-xs";
                         tr.innerHTML = `
-                            <td class="p-3 text-center text-xs font-bold text-blue-600 bg-blue-50/30 font-mono">${item.rowNumber}</td>
-                            <td class="p-3 font-bold text-xs"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded">${item.Unit || '-'}</span></td>
-                            <td class="p-3 text-xs whitespace-nowrap text-gray-500">${item.Tanggal || '-'}</td>
-                            <td class="p-3 text-sm font-semibold text-gray-800 max-w-xs truncate">${item.Judul_Kegiatan || item.namaKegiatan || '-'}</td>
+                            <td class="p-3 text-center font-bold text-blue-600 bg-blue-50/20 font-mono">${item.rowNumber}</td>
+                            <td class="p-3 font-bold"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-[10px]">${item.Unit || '-'}</span></td>
+                            <td class="p-3 text-gray-500 whitespace-nowrap">${item.Tanggal || '-'}</td>
+                            <td class="p-3 font-semibold text-gray-800 max-w-xs truncate">${item.Judul_Kegiatan || '-'}</td>
                             <td class="p-3 text-center">
-                                <button onclick="pilihBarisBerita(${item.rowNumber})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1 mx-auto">
-                                    <i class="fa-solid fa-pen-to-square"></i> Kurasi Berita
+                                <button onclick="pilihBarisBerita(${item.rowNumber})" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer transition-all">
+                                    <i class="fa-solid fa-folder-open mr-1"></i> Buka Data
                                 </button>
                             </td>
                         `;
                         tbody.appendChild(tr);
                     });
-
                     tableWrapper.classList.remove("hidden");
                 })
                 .catch(err => {
                     btnRefresh.disabled = false;
-                    btnRefresh.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh Antrean';
                     loader.classList.add("hidden");
-                    alert("Gagal memuat antrean karena kendala jaringan!\nDetail: " + err.toString());
+                    alert("Koneksi gagal mengambil antrean: " + err.toString());
                 });
         }
 
-        // FUNGSI UTAMA 2: Dipanggil saat salah satu tombol "Kurasi Berita" di dalam tabel diklik
+        // 2. Membuka form detail baris & memotong (parsing) link foto dari sel spreadsheet ke elemen visual
         function pilihBarisBerita(rowNo) {
             const areaForm = document.getElementById("areaFormKurasi");
-            areaForm.classList.add("hidden"); // Sembunyikan dulu form lama jika ada
+            areaForm.classList.add("hidden");
 
-            // Tampilkan animasi loading penarikan data spesifik baris
-            const loadingModal = document.createElement("div");
-            loadingModal.id = "temp-loading";
-            loadingModal.className = "fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 text-white font-bold";
-            loadingModal.innerHTML = '<div class="bg-gray-900 p-6 rounded-xl flex items-center gap-3 shadow-xl"><i class="fa-solid fa-spinner animate-spin text-xl text-blue-400"></i> Membuka berkas & folder foto baris #' + rowNo + '...</div>';
-            document.body.appendChild(loadingModal);
+            const loading = document.createElement("div");
+            loading.id = "temp-loading";
+            loading.className = "fixed inset-0 bg-black/30 backdrop-blur-xs flex items-center justify-center z-50 text-white font-bold text-sm";
+            loading.innerHTML = '<div class="bg-gray-800 p-4 rounded-lg flex items-center gap-2"><i class="fa-solid fa-spinner animate-spin text-blue-400"></i> Membuka lampiran data baris #' + rowNo + '...</div>';
+            document.body.appendChild(loading);
 
-            const urlTarget = `${WEB_APP_URL}?action=getDetail&rowId=${rowNo}`;
-
-            fetch(urlTarget)
+            fetch(`${WEB_APP_URL}?action=getDetail&rowId=${rowNo}`)
                 .then(response => response.json())
                 .then(res => {
-                    const lm = document.getElementById("temp-loading");
-                    if (lm) lm.remove();
+                    if (document.getElementById("temp-loading")) document.getElementById("temp-loading").remove();
+                    if (res.status === "error") { alert(res.message); return; }
 
-                    if (res.status === "error" || !res.judul) {
-                        alert("Gagal membuka detail berita!\nDetail: " + (res.message || "Data baris kosong"));
-                        return;
-                    }
-
-                    // Tampilkan form dan isi nilainya
                     areaForm.classList.remove("hidden");
                     document.getElementById("targetRowHidden").value = rowNo;
                     document.getElementById("labelRowNumber").innerText = "#" + rowNo;
                     document.getElementById("badgeUnit").innerText = res.unit || "UMUM";
-
                     document.getElementById("judul").value = res.judul || "";
+                    document.getElementById("tanggal").value = res.tanggal || "";
                     document.getElementById("kelas").value = res.kelas || "";
                     document.getElementById("nilai").value = res.nilai || "";
                     document.getElementById("cerita").value = res.cerita || "";
                     document.getElementById("linkAlbum").value = res.linkAlbum === "-" ? "" : (res.linkAlbum || "");
                     document.getElementById("linkVideo").value = res.linkVideo === "-" ? "" : (res.linkVideo || "");
-                    
-                    if (res.tanggal) {
-                        document.getElementById("tanggal").value = res.tanggal;
-                    } else {
-                        document.getElementById("tanggal").value = "";
-                    }
 
-                    globalExistingLinkFoto = res.existingLinkFoto || "-";
-                    const txtExist = document.getElementById("textExistingLink");
-                    if (globalExistingLinkFoto !== "-") {
-                        txtExist.innerText = globalExistingLinkFoto;
-                        document.getElementById("areaExistingLink").classList.remove("hidden");
-                    } else {
-                        document.getElementById("areaExistingLink").classList.add("hidden");
-                    }
-
-                    // Render foto-foto dari Google Drive
+                    // RESET PILIHAN FOTO DENGAN MEM-PARSING SEL LINK_FOTO
                     const containerFoto = document.getElementById("containerOpsiFoto");
-                    containerFoto.innerHTML = ""; 
+                    containerFoto.innerHTML = "";
+                    rawUrlsArrayFromSheet = [];
 
-                    if (res.fotos && res.fotos.length > 0) {
-                        res.fotos.forEach((foto, i) => {
-                            const isChecked = globalExistingLinkFoto.includes(foto.id) ? "checked" : "";
+                    // Baca string panjang isi kumpulan link foto dari spreadsheet, pisah berdasarkan tanda koma
+                    let rawLinksString = res.existingLinkFoto || "";
+                    if (rawLinksString && rawLinksString !== "-") {
+                        // Bersihkan spasi-spasi kosong di sekitar link
+                        rawUrlsArrayFromSheet = rawLinksString.split(",").map(url => url.trim()).filter(url => url.length > 10);
+                    }
+
+                    if (rawUrlsArrayFromSheet.length > 0) {
+                        rawUrlsArrayFromSheet.forEach((url, index) => {
+                            // Konversi link view Drive biasa agar ramah dijadikan src tag <img> gambar HTML
+                            let renderUrl = url;
+                            if (url.includes("drive.google.com/file/d/")) {
+                                let fileId = url.split("/file/d/")[1].split("/")[0];
+                                renderUrl = "https://docs.google.com/uc?export=view&id=" + fileId;
+                            }
+
                             const wrapper = document.createElement("label");
                             wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1";
                             wrapper.innerHTML = `
-                                <input type="checkbox" name="thumbnailFoto" value="${foto.url}" ${isChecked}>
-                                <img src="${foto.url}" alt="Foto Berita" class="w-full h-28 object-cover rounded">
-                                <div class="checked-badge absolute top-2 right-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow shadow-black/40">
+                                <input type="checkbox" name="thumbnailFoto" value="${url}" onchange="kontrolMaksimalFoto(this)">
+                                <img src="${renderUrl}" alt="Foto Berita" class="w-full h-24 object-cover rounded">
+                                <div class="checked-badge absolute top-1.5 right-1.5 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow-md">
                                     <i class="fa-solid fa-check"></i>
                                 </div>
                             `;
@@ -305,26 +286,34 @@
                         });
                     } else {
                         containerFoto.innerHTML = `
-                            <div class="col-span-full text-center py-6 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs font-medium">
-                                <i class="fa-solid fa-folder-open text-xl mb-2 block"></i> Tidak ada file gambar atau folder Drive belum sinkron sempurna.
+                            <div class="col-span-full text-center py-6 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs">
+                                <i class="fa-solid fa-triangle-exclamation text-lg mb-1 block"></i> Kolom Link_Foto kosong atau format link tidak sesuai.
                             </div>
                         `;
                     }
 
                     document.getElementById("pin").value = "";
-                    document.getElementById("status").value = "PENDING"; 
+                    document.getElementById("status").value = "PENDING";
                     areaForm.scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(err => {
-                    const lm = document.getElementById("temp-loading");
-                    if (lm) lm.remove();
-                    alert("Gagal terhubung dengan server jaringan!\nDetail: " + err.toString());
+                    if (document.getElementById("temp-loading")) document.getElementById("temp-loading").remove();
+                    alert("Gagal memproses data baris: " + err.toString());
                 });
         }
 
-        // FUNGSI UTAMA 3: Simpan perubahan ke Google Sheet backend via POST
+        // 3. Membatasi Wakasek agar maksimal hanya bisa mencentang 5 buah foto
+        function kontrolMaksimalFoto(element) {
+            const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
+            if (checkedBoxes.length > 5) {
+                alert("⚠️ Batasan Tercapai: Wakasek hanya diperbolehkan memilih maksimal 5 foto sebagai thumbnail!");
+                element.checked = false; // Batalkan centangan ke-6
+            }
+        }
+
+        // 4. Pengiriman data hasil kurasi ke server
         function simpanPerubahanKurasi(event) {
-            event.preventDefault(); 
+            event.preventDefault();
 
             const rowNo = document.getElementById("targetRowHidden").value;
             const btn = document.getElementById("btnSimpan");
@@ -332,21 +321,19 @@
             const pinValue = document.getElementById("pin").value.trim();
 
             if (statusBerita === "TAYANG" && !pinValue) {
-                alert("⚠️ Validasi Gagal: PIN Keamanan wajib diisi oleh Tim Publikasi jika ingin menerbitkan ke status TAYANG!");
+                alert("⚠️ Otorisasi Ditolak: PIN Keamanan wajib diisi oleh Tim Publikasi untuk mengubah status menjadi TAYANG!");
                 return;
             }
 
             const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
             let selectedUrlsArray = [];
-            checkedBoxes.forEach(box => {
-                selectedUrlsArray.push(box.value);
-            });
+            checkedBoxes.forEach(box => { selectedUrlsArray.push(box.value); });
 
             const payload = {
                 "action": "updateWakasek",
                 "rowNumber": parseInt(rowNo),
                 "judul": document.getElementById("judul").value.trim(),
-                "tanggal": document.getElementById("tanggal").value, 
+                "tanggal": document.getElementById("tanggal").value,
                 "kelas": document.getElementById("kelas").value.trim(),
                 "nilai": document.getElementById("nilai").value.trim(),
                 "cerita": document.getElementById("cerita").value.trim(),
@@ -355,38 +342,35 @@
                 "statusBerita": statusBerita,
                 "pin": pinValue,
                 "selectedUrls": selectedUrlsArray,
-                "existingLinkFoto": globalExistingLinkFoto
+                "existingLinkFoto": rawUrlsArrayFromSheet.join(", ") // fallback referensi
             };
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Menyimpan Hasil Kurasi...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses Penyimpanan...';
 
             fetch(WEB_APP_URL, {
                 method: "POST",
-                mode: "no-cors", 
+                mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             })
             .then(() => {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Hasil Kurasi';
-                
-                alert(`Sukses! Perubahan data Baris #${rowNo} berhasil dikomit ke Google Sheet.`);
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Data Berita';
+                alert(`Sukses! Perubahan data Baris #${rowNo} berhasil dikomit.`);
                 document.getElementById("areaFormKurasi").classList.add("hidden");
-                
-                // Segera refresh antrean untuk membersihkan berita yang statusnya sudah bukan PENDING lagi
                 muatAntreanPending();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             })
             .catch(err => {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Hasil Kurasi';
-                alert("Gagal melakukan update backend!\nDetail: " + err.toString());
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Data Berita';
+                alert("Gagal memperbarui database: " + err.toString());
             });
         }
 
         function batalEdit() {
-            if(confirm("Apakah Anda yakin ingin membatalkan kurasi baris ini?")) {
+            if (confirm("Batalkan proses kurasi pada baris ini?")) {
                 document.getElementById("areaFormKurasi").classList.add("hidden");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
