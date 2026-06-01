@@ -5,15 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Kurasi Berita Newsroom</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .image-checkbox { position: relative; cursor: pointer; }
-        .image-checkbox input[type="checkbox"] { display: none; }
-        .image-checkbox img { border: 4px solid transparent; transition: all 0.2s ease; }
-        .image-checkbox input[type="checkbox"]:checked + img { border-color: #2563eb; transform: scale(0.96); }
-        .image-checkbox .checked-badge { display: none; }
-        .image-checkbox input[type="checkbox"]:checked ~ .checked-badge { display: flex; }
-    </style>
+    <link class="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen pb-16">
 
@@ -34,7 +26,7 @@
         <section class="bg-white p-6 rounded-xl shadow-xs border border-gray-200">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-base font-bold text-gray-700 flex items-center gap-2">
-                    <i class="fa-solid fa-clock text-amber-500"></i> Antrean Berita Berstatus PENDING
+                    <i class="fa-solid fa-clock text-amber-500"></i> Antrean Berita Berstatus PENDING / ACC
                 </h2>
                 <button onclick="muatAntreanPending()" id="btnRefreshAntrean" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-lg border border-blue-200 transition-all cursor-pointer">
                     <i class="fa-solid fa-rotate mr-1"></i> Refresh Antrean
@@ -100,27 +92,17 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Narasi Berita (Cerita)</label>
-                            <textarea id="cerita" rows="5" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm leading-relaxed"></textarea>
-                        </div>
-
-                        <div class="border-t border-gray-100 pt-5">
-                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">
-                                <i class="fa-solid fa-images text-blue-500 mr-1"></i> Pilih Foto Utama (Thumbnail Website)
-                            </label>
-                            <p class="text-xs text-gray-400 mb-3">*Centang atau pilih maksimal 5 foto terbaik yang akan tampil di halaman depan website.</p>
-                            
-                            <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                            </div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Narasi Berita / Keterangan 5W+1H (Bisa Diedit Ber-value)</label>
+                            <textarea id="cerita" rows="7" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm leading-relaxed"></textarea>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-gray-100 pt-5">
                             <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1"><i class="fa-solid fa-folder-open text-emerald-500 mr-1"></i> Link Dokumentasi Tambahan (Optional)</label>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1"><i class="fa-solid fa-folder-open text-emerald-500 mr-1"></i> Link Folder Google Drive Utama (Internal)</label>
                                 <input type="url" id="linkAlbum" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1"><i class="fa-brands fa-youtube text-red-500 mr-1"></i> Link Video Dokumentasi (Optional)</label>
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1"><i class="fa-brands fa-youtube text-red-500 mr-1"></i> Link Video Dokumentasi / YouTube (Optional)</label>
                                 <input type="url" id="linkVideo" placeholder="https://youtube.com/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono">
                             </div>
                         </div>
@@ -137,20 +119,21 @@
                 <div class="bg-amber-50 rounded-xl shadow-xs border border-amber-200 overflow-hidden">
                     <div class="bg-amber-100/70 border-b border-amber-200 px-6 py-3 flex items-center gap-2">
                         <i class="fa-solid fa-key text-amber-700"></i>
-                        <h3 class="text-xs font-bold uppercase text-amber-800 tracking-wider">Otorisasi Validasi & Penerbitan (Khusus Tim Publikasi)</h3>
+                        <h3 class="text-xs font-bold uppercase text-amber-800 tracking-wider">Otorisasi Validasi & Penerbitan Berjenjang</h3>
                     </div>
                     <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label for="status" class="block text-xs font-bold uppercase text-amber-900 mb-1">Keputusan Validasi Status Berita</label>
                             <select id="status" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg font-bold text-gray-700 text-sm">
                                 <option value="PENDING">PENDING (Tetap Berada di Antrean Tinjau)</option>
-                                <option value="TAYANG">TAYANG (Terbitkan Berita Langsung ke Website)</option>
+                                <option value="ACC">ACC (Disetujui Wakasek - Teruskan ke Tim Publikasi)</option>
+                                <option value="TAYANG">TAYANG (Diterbitkan ke Web oleh Tim Publikasi)</option>
                                 <option value="TOLAK">TOLAK (Arsipkan / Tolak Pengajuan Berita)</option>
                             </select>
                         </div>
                         <div>
-                            <label for="pin" class="block text-xs font-bold uppercase text-amber-900 mb-1">PIN Keamanan Verifikasi Tim</label>
-                            <input type="password" id="pin" placeholder="Masukkan PIN Rahasia Publikasi untuk Mengubah Menjadi TAYANG" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg font-mono text-center text-sm tracking-widest">
+                            <label for="pin" class="block text-xs font-bold uppercase text-amber-900 mb-1">PIN Keamanan Verifikasi Otoritas</label>
+                            <input type="password" id="pin" placeholder="Masukkan PIN Wakasek untuk ACC atau PIN Publikasi untuk TAYANG" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg font-mono text-center text-sm tracking-widest">
                         </div>
                     </div>
                 </div>
@@ -169,7 +152,7 @@
             muatAntreanPending();
         });
 
-        // 1. Ambil data baris berstatus PENDING dari Web App
+        // 1. Ambil data baris dari Web App (Menampilkan PENDING dan ACC)
         function muatAntreanPending() {
             const loader = document.getElementById("loadingAntrean");
             const tableWrapper = document.getElementById("wrapperTabelAntrean");
@@ -189,7 +172,7 @@
 
                     const dataPending = res.data ? res.data.filter(item => {
                         const s = item["Status"] ? item["Status"].toString().toUpperCase() : "";
-                        return s.includes("PENDING");
+                        return s.includes("PENDING") || s.includes("ACC");
                     }) : [];
 
                     if (dataPending.length === 0) {
@@ -201,9 +184,15 @@
                     dataPending.forEach(item => {
                         const tr = document.createElement("tr");
                         tr.className = "border-b border-gray-100 hover:bg-gray-50 transition-all text-xs";
+                        
+                        let badgeStatusColor = item.Status === "ACC" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700";
+                        
                         tr.innerHTML = `
                             <td class="p-3 text-center font-bold text-blue-600 bg-blue-50/20 font-mono">${item.rowNumber}</td>
-                            <td class="p-3 font-bold"><span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-[10px]">${item.Unit || '-'}</span></td>
+                            <td class="p-3 font-bold">
+                                <span class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-[10px] mr-1">${item.Unit || '-'}</span>
+                                <span class="px-2 py-0.5 ${badgeStatusColor} rounded text-[10px] font-bold">${item.Status || 'PENDING'}</span>
+                            </td>
                             <td class="p-3 text-gray-500 whitespace-nowrap">${item.Tanggal || '-'}</td>
                             <td class="p-3 font-semibold text-gray-800 max-w-xs truncate">${item.Judul_Kegiatan || '-'}</td>
                             <td class="p-3 text-center">
@@ -223,7 +212,7 @@
                 });
         }
 
-        // 2. Membuka form detail baris & mengolah data foto terlampir
+        // 2. Membuka form detail baris & mengamankan data link foto tanpa render checkbox UI
         function pilihBarisBerita(rowNo) {
             const areaForm = document.getElementById("areaFormKurasi");
             areaForm.classList.add("hidden");
@@ -252,70 +241,22 @@
                     document.getElementById("linkAlbum").value = res.linkAlbum === "-" ? "" : (res.linkAlbum || "");
                     document.getElementById("linkVideo").value = res.linkVideo === "-" ? "" : (res.linkVideo || "");
 
-                    // RESET & RENDER PILIHAN FOTO BERDASARKAN REAL-OBJECT ATAU FALLBACK STRING
-                    const containerFoto = document.getElementById("containerOpsiFoto");
-                    containerFoto.innerHTML = "";
                     rawUrlsArrayFromSheet = [];
 
-                    // OPSI A: Jika backend code.gs mengirimkan format array objek baru (res.fotos)
+                    // Mengamankan data link foto yang sudah tersimpan agar tidak hilang saat ditimpa
                     if (res.fotos && Array.isArray(res.fotos) && res.fotos.length > 0) {
                         res.fotos.forEach((foto) => {
                             rawUrlsArrayFromSheet.push(foto.url);
-
-                            const wrapper = document.createElement("label");
-                            wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1 group";
-                            wrapper.innerHTML = `
-                                <input type="checkbox" name="thumbnailFoto" value="${foto.url}" onchange="kontrolMaksimalFoto(this)">
-                                <img src="${foto.url}" alt="${foto.name || 'Foto Berita'}" class="w-full h-24 object-cover rounded">
-                                <div class="checked-badge absolute top-1.5 right-1.5 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow-md">
-                                    <i class="fa-solid fa-check"></i>
-                                </div>
-                                ${foto.driveUrl ? `
-                                <a href="${foto.driveUrl}" target="_blank" class="absolute bottom-1 left-1 right-1 bg-black/75 text-white text-[9px] py-0.5 rounded text-center opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1" onclick="event.stopPropagation();">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> Cek Drive
-                                </a>
-                                ` : ''}
-                            `;
-                            containerFoto.appendChild(wrapper);
                         });
-                    } 
-                    // OPSI B: Fallback jika properti res.fotos kosong, potong string res.existingLinkFoto lama
-                    else {
+                    } else {
                         let rawLinksString = res.existingLinkFoto || "";
                         if (rawLinksString && rawLinksString !== "-") {
                             rawUrlsArrayFromSheet = rawLinksString.split(",").map(url => url.trim()).filter(url => url.length > 10);
                         }
-
-                        if (rawUrlsArrayFromSheet.length > 0) {
-                            rawUrlsArrayFromSheet.forEach((url) => {
-                                let renderUrl = url;
-                                if (url.includes("drive.google.com/file/d/")) {
-                                    let fileId = url.split("/file/d/")[1].split("/")[0];
-                                    renderUrl = "https://docs.google.com/uc?export=view&id=" + fileId;
-                                }
-
-                                const wrapper = document.createElement("label");
-                                wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1";
-                                wrapper.innerHTML = `
-                                    <input type="checkbox" name="thumbnailFoto" value="${url}" onchange="kontrolMaksimalFoto(this)">
-                                    <img src="${renderUrl}" alt="Foto Berita" class="w-full h-24 object-cover rounded">
-                                    <div class="checked-badge absolute top-1.5 right-1.5 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow-md">
-                                        <i class="fa-solid fa-check"></i>
-                                    </div>
-                                `;
-                                containerFoto.appendChild(wrapper);
-                            });
-                        } else {
-                            containerFoto.innerHTML = `
-                                <div class="col-span-full text-center py-6 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs">
-                                    <i class="fa-solid fa-triangle-exclamation text-lg mb-1 block"></i> Kolom Link_Foto kosong atau format tidak didukung.
-                                </div>
-                            `;
-                        }
                     }
 
                     document.getElementById("pin").value = "";
-                    document.getElementById("status").value = "PENDING";
+                    document.getElementById("status").value = res.statusBerita || "PENDING";
                     areaForm.scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(err => {
@@ -324,16 +265,7 @@
                 });
         }
 
-        // 3. Membatasi Wakasek agar maksimal hanya bisa mencentang 5 buah foto
-        function kontrolMaksimalFoto(element) {
-            const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
-            if (checkedBoxes.length > 5) {
-                alert("⚠️ Batasan Tercapai: Wakasek hanya diperbolehkan memilih maksimal 5 foto sebagai thumbnail!");
-                element.checked = false; 
-            }
-        }
-
-        // 4. Pengiriman data hasil kurasi ke server
+        // 3. Pengiriman data hasil kurasi teks dan PIN otorisasi ke Google Apps Script
         function simpanPerubahanKurasi(event) {
             event.preventDefault();
 
@@ -342,14 +274,13 @@
             const statusBerita = document.getElementById("status").value;
             const pinValue = document.getElementById("pin").value.trim();
 
-            if (statusBerita === "TAYANG" && !pinValue) {
-                alert("⚠️ Otorisasi Ditolak: PIN Keamanan wajib diisi oleh Tim Publikasi untuk mengubah status menjadi TAYANG!");
+            if ((statusBerita === "TAYANG" || statusBerita === "ACC") && !pinValue) {
+                alert("⚠️ Otorisasi Ditolak: PIN Keamanan wajib diisi untuk memproses status " + statusBerita + "!");
                 return;
             }
 
-            const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
-            let selectedUrlsArray = [];
-            checkedBoxes.forEach(box => { selectedUrlsArray.push(box.value); });
+            // Diisi array kosong agar skrip backend code.gs tetap menerima variabel parameter tanpa bug
+            let selectedUrlsArray = []; 
 
             const payload = {
                 "action": "updateWakasek",
@@ -379,7 +310,7 @@
             .then(() => {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Data Berita';
-                alert(`Sukses! Perubahan data Baris #${rowNo} berhasil dikomit.`);
+                alert(`Sukses! Perubahan data Baris #${rowNo} dengan status [${statusBerita}] berhasil dikirim.`);
                 document.getElementById("areaFormKurasi").classList.add("hidden");
                 muatAntreanPending();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
