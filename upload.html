@@ -3,395 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Konten - Athalia Newsroom</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard Kurasi Berita - Wakasek</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .modal-open { overflow: hidden; }
+        .image-checkbox {
+            position: relative;
+            cursor: pointer;
+        }
+        .image-checkbox input[type="checkbox"] {
+            display: none;
+        }
+        .image-checkbox img {
+            border: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .image-checkbox input[type="checkbox"]:checked + img {
+            border-color: #3b82f6;
+            transform: scale(0.98);
+        }
+        .image-checkbox .checked-badge {
+            display: none;
+        }
+        .image-checkbox input[type="checkbox"]:checked ~ .checked-badge {
+            display: flex;
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen pb-12">
 
-    <nav class="bg-[#1e3a8a] text-white shadow-md sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center h-16">
-            <div class="flex items-center gap-2">
-                <span class="font-bold tracking-tight text-lg">ATHALIA <span class="font-light text-slate-300">DASHBOARD</span></span>
+    <header class="bg-blue-600 text-white shadow-md mb-8">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-newspaper text-2xl"></i>
+                <h1 class="text-xl font-bold tracking-wide">Sistem Kurasi Berita Sekolah</h1>
             </div>
-            <div class="flex h-full text-sm font-semibold">
-                <button id="tabFormBtn" onclick="switchView('form')" class="px-4 h-full border-b-4 border-white bg-blue-700/50 flex items-center gap-2 transition">
-                    <i class="fa-solid fa-pen-to-square"></i> Form Guru
-                </button>
-                <button id="tabMonitorBtn" onclick="switchView('monitor')" class="px-4 h-full border-b-4 border-transparent hover:bg-blue-700/30 flex items-center gap-2 transition">
-                    <i class="fa-solid fa-rectangle-list"></i> Monitoring & Kurasi
-                </button>
+            <div class="bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium">
+                <i class="fa-solid fa-user-shield mr-2"></i>Mode Portal: Wakil Kepala Sekolah
             </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="max-w-6xl mx-auto p-4 sm:p-6">
+    <main class="max-w-4xl mx-auto px-4">
         
-        <section id="formSection" class="block max-w-2xl mx-auto bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden mt-4">
-            <div class="bg-blue-600 p-5 text-white text-center">
-                <h2 class="text-lg font-bold tracking-wide">Form Kontributor Berita</h2>
-                <p class="text-xs text-blue-100 mt-0.5">Wajib diisi menggunakan akun email resmi sekolah.</p>
-            </div>
-            <form id="guruUploadForm" class="p-6 space-y-5" onsubmit="handleGuruSubmit(event)">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Unit Sekolah *</label>
-                        <select required id="guruUnit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
-                            <option value="">-- Pilih Unit --</option>
-                            <option value="KB-TK">KB-TK</option>
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                            <option value="SMA">SMA</option>
-                            <option value="UMUM">UMUM</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tanggal Kegiatan *</label>
-                        <input type="date" required id="guruTanggal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
-                    </div>
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+            <h2 class="text-lg font-bold text-gray-700 mb-4"><i class="fa-solid fa-magnifying-glass mr-2 text-blue-500"></i>Pilih Baris Berita Berdasarkan ID Google Sheet</h2>
+            <div class="flex flex-col sm:flex-row gap-4 items-end">
+                <div class="w-full sm:w-1/3">
+                    <label for="inputRowNumber" class="block text-xs font-semibold uppercase text-gray-500 mb-2">Nomor Baris (Row Number)</label>
+                    <input type="number" id="inputRowNumber" min="2" placeholder="Contoh: 2" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nama / Judul Kegiatan *</label>
-                    <input type="text" required id="guruJudul" placeholder="Contoh: Pelepasan Siswa Kelas 9 SMP Athalia" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Kelas / Sasaran</label>
-                        <input type="text" id="guruKelas" placeholder="Contoh: Kelas 9" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nilai Karakter (Value)</label>
-                        <input type="text" id="guruValue" placeholder="Contoh: Respect & Integrity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Cerita Narasi Berita (5W+1H) *</label>
-                    <textarea required id="guruCerita" rows="5" placeholder="Tulis rincian kejadian mencakup Apa, Siapa, Kapan, Di mana, Mengapa, dan Bagaimana..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email Akun Sekolah Anda *</label>
-                    <input type="email" required pattern="^[a-zA-Z0-9._%+-]+@sekolahathalia\.sch\.id$" title="Wajib menggunakan email @sekolahathalia.sch.id" placeholder="nama.guru@sekolahathalia.sch.id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Unggah Foto Pilihan Kontributor *</label>
-                    <span class="block text-[11px] text-slate-400 mb-2">Maksimal pilih 25 foto terbaik yang telah Anda kurasi.</span>
-                    <input type="file" id="guruFotoFiles" multiple accept="image/*" required class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Kirim Berita ke Wakasek
-                </button>
-            </form>
-        </section>
-
-        <section id="monitorSection" class="hidden space-y-4">
-            <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-100">
-                <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-desktop text-blue-600"></i> Monitoring Status Alur Publikasi Berita
-                </h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
-                                <th class="p-3 rounded-l-xl">Row</th>
-                                <th class="p-3">Unit</th>
-                                <th class="p-3">Tanggal</th>
-                                <th class="p-3">Judul Kegiatan</th>
-                                <th class="p-3">Kontributor</th>
-                                <th class="p-3">Status</th>
-                                <th class="p-3 rounded-r-xl text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="monitorTableBody" class="text-sm divide-y divide-slate-100 font-medium text-slate-600">
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="p-3 font-bold">22</td>
-                                <td class="p-3">SMP</td>
-                                <td class="p-3">30/05/2026</td>
-                                <td class="p-3 font-semibold text-slate-800">Wisuda SMP Athalia Angkatan 17</td>
-                                <td class="p-3 text-xs text-slate-400">budi.hartono@sekolahathalia.sch.id</td>
-                                <td class="p-3"><span class="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-md text-xs font-bold">PENDING</span></td>
-                                <td class="p-3 text-center">
-                                    <button onclick="mintaPasswordKurasi(22)" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold inline-flex items-center gap-1 transition shadow-sm">
-                                        <i class="fa-solid fa-user-lock"></i> Kurasi
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <div id="passwordModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-100">
-            <div class="text-center space-y-2 mb-4">
-                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl shadow-sm">
-                    <i class="fa-solid fa-lock"></i>
-                </div>
-                <h4 class="text-base font-bold text-slate-800">Otorisasi Akses Editor</h4>
-                <p class="text-xs text-slate-400">Masukkan kata sandi editor internal untuk memproses kurasi berita ini.</p>
-            </div>
-            <div class="space-y-3">
-                <input type="password" id="editorPasswordInput" placeholder="Password Editor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-mono">
-                <div class="flex gap-2">
-                    <button onclick="closePasswordModal()" class="w-1/2 py-2 bg-slate-200 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-300 transition">Batal</button>
-                    <button onclick="verifikasiPasswordEditor()" class="w-1/2 py-2 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 transition shadow-sm">Verifikasi</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="kurasiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden overflow-y-auto">
-        <div class="bg-white w-full max-w-3xl rounded-2xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl">
-            
-            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-user-gear text-blue-600"></i> Workspace Pengeditan & Kurasi Berita (Row <span id="targetRowLabel">22</span>)
-                </h3>
-                <button onclick="closeKurasiModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button type="button" onclick="muatDataBerita()" id="btnMuat" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-download"></i> Tarik Data Berita
                 </button>
             </div>
+        </section>
 
-            <div class="p-6 overflow-y-auto flex-1 space-y-5">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unit Sekolah</label>
-                        <input type="text" id="editUnit" value="SMP" disabled class="w-full bg-slate-100 border border-slate-200 text-slate-400 rounded-xl px-3 py-2 text-sm font-semibold">
+        <section id="areaFormKurasi" class="hidden space-y-6">
+            <form id="formKurasiBerita" onsubmit="simpanPerubahanKurasi(event)" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                
+                <div class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-600">EDITOR BERITA BARIS: <span id="labelRowNumber" class="text-blue-600">#</span></span>
+                    <span id="badgeUnit" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider">-</span>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2">
+                            <label for="judul" class="block text-xs font-bold uppercase text-gray-500 mb-2">Judul Kegiatan</label>
+                            <input type="text" id="judul" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="tanggal" class="block text-xs font-bold uppercase text-gray-500 mb-2">Tanggal Kegiatan (YYYY-MM-DD)</label>
+                            <input type="date" id="tanggal" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                        </div>
                     </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="kelas" class="block text-xs font-bold uppercase text-gray-500 mb-2">Kelas / Sasaran</label>
+                            <input type="text" id="kelas" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="nilai" class="block text-xs font-bold uppercase text-gray-500 mb-2">Nilai Karakter Inti</label>
+                            <input type="text" id="nilai" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Input</label>
-                        <input type="text" id="editTanggal" value="30/05/2026" disabled class="w-full bg-slate-100 border border-slate-200 text-slate-400 rounded-xl px-3 py-2 text-sm font-semibold">
+                        <label for="cerita" class="block text-xs font-bold uppercase text-gray-500 mb-2">Narasi Berita (Cerita)</label>
+                        <textarea id="cerita" rows="6" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed"></textarea>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Pilih Foto Utama (Thumbnail Website)</label>
+                        <p class="text-xs text-gray-400 mb-4">*Foto yang Anda centang akan disalin otomatis ke folder publik sebagai aset website.</p>
+                        
+                        <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            </div>
+                        
+                        <div id="areaExistingLink" class="mt-4 text-xs bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-200 hidden">
+                            <i class="fa-solid fa-link mr-1"></i> <strong>Link Foto Saat Ini:</strong> <span id="textExistingLink" class="break-all font-mono"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-6">
+                        <div>
+                            <label for="linkAlbum" class="block text-xs font-bold uppercase text-gray-500 mb-2"><i class="fa-solid fa-images mr-1 text-green-500"></i> Link Dokumentasi Tambahan (Optional)</label>
+                            <input type="url" id="linkAlbum" placeholder="https://photos.google.com/..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label for="linkVideo" class="block text-xs font-bold uppercase text-gray-500 mb-2"><i class="fa-brands fa-youtube mr-1 text-red-500"></i> Link Video Dokumentasi (Optional)</label>
+                            <input type="url" id="linkVideo" placeholder="https://youtube.com/..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-100 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div>
+                            <label for="status" class="block text-xs font-bold uppercase text-blue-700 mb-2">Keputusan Validasi Status</label>
+                            <select id="status" class="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700">
+                                <option value="PENDING">PENDING (Antrean Tinjau)</option>
+                                <option value="TAYANG">TAYANG (Terbitkan ke Web)</option>
+                                <option value="TOLAK">TOLAK (Arsipkan / Tolak)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="pin" class="block text-xs font-bold uppercase text-blue-700 mb-2">PIN Keamanan Verifikasi</label>
+                            <input type="password" id="pin" required placeholder="Masukkan PIN Wakasek" class="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-widest text-center text-lg">
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama / Judul Kegiatan (Koreksi Wakasek)</label>
-                    <input type="text" id="editTitle" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kelas / Sasaran</label>
-                        <input type="text" id="editKelas" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nilai Karakter (Value)</label>
-                        <input type="text" id="editValue" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Narasi Berita (Optimasi Informasi 5W+1H)</label>
-                    <textarea id="editStory" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-                </div>
-
-                <div class="flex justify-start pt-1">
-                    <button type="button" onclick="simpanPerubahanWakasek()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-3 rounded-xl shadow-sm transition flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk text-sm"></i> SIMPAN PERUBAHAN DATA (Status Tetap Pending)
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
+                    <button type="button" onclick="batalEdit()" class="px-5 py-2.5 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg text-sm transition-all cursor-pointer text-center">Batal</button>
+                    <button type="submit" id="btnSimpan" class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Berita
                     </button>
                 </div>
-
-                <hr class="border-slate-100 my-2">
-
-                <div>
-                    <label class="block text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1">
-                        <i class="fa-regular fa-images"></i> Pilih Maksimal 5 Foto Terbaik untuk Thumbnail Website:
-                    </label>
-                    <div id="photoGridContainer" class="grid grid-cols-3 sm:grid-cols-5 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-48 overflow-y-auto">
-                        </div>
-                </div>
-
-                <hr class="border-slate-100 my-2">
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                    <div>
-                        <label class="block text-[11px] font-bold text-red-600 uppercase tracking-wider mb-1"><i class="fa-solid fa-key"></i> PIN Khusus Tim Publikasi *</label>
-                        <input type="password" id="pubPinInput" placeholder="Masukkan PIN Otorisasi" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Ubah Status Penerbitan</label>
-                        <select id="pubStatusSelect" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="PENDING">PENDING (Tunda)</option>
-                            <option value="TAYANG">TAYANG (Terbitkan)</option>
-                            <option value="TOLAK">TOLAK (Kembalikan)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-                <button onclick="closeKurasiModal()" class="px-4 py-2 bg-slate-200 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-300 transition">Batal</button>
-                <button onclick="eksekusiStatusPublikasi()" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-xl text-xs hover:bg-emerald-700 transition shadow-sm flex items-center gap-1">
-                    <i class="fa-solid fa-circle-check"></i> Eksekusi Status Final
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="zoomModal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center hidden p-4" onclick="closeZoomPhoto()">
-        <button class="absolute top-4 right-4 text-white text-2xl hover:text-slate-300 transition"><i class="fa-solid fa-xmark"></i></button>
-        <img id="zoomImgTarget" src="" class="max-w-full max-h-[92vh] rounded-lg object-contain shadow-2xl">
-    </div>
+            </form>
+        </section>
+    </main>
 
     <script>
-        let currentActiveRow = null;
-        const API_URL = "https://script.google.com/macros/s/YOUR_API_URL_HERE/exec"; // Masukkan tautan web app macro apps script Anda di sini
+        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
 
-        // Batasi upload foto input guru maksimal 25 file
-        document.getElementById('guruFotoFiles').addEventListener('change', function() {
-            if (this.files.length > 25) {
-                alert('Batas maksimal unggahan dari guru adalah 25 foto. Silakan lakukan kurasi mandiri sebelum mengirim.');
-                this.value = '';
-            }
-        });
+        // Variabel penampung cadangan link foto lama
+        let globalExistingLinkFoto = "-";
 
-        // Pengalihan Halaman (SPA Switcher Tab)
-        function switchView(view) {
-            const formSec = document.getElementById("formSection");
-            const monSec = document.getElementById("monitorSection");
-            const tabForm = document.getElementById("tabFormBtn");
-            const tabMon = document.getElementById("tabMonitorBtn");
-
-            if(view === 'form') {
-                formSec.classList.remove("hidden"); formSec.classList.add("block");
-                monSec.classList.add("hidden");
-                tabForm.className = "px-4 h-full border-b-4 border-white bg-blue-700/50 flex items-center gap-2 transition";
-                tabMon.className = "px-4 h-full border-b-4 border-transparent hover:bg-blue-700/30 flex items-center gap-2 transition";
-            } else {
-                formSec.classList.add("hidden"); formSec.classList.remove("block");
-                monSec.classList.remove("hidden");
-                tabForm.className = "px-4 h-full border-b-4 border-transparent hover:bg-blue-700/30 flex items-center gap-2 transition";
-                tabMon.className = "px-4 h-full border-b-4 border-white bg-blue-700/50 flex items-center gap-2 transition";
-                loadMonitoringData(); // Tarik list database baris terupdate
-            }
-        }
-
-        function handleGuruSubmit(e) {
-            e.preventDefault();
-            alert("Simulasi Berhasil: Data form informasi berita 5W+1H serta berkas 25 foto dari guru berhasil diproses dan masuk antrean sistem.");
-            document.getElementById("guruUploadForm").reset();
-        }
-
-        function loadMonitoringData() {
-            console.log("Menghubungkan ke basis data Spreadsheet Athalia...");
-            // Render kartu foto contoh untuk demonstrasi fitur pemilihan maks 5 thumbnail oleh wakasek
-            const photoGrid = document.getElementById("photoGridContainer");
-            photoGrid.innerHTML = "";
-            
-            // Loop membuat 25 slot foto tiruan
-            for (let i = 1; i <= 25; i++) {
-                const imgUrl = `https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=400`;
-                photoGrid.innerHTML += `
-                    <div class="relative bg-white rounded-xl border border-slate-200 overflow-hidden group h-20 shadow-sm flex items-center justify-center">
-                        <img src="${imgUrl}" class="w-full h-full object-cover">
-                        <input type="checkbox" name="thumbnailCheck" value="${imgUrl}" class="absolute top-1.5 left-1.5 w-4 h-4 rounded accent-blue-600 cursor-pointer shadow-sm" onclick="restrictThumbCheckbox(this)">
-                        <button type="button" onclick="zoomPhotoDetail('${imgUrl}')" class="absolute bottom-1.5 right-1.5 bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-sm">
-                            <i class="fa-solid fa-magnifying-glass-plus"></i>
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // Validasi pembatasan maksimal 5 pilihan foto thumbnail oleh Wakasek
-        function restrictThumbCheckbox(cb) {
-            const checkedBoxes = document.querySelectorAll('input[name="thumbnailCheck"]:checked');
-            if (checkedBoxes.length > 5) {
-                alert("SOP: Wakasek hanya diperkenankan memilih maksimal 5 foto terbaik untuk dijadikan thumbnail tayangan website.");
-                cb.checked = false;
-            }
-        }
-
-        // Gerbang Password Editor saat klik Kurasi
-        function mintaPasswordKurasi(rowId) {
-            currentActiveRow = rowId;
-            document.getElementById("editorPasswordInput").value = "";
-            document.getElementById("passwordModal").classList.remove("hidden");
-            document.body.classList.add("modal-open");
-        }
-
-        function closePasswordModal() {
-            document.getElementById("passwordModal").classList.add("hidden");
-            document.body.classList.remove("modal-open");
-        }
-
-        function verifikasiPasswordEditor() {
-            const pwd = document.getElementById("editorPasswordInput").value;
-            // Ganti password "athaliaeditor" di bawah ini sesuai kesepakatan internal Anda
-            if(pwd === "athaliaeditor") { 
-                closePasswordModal();
-                bukaWorkspaceKurasi();
-            } else {
-                alert("Kata sandi Editor salah! Akses kurasi ditolak.");
-            }
-        }
-
-        function bukaWorkspaceKurasi() {
-            document.getElementById("targetRowLabel").innerText = currentActiveRow;
-            
-            // Set value default simulasi pengeditan data baris
-            document.getElementById("editTitle").value = "Wisuda SMP Athalia Angkatan 17";
-            document.getElementById("editKelas").value = "Kelas 9";
-            document.getElementById("editValue").value = "Caring & Sharing";
-            document.getElementById("editStory").value = "SERPONG - Penuh khidmat, sekolah Athalia melangsungkan prosesi pelepasan kelulusan siswa-siswi...";
-            
-            document.getElementById("kurasiModal").classList.remove("hidden");
-            document.body.classList.add("modal-open");
-        }
-
-        function closeKurasiModal() {
-            document.getElementById("kurasiModal").classList.add("hidden");
-            document.body.classList.remove("modal-open");
-        }
-
-        // Aksi Tombol Simpan Perubahan oleh Wakasek (Di bawah editor cerita)
-        function simpanPerubahanWakasek() {
-            const judul = document.getElementById("editTitle").value;
-            const kelas = document.getElementById("editKelas").value;
-            const valChar = document.getElementById("editValue").value;
-            const cerita = document.getElementById("editStory").value;
-
-            // Ambil tautan dari checkbox gambar yang dicentang oleh Wakasek
-            const selectedThumbs = Array.from(document.querySelectorAll('input[name="thumbnailCheck"]:checked')).map(cb => cb.value);
-
-            console.log("Mengirim data update teks dan " + selectedThumbs.length + " foto thumbnail terkurasi ke Google Sheet...");
-            alert("Sukses! Perubahan data informasi 5W+1H berhasil diperbarui di server. Status berita dikunci aman pada opsi 'PENDING'.");
-        }
-
-        // Fungsi Zoom Foto Detail
-        function zoomPhotoDetail(srcUrl) {
-            document.getElementById("zoomImgTarget").src = srcUrl;
-            document.getElementById("zoomModal").classList.remove("hidden");
-        }
-
-        function closeZoomPhoto() {
-            document.getElementById("zoomModal").classList.add("hidden");
-        }
-
-        // Aksi Final Tim Publikasi (Mengubah status tayang menggunakan PIN)
-        function eksekusiStatusPublikasi() {
-            const pin = document.getElementById("pubPinInput").value;
-            const statusTarget = document.getElementById("pubStatusSelect").value;
-
-            if(!pin) {
-                alert("Gagal: Diperlukan kode PIN otorisasi khusus dari Tim Publikasi untuk merubah status rilis berita!");
+        /**
+         * FUNGSI A: MENARIK DATA DETAIL DARI GOOGLE SHEET (GET)
+         */
+        function muatDataBerita() {
+            const rowNo = document.getElementById("inputRowNumber").value.trim();
+            if (!rowNo || parseInt(rowNo) < 2) {
+                alert("Mohon masukkan nomor baris Google Sheet yang valid (minimal baris ke-2)!");
                 return;
             }
 
-            // Ganti "1920" dengan PIN rahasia Tim Publikasi Anda
-            if(pin !== "1920") {
-                alert("PIN Otorisasi Tim Publikasi Tidak Sah/Salah!");
-                return;
-            }
+            const btn = document.getElementById("btnMuat");
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Menghubungkan...';
 
-            alert(`Sistem Berhasil Mengeksekusi Aksi! Status baris data berita ke-${currentActiveRow} kini resmi berubah menjadi: [${statusTarget}].`);
-            closeKurasiModal();
+            // Panggil fungsi getDetailBerita() di Apps Script via URL Parameter JSONP/CORS Fetch
+            const urlTarget = `${WEB_APP_URL}?action=getDetail&rowId=${rowNo}`;
+
+            fetch(urlTarget)
+                .then(response => response.json())
+                .then(res => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-download"></i> Tarik Data Berita';
+
+                    // Validasi jika terjadi error di Apps Script
+                    if (res.status === "error" || !res.judul) {
+                        alert("Gagal memuat data! Baris mungkin kosong atau struktur kolom salah.\nDetail: " + (res.message || "Data null"));
+                        document.getElementById("areaFormKurasi").classList.add("hidden");
+                        return;
+                    }
+
+                    // TAMPILKAN FORM DAN ISI DATA SECARA OTOMATIS (AUTO-FILL)
+                    document.getElementById("areaFormKurasi").classList.remove("hidden");
+                    document.getElementById("labelRowNumber").innerText = "#" + rowNo;
+                    document.getElementById("badgeUnit").innerText = res.unit || "UMUM";
+
+                    document.getElementById("judul").value = res.judul || "";
+                    document.getElementById("kelas").value = res.kelas || "";
+                    document.getElementById("nilai").value = res.nilai || "";
+                    document.getElementById("cerita").value = res.cerita || "";
+                    document.getElementById("linkAlbum").value = res.linkAlbum === "-" ? "" : (res.linkAlbum || "");
+                    document.getElementById("linkVideo").value = res.linkVideo === "-" ? "" : (res.linkVideo || "");
+                    
+                    // PENETAPAN FORMAT TANGGAL YANG AMAN (YYYY-MM-DD)
+                    // Komponen input type="date" membutuhkan string berformat persis YYYY-MM-DD
+                    if (res.tanggal) {
+                        document.getElementById("tanggal").value = res.tanggal;
+                    } else {
+                        document.getElementById("tanggal").value = "";
+                    }
+
+                    // Backup data link foto lama
+                    globalExistingLinkFoto = res.existingLinkFoto || "-";
+                    const txtExist = document.getElementById("textExistingLink");
+                    if (globalExistingLinkFoto !== "-") {
+                        txtExist.innerText = globalExistingLinkFoto;
+                        document.getElementById("areaExistingLink").classList.remove("hidden");
+                    } else {
+                        document.getElementById("areaExistingLink").classList.add("hidden");
+                    }
+
+                    // AMBIL DATA PILIHAN FOTO DI DRIVE UNTUK THUMBNAIL
+                    const containerFoto = document.getElementById("containerOpsiFoto");
+                    containerFoto.innerHTML = ""; // Bersihkan kontainer lama
+
+                    if (res.fotos && res.fotos.length > 0) {
+                        res.fotos.forEach((foto, i) => {
+                            // Cek apakah link foto ini sudah tersimpan sebagai thumbnail aktif sebelumnya
+                            const isChecked = globalExistingLinkFoto.includes(foto.id) ? "checked" : "";
+                            
+                            const wrapper = document.createElement("label");
+                            wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1";
+                            wrapper.innerHTML = `
+                                <input type="checkbox" name="thumbnailFoto" value="${foto.url}" ${isChecked}>
+                                <img src="${foto.url}" alt="Foto Berita" class="w-full h-28 object-cover rounded">
+                                <div class="checked-badge absolute top-2 right-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow shadow-black/40">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                            `;
+                            containerFoto.appendChild(wrapper);
+                        });
+                    } else {
+                        containerFoto.innerHTML = `
+                            <div class="col-span-full text-center py-6 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs font-medium">
+                                <i class="fa-solid fa-folder-open text-xl mb-2 block"></i> Tidak ditemukan file gambar di dalam folder Drive kegiatan ini.
+                            </div>
+                        `;
+                    }
+
+                    // Reset field password PIN setiap kali ganti data baris
+                    document.getElementById("pin").value = "";
+                    
+                    // Scroll otomatis ke area form biar user fokus
+                    document.getElementById("areaFormKurasi").scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-download"></i> Tarik Data Berita';
+                    alert("Terjadi kendala jaringan saat berkomunikasi dengan Apps Script!\nDetail: " + err.toString());
+                });
+        }
+
+        /**
+         * FUNGSI B: MENYIMPAN PERUBAHAN DATA KURASI (POST)
+         */
+        function simpanPerubahanKurasi(event) {
+            event.preventDefault(); // Mencegah reload halaman bawaan form
+
+            const rowNo = document.getElementById("inputRowNumber").value.trim();
+            const btn = document.getElementById("btnSimpan");
+
+            // Kumpulkan daftar URL foto yang dicentang oleh Wakasek
+            const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
+            let selectedUrlsArray = [];
+            checkedBoxes.forEach(box => {
+                selectedUrlsArray.push(box.value);
+            });
+
+            // Siapkan payload paket JSON data perubahan
+            const payload = {
+                "action": "updateWakasek",
+                "rowNumber": parseInt(rowNo),
+                "judul": document.getElementById("judul").value.trim(),
+                "tanggal": document.getElementById("tanggal").value, // Format otomatis terkirim: YYYY-MM-DD
+                "kelas": document.getElementById("kelas").value.trim(),
+                "nilai": document.getElementById("nilai").value.trim(),
+                "cerita": document.getElementById("cerita").value.trim(),
+                "linkAlbum": document.getElementById("linkAlbum").value.trim() || "-",
+                "linkVideo": document.getElementById("linkVideo").value.trim() || "-",
+                "statusBerita": document.getElementById("status").value,
+                "pin": document.getElementById("pin").value,
+                "selectedUrls": selectedUrlsArray,
+                "existingLinkFoto": globalExistingLinkFoto
+            };
+
+            // Kunci tombol proses loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Menyimpan Perubahan...';
+
+            // Kirim data menggunakan metode HTTP POST Fetch API
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors", // Mode aman bypass CORS Google Apps Script Redirect
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                // Catatan: Karena mode 'no-cors' tidak bisa membaca kembalian body JSON secara langsung, 
+                // asalkan tidak masuk ke blok catch (.catch), berarti data telah sukses menyentuh server Apps Script.
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Berita';
+                
+                alert(`Selamat! Data Baris #${rowNo} berhasil diproses dan disimpan ke Google Sheet.`);
+                
+                // Sembunyikan kembali form untuk proses entri selanjutnya
+                document.getElementById("areaFormKurasi").classList.add("hidden");
+                document.getElementById("inputRowNumber").value = "";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Berita';
+                alert("Gagal melakukan penyimpanan data!\nDetail: " + err.toString());
+            });
+        }
+
+        /**
+         * FUNGSI C: MENUTUP / MEMBATALKAN FORM EDIT
+         */
+        function batalEdit() {
+            if(confirm("Apakah Anda yakin ingin membatalkan perubahan data yang sedang diedit?")) {
+                document.getElementById("areaFormKurasi").classList.add("hidden");
+                document.getElementById("inputRowNumber").value = "";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
     </script>
 </body>
