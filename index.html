@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Athalia Newsroom</title>
   <style>
-    /* 100% Mengembalikan Desain Asli Nuansa Biru/Navy Elegan Kamu */
+    /* 100% Desain Asli Dashboard Berita Publik Navy Elegan */
     :root {
-      --bg-header: #1e3a8a; /* Navy Blue */
+      --bg-header: #1e3a8a;
       --bg-body: #f1f5f9;
       --text-white: #ffffff;
     }
@@ -89,7 +89,7 @@
   <div id="newsGridContainer" class="news-grid hidden"></div>
 
   <script>
-    // URL Web App GAS kamu
+    // URL Web App GAS milikmu
     const API_URL = "https://script.google.com/a/macros/sekolahathalia.sch.id/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
     
     let semuaBeritaArr = [];
@@ -99,14 +99,14 @@
     };
 
     function muatBeritaSitus() {
-      // Ambil data dalam format teks biasa (.text()) untuk melewati blokir CORS browser
+      // Menggunakan .text() untuk membaca plain text hasil bypass CORS
       fetch(`${API_URL}?action=getBeritaTayang`)
         .then(res => {
           if (!res.ok) throw new Error("Network response error");
           return res.text(); 
         })
         .then(textData => {
-          const data = JSON.parse(textData); // Di-parse manual setelah masuk client
+          const data = JSON.parse(textData); // Di-parse manual di sisi client browser
           document.getElementById('loader').classList.add('hidden');
           semuaBeritaArr = data;
           tampilkanGridCard(semuaBeritaArr);
