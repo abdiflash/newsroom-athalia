@@ -80,8 +80,8 @@
                             <input type="text" id="nilai" placeholder="Contoh: Integritas, Ketaatan, Kepedulian" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
                         </div>
                         <div>
-                            <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Email Kontributor</label>
-                            <input type="email" id="emailContributor" required pattern="^[a-zA-Z0-9._%+-]+@sekolahathalia\.sch\.id$" placeholder="nama@sekolahathalia.sch.id" title="Harus menggunakan email resmi dengan domain @sekolahathalia.sch.id" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Email Aktif Browser (Otomatis)</label>
+                            <input type="email" id="emailContributor" readonly required placeholder="Mendeteksi email akun..." class="w-full px-3 py-2 border border-gray-200 bg-gray-100 rounded-lg text-xs sm:text-sm font-semibold text-gray-600 focus:outline-hidden cursor-not-allowed">
                         </div>
                     </div>
 
@@ -157,7 +157,32 @@
 
         let statusLoginEditor = false;
 
-                function switchTab(target) {
+        // SEGERA JALANKAN SAAT HALAMAN DIBUKA: Ambil email asli dari server Apps Script
+        window.addEventListener("DOMContentLoaded", () => {
+            if (typeof google !== "undefined" && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler((email) => {
+                        const inputEmail = document.getElementById("emailContributor");
+                        if (email) {
+                            inputEmail.value = email;
+                            // Cek langsung jika email bukan domain sekolah, kunci tombol kirim
+                            if (!email.toLowerCase().endsWith("@sekolahathalia.sch.id")) {
+                                alert("❌ Akses Ditolak! Browser Anda mendeteksi akun pribadi (" + email + "). Silakan ganti ke akun @sekolahathalia.sch.id");
+                                document.getElementById("btnSubmitGuru").disabled = true;
+                                document.getElementById("btnSubmitGuru").innerText = "Akses Ditolak (Gunakan Akun Sekolah)";
+                            }
+                        } else {
+                            inputEmail.value = "Tidak terdeteksi";
+                        }
+                    })
+                    .withFailureHandler(() => {
+                        document.getElementById("emailContributor").value = "Gagal memverifikasi akun";
+                    })
+                    .getUserEmailFromServer(); // Memanggil fungsi pencari email di code.gs
+            }
+        });
+
+        function switchTab(target) {
             const tabGuru = document.getElementById("tabGuru");
             const tabWakasek = document.getElementById("tabWakasek");
             const kontenGuru = document.getElementById("kontenGuru");
@@ -225,7 +250,7 @@
             
             const emailInput = document.getElementById("emailContributor").value.trim().toLowerCase();
             if (!emailInput.endsWith("@sekolahathalia.sch.id")) {
-                alert("❌ Akses Ditolak! Anda harus memasukkan email resmi @sekolahathalia.sch.id");
+                alert("❌ Akses Ditolak! Akun aktif browser Anda (" + emailInput + ") bukan email resmi @sekolahathalia.sch.id");
                 return;
             }
 
