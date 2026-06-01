@@ -3,168 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Athalia Newsroom</title>
+  <title>Athalia Newsroom - Validation Board</title>
   <style>
-    /* Mengembalikan 100% Desain Asli Nuansa Biru/Navy Elegan Kamu */
+    /* 100% Mengembalikan Tampilan Dark Mode Sesuai Screenshot Asli Kamu */
     :root {
-      --bg-header: #1e3a8a; /* Navy Blue */
-      --bg-body: #f1f5f9;
-      --text-white: #ffffff;
-      --text-muted: #94a3b8;
+      --bg-dark: #121212;
+      --bg-card: #1a1a1a;
+      --border-color: #2d2d2d;
+      --text-light: #e0e0e0;
+      --accent-blue: #2563eb;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: var(--bg-body); color: #334155; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-light); padding: 30px; }
     
-    .header-bar { background-color: #1a365d; color: var(--text-white); padding: 20px 40px; }
-    .header-bar h1 { font-size: 24px; font-weight: bold; letter-spacing: 0.5px; }
-    .header-bar p { font-size: 13px; color: #cbd5e1; font-style: italic; margin-top: 2px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+    h1 { font-size: 24px; font-weight: 600; color: #ffffff; }
+    .subtitle { color: #888; font-size: 13px; margin-top: 5px; }
+    
+    .btn { background-color: var(--accent-blue); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
+    .btn:hover { background-color: #1d4ed8; }
+    
+    /* Table Styling */
+    .table-container { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background-color: #161616; padding: 16px; font-weight: 600; color: #888; border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    td { padding: 16px; border-bottom: 1px solid var(--border-color); color: #cbd5e1; }
+    tr:hover { background-color: #222222; }
+    
+    /* Status Badges */
+    .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; }
+    .badge-pending { background-color: rgba(217, 119, 6, 0.15); color: #f59e0b; border: 1px solid rgba(217, 119, 6, 0.3); }
+    .badge-acc { background-color: rgba(37, 99, 235, 0.15); color: #3b82f6; border: 1px solid rgba(37, 99, 235, 0.3); }
 
-    /* Filter Bar */
-    .filter-container { background: white; margin: 20px 40px; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; gap: 20px; align-items: center; }
-    .search-box { flex: 2; position: relative; }
-    .search-box input { width: 100%; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #f8fafc; }
-    .filter-group { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #64748b; }
-    .filter-group select { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; font-size: 14px; color: #334155; cursor: pointer; }
-
-    /* Main Grid Berita */
-    .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding: 0 40px 40px 40px; }
-    .news-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
-    .news-card:hover { transform: translateY(-4px); }
-    .news-thumb { width: 100%; height: 180px; object-fit: cover; background-color: #cbd5e1; }
-    .news-content { padding: 20px; }
-    .news-meta { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
-    .news-title { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 10px; line-height: 1.4; }
-    .news-snippet { font-size: 13px; color: #64748b; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-    /* Loading Spinner Bulat Sesuai Screenshot */
-    .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; color: #64748b; font-size: 14px; }
-    .spinner { border: 4px solid rgba(30, 58, 138, 0.1); border-radius: 50%; border-top: 4px solid #1a365d; width: 36px; height: 36px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    /* Loader Spinner */
+    .loading-state { text-align: center; padding: 60px 0; color: #888; }
+    .spinner { border: 3px solid rgba(255,255,255,0.05); border-radius: 50%; border-top: 3px solid var(--accent-blue); width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     
-    .error-alert { background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 40px; font-size: 14px; font-weight: 500; }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <div class="header-bar">
-    <h1>ATHALIA NEWSROOM</h1>
-    <p>More Impact - More Value</p>
+  <div class="header">
+    <div>
+      <h1>Newsroom Validation Board</h1>
+      <div class="subtitle">Daftar artikel masuk yang memerlukan validasi Wakasek dan Publikasi.</div>
+    </div>
+    <button class="btn" onclick="muatDataAntrean()">🔄 Segarkan Antrean</button>
   </div>
 
-  <div class="filter-container">
-    <div class="search-box">
-      <input type="text" id="txtSearch" placeholder="Cari berita..." oninput="filterBerita()">
-    </div>
-    <div class="filter-group">
-      <span>UNIT:</span>
-      <select id="selUnit" onchange="filterBerita()">
-        <option value="">Semua Unit</option>
-        <option value="KB-TK">KB-TK</option>
-        <option value="SD">SD</option>
-        <option value="SMP">SMP</option>
-        <option value="SMA">SMA</option>
-        <option value="UMUM">UMUM</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <span>TAHUN:</span>
-      <select id="selTahun" onchange="filterBerita()">
-        <option value="">Semua Tahun</option>
-        <option value="2026">2026</option>
-        <option value="2025">2025</option>
-        <option value="2024">2024</option>
-      </select>
-    </div>
-  </div>
-
-  <div id="loader" class="loading-state">
+  <div id="loaderBaris" class="loading-state">
     <div class="spinner"></div>
-    <p>Menghubungkan ke server Athalia...</p>
+    <p>Menghubungkan ke Google Spreadsheet Engine...</p>
   </div>
 
-  <div id="errorBox" class="error-alert hidden">
-    Gagal memuat data dari server Newsroom. Silakan periksa koneksi atau verifikasi setelan deployment backend Anda.
+  <div id="wrapperTabel" class="table-container hidden">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Unit</th>
+          <th style="width: 20%;">Tanggal</th>
+          <th style="width: 45%;">Judul Berita</th>
+          <th style="width: 10%;">Status</th>
+          <th style="width: 10%; text-align: center;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="bodyAntrean">
+        </tbody>
+    </table>
   </div>
-
-  <div id="newsGridContainer" class="news-grid hidden"></div>
 
   <script>
-    // URL Web App GAS kamu yang valid berdasarkan screenshot
+    // URL Web App GAS Anda sesuai berkas image_ef14eb.png
     const API_URL = "https://script.google.com/a/macros/sekolahathalia.sch.id/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
-    
-    let semuaBeritaArr = [];
 
     window.onload = function() {
-      muatBeritaSitus();
+      muatDataAntrean();
     };
 
-    function muatBeritaSitus() {
-      // Menembak endpoint khusus mengambil artikel berstatus "TAYANG"
-      fetch(`${API_URL}?action=getBeritaTayang`)
+    function muatDataAntrean() {
+      document.getElementById('loaderBaris').classList.remove('hidden');
+      document.getElementById('wrapperTabel').classList.add('hidden');
+
+      // Ambil data antrean menggunakan parameter action
+      fetch(`${API_URL}?action=getAntrean`)
         .then(res => {
-          if (!res.ok) throw new Error("Network response error");
+          if (!res.ok) throw new Error("Gagal merespon");
           return res.json();
         })
         .then(data => {
-          document.getElementById('loader').classList.add('hidden');
-          semuaBeritaArr = data;
-          tampilkanGridCard(semuaBeritaArr);
+          document.getElementById('loaderBaris').classList.add('hidden');
+          const tbody = document.getElementById('bodyAntrean');
+          tbody.innerHTML = "";
+
+          if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666; padding:30px;">Antrean kosong. Tidak ada berita PENDING atau ACC WAKASEK.</td></tr>`;
+            document.getElementById('wrapperTabel').classList.remove('hidden');
+            return;
+          }
+
+          data.forEach(item => {
+            let kelasBadge = item.status.toUpperCase() === "ACC WAKASEK" ? "badge-acc" : "badge-pending";
+            
+            tbody.innerHTML += `
+              <tr>
+                <td style="font-weight: bold; color: #ffffff;">${item.unit}</td>
+                <td>${item.tanggal}</td>
+                <td>${item.judul}</td>
+                <td><span class="badge ${kelasBadge}">${item.status}</span></td>
+                <td style="text-align: center;">
+                  <button class="btn" style="padding: 6px 12px; font-size: 12px; background-color: #2563eb;" onclick="bukaDetailBerita(${item.row})">Buka</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          document.getElementById('wrapperTabel').classList.remove('hidden');
         })
         .catch(err => {
-          document.getElementById('loader').classList.add('hidden');
-          document.getElementById('errorBox').classList.remove('hidden');
+          document.getElementById('loaderBaris').classList.add('hidden');
+          alert("Gagal memuat data dari server Newsroom. Pastikan Akses Deployment GAS sudah disetel ke 'Siapa saja (Anyone)'.");
           console.error(err);
         });
     }
 
-    function tampilkanGridCard(listBerita) {
-      const container = document.getElementById('newsGridContainer');
-      container.innerHTML = "";
-      
-      if(listBerita.length === 0) {
-        container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#94a3b8; padding:40px;">Belum ada berita yang diterbitkan untuk kategori ini.</p>`;
-        container.classList.remove('hidden');
-        return;
-      }
-
-      listBerita.forEach(b => {
-        // Ambil thumbnail pertama, jika kosong pakai placeholder standar image
-        let srcGambar = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600";
-        if(b.linkFoto && b.linkFoto !== "-" && b.linkFoto.trim() !== "") {
-          srcGambar = b.linkFoto.split(",")[0].trim();
-        }
-
-        container.innerHTML += `
-          <div class="news-card">
-            <img src="${srcGambar}" class="news-thumb" alt="Thumbnail Berita">
-            <div class="news-content">
-              <div class="news-meta">
-                <span style="color:#1e3a8a;">${b.unit}</span>
-                <span>${b.tanggal}</span>
-              </div>
-              <h3 class="news-title">${b.judul}</h3>
-              <p class="news-snippet">${b.cerita}</p>
-            </div>
-          </div>
-        `;
-      });
-      container.classList.remove('hidden');
-    }
-
-    function filterBerita() {
-      const kataKunci = document.getElementById('txtSearch').value.toLowerCase();
-      const unitTerpilih = document.getElementById('selUnit').value;
-      const tahunTerpilih = document.getElementById('selTahun').value;
-
-      const hasilFilter = semuaBeritaArr.filter(b => {
-        const matchKata = b.judul.toLowerCase().includes(kataKunci) || b.cerita.toLowerCase().includes(kataKunci);
-        const matchUnit = unitTerpilih === "" || b.unit === unitTerpilih;
-        const matchTahun = tahunTerpilih === "" || b.tanggal.includes(tahunTerpilih);
-        return matchKata && matchUnit && matchTahun;
-      });
-
-      tampilkanGridCard(hasilFilter);
+    function bukaDetailBerita(rowId) {
+      // Logika integrasi untuk membuka modal kurasi popup kamu (image_e41999.png)
+      alert("Membuka data baris nomor: " + rowId);
     }
   </script>
 </body>
