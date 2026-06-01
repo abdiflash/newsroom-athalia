@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Berita Kegiatan - Sekolah Athalia</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Mencegah zoom otomatis pada input iOS saat di-fokus */
+        @media screen and (max-width: 768px) {
+            input, select, textarea { font-size: 16px !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen pb-12 antialiased selection:bg-emerald-500 selection:text-white">
+
+    <header class="bg-emerald-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+            <div class="flex items-center gap-3 text-center sm:text-left">
+                <i class="fa-solid fa-newspaper text-xl sm:text-2xl hidden sm:block"></i>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold leading-tight">Athalia Newsroom System</h1>
+                    <p class="text-[11px] text-emerald-100">Satu Ruang untuk Dokumentasi & Publikasi</p>
+                </div>
+            </div>
+            
+            <div class="flex bg-emerald-700 p-1 rounded-lg text-xs sm:text-sm font-medium w-full sm:w-auto justify-center">
+                <button onclick="switchTab('guru')" id="tabGuru" class="flex-1 sm:flex-none text-center px-4 py-1.5 rounded-md transition-all text-white bg-emerald-600 shadow-sm font-bold cursor-pointer">
+                    <i class="fa-solid fa-pen-to-square mr-1"></i> Form Guru
+                </button>
+                <button onclick="switchTab('wakasek')" id="tabWakasek" class="flex-1 sm:flex-none text-center px-4 py-1.5 rounded-md transition-all text-emerald-100 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Ruang Wakasek
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-3 sm:px-4 mt-4 sm:mt-6">
+
+        <section id="kontenGuru" class="block">
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-xs border border-gray-200">
+                <div class="mb-4 border-b border-gray-100 pb-3">
+                    <h2 class="text-sm sm:text-base font-bold text-gray-700"><i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Upload Laporan Kegiatan Lapangan</h2>
+                    <p class="text-[11px] sm:text-xs text-gray-400 mt-0.5">Guru/Staf: Silakan lengkapi data 5W+1H dan lampirkan foto kegiatan.</p>
+                </div>
+
+                <form id="formGuru" onsubmit="prosesUploadGuru(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Unit Sekolah</label>
+                            <select id="unit" required class="w-full px-3 py-2 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
+                                <option value="UMUM">UMUM / Semua Unit</option>
+                                <option value="KB-TK">KB-TK Athalia</option>
+                                <option value="SD">SD Athalia</option>
+                                <option value="SMP">SMP Athalia</option>
+                                <option value="SMA">SMA Athalia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Tanggal Kegiatan</label>
+                            <input type="date" id="tanggal" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Judul Kegiatan</label>
+                            <input type="text" id="judul" required placeholder="Contoh: LDKS OSIS SMA 2026" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Kelas / Sasaran</label>
+                            <input type="text" id="kelas" required placeholder="Contoh: Kelas 10 & 11" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Nilai Karakter Inti</label>
+                        <input type="text" id="nilai" placeholder="Contoh: Integritas, Ketaatan, Kepedulian" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] sm:text-xs font-bold uppercase text-gray-500 mb-1">Narasi Berita (5W + 1H)</label>
+                        <textarea id="cerita" rows="5" required placeholder="Tulis rincian kejadian lapangan di sini secara lengkap..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"></textarea>
+                    </div>
+
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-5 bg-gray-50 text-center active:bg-gray-100 transition-colors relative">
+                        <i class="fa-solid fa-camera-retro text-xl sm:text-2xl text-emerald-600 mb-1"></i>
+                        <label class="block text-xs sm:text-sm font-bold text-gray-700">Ambil Foto HP atau Pilih Galeri</label>
+                        <p class="text-[10px] sm:text-xs text-gray-400 mb-3">Mendukung banyak foto sekaligus (Maksimal 25 foto)</p>
+                        
+                        <input type="file" id="inputFoto" multiple accept="image/*" capture="environment" required class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-[11px] sm:file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
+                        <div id="previewJumlah" class="mt-2 text-xs font-bold text-emerald-600 hidden"></div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitGuru" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Laporan ke Sistem
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section id="kontenWakasek" class="hidden">
+            <div id="gerbangPIN" class="bg-white p-6 sm:p-8 rounded-xl shadow-xs border border-gray-200 max-w-md mx-auto text-center space-y-4">
+                <i class="fa-solid fa-lock-open text-2xl sm:text-3xl text-amber-500"></i>
+                <div>
+                    <h3 class="text-sm sm:text-base font-bold text-gray-700">Verifikasi Akses Ruang Wakasek</h3>
+                    <p class="text-[11px] sm:text-xs text-gray-400">Masukkan PIN Editor untuk melihat antrean berita guru.</p>
+                </div>
+                <input type="password" id="pinPintuMasuk" placeholder="••••" inputmode="numeric" pattern="[0-9]*" class="w-full px-3 py-2 text-center border border-gray-300 rounded-lg text-lg tracking-widest font-bold focus:ring-2 focus:ring-amber-500 focus:outline-hidden">
+                <button onclick="verifikasiPintuMasuk()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-xs sm:text-sm cursor-pointer active:scale-[0.99]">
+                    <i class="fa-solid fa-key mr-1"></i> Buka Editor Kurasi
+                </button>
+            </div>
+
+            <div id="areaEditorUtama" class="bg-white p-4 sm:p-6 rounded-xl shadow-xs border border-gray-200 hidden">
+                <div class="mb-4 border-b border-gray-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-bold text-gray-700"><i class="fa-solid fa-user-check text-emerald-600 mr-1"></i> Ruang Review & Persetujuan Berita</h2>
+                        <p class="text-[11px] sm:text-xs text-gray-400">Silakan sunting tulisan guru sebelum diteruskan ke publikasi.</p>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto justify-end">
+                        <button onclick="logoutEditor()" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-[11px] sm:text-xs font-semibold cursor-pointer">
+                            <i class="fa-solid fa-lock"></i> Kunci
+                        </button>
+                        <button onclick="muatAntreanPending()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1 cursor-pointer">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div id="loadingWakasek" class="text-center py-8 text-gray-400 hidden">
+                    <i class="fa-solid fa-spinner animate-spin text-2xl mb-2 text-emerald-600"></i>
+                    <p class="text-xs">Menghubungkan ke Google Sheets...</p>
+                </div>
+
+                <div id="antreanKosong" class="text-center py-8 border border-dashed border-gray-200 rounded-xl bg-gray-50">
+                    <i class="fa-solid fa-folder-open text-gray-300 text-2xl sm:text-3xl mb-1"></i>
+                    <p class="text-xs font-semibold text-gray-400">Belum memuat data. Silakan klik tombol Refresh Data.</p>
+                </div>
+
+                <div id="containerAntrean" class="space-y-4 sm:space-y-6 hidden"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+        const MASTER_PIN_EDITOR = "1234"; 
+
+        let statusLoginEditor = false;
+
+        function switchTab(target) {
+            const tabGuru = document.getElementById("tabGuru");
+            const tabWakasek = document.getElementById("tabWakasek");
+            const kontenGuru = document.getElementById("kontenGuru");
+            const kontenWakasek = document.getElementById("kontenWakasek");
+
+            if (target === 'guru') {
+                tabGuru.className = "flex-1 sm:flex-none text-center px-4 py-1.5 rounded-md transition-all text-white bg-emerald-600 shadow-sm font-bold cursor-pointer";
+                tabWakasek.className = "flex-1 sm:flex-none text-center px-4 py-1.5 rounded-md transition-all text-emerald-100 hover:text-white cursor-pointer";
+                kontenGuru.classList.remove("hidden");
+                kontenWakasek.classList.add("hidden");
+            } else {
+                tabWakasek.className = "flex-1 sm:flex-none text-center px-4 py-1.5 rounded-md transition-all text-white bg-emerald-600 shadow-sm font-bold cursor-pointer";
+                tabGuru.className = "flex-1 sm:flex-none text-center px-4 py-1.5 rounded-md transition-all text-emerald-100 hover:text-white cursor-pointer";
+                kontenGuru.classList.add("hidden");
+                kontenWakasek.classList.remove("hidden");
+                renderTampilanEditor();
+            }
+        }
+
+        function verifikasiPintuMasuk() {
+            const input = document.getElementById("pinPintuMasuk").value;
+            if (input === MASTER_PIN_EDITOR) {
+                statusLoginEditor = true;
+                document.getElementById("pinPintuMasuk").value = "";
+                renderTampilanEditor();
+                muatAntreanPending();
+            } else {
+                alert("❌ PIN Editor Salah! Akses ditolak.");
+            }
+        }
+
+        function renderTampilanEditor() {
+            const gerbang = document.getElementById("gerbangPIN");
+            const areaUtama = document.getElementById("areaEditorUtama");
+            if (statusLoginEditor) {
+                gerbang.classList.add("hidden");
+                areaUtama.classList.remove("hidden");
+            } else {
+                gerbang.classList.remove("hidden");
+                areaUtama.classList.add("hidden");
+            }
+        }
+
+        function logoutEditor() {
+            statusLoginEditor = false;
+            renderTampilanEditor();
+        }
+
+        const inputFoto = document.getElementById("inputFoto");
+        inputFoto.addEventListener("change", function() {
+            const jml = this.files.length;
+            const preview = document.getElementById("previewJumlah");
+            if(jml > 25) {
+                alert("⚠️ Maksimal 25 foto! Anda memilih " + jml + " foto.");
+                this.value = "";
+                preview.classList.add("hidden");
+            } else if(jml > 0) {
+                preview.innerText = "✓ " + jml + " foto siap diunggah.";
+                preview.classList.remove("hidden");
+            }
+        });
+
+        function prosesUploadGuru(event) {
+            event.preventDefault();
+            const btn = document.getElementById("btnSubmitGuru");
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses Foto Laporan...';
+
+            let filePromises = Array.from(inputFoto.files).map(file => {
+                return new Promise((resolve) => {
+                    let reader = new FileReader();
+                    reader.onloadend = function() {
+                        resolve({
+                            base64: reader.result.split(',')[1],
+                            type: file.type,
+                            name: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            Promise.all(filePromises).then(fotosArray => {
+                const payload = {
+                    action: "submitGuru",
+                    unit: document.getElementById("unit").value,
+                    tanggal: document.getElementById("tanggal").value,
+                    judul: document.getElementById("judul").value.trim(),
+                    kelas: document.getElementById("kelas").value.trim(),
+                    nilai: document.getElementById("nilai").value.trim(),
+                    cerita: document.getElementById("cerita").value.trim(),
+                    fotos: fotosArray
+                };
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mengirim data ke Cloud...';
+
+                fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => {
+                    alert("Sukses! Laporan kegiatan Anda sudah masuk ke ruang antrean.");
+                    document.getElementById("formGuru").reset();
+                    document.getElementById("previewJumlah").classList.add("hidden");
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Laporan ke Sistem';
+                })
+                .catch(err => {
+                    alert("Gagal kirim: " + err.toString());
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Laporan ke Sistem';
+                });
+            });
+        }
+
+        function muatAntreanPending() {
+            if (!statusLoginEditor) return;
+            const loading = document.getElementById("loadingWakasek");
+            const kosong = document.getElementById("antreanKosong");
+            const container = document.getElementById("containerAntrean");
+
+            loading.classList.remove("hidden");
+            kosong.classList.add("hidden");
+            container.classList.add("hidden");
+            container.innerHTML = "";
+
+            fetch(`${WEB_APP_URL}?action=getAntrean`)
+                .then(res => res.json())
+                .then(data => {
+                    loading.classList.add("hidden");
+                    if (!data || data.length === 0) {
+                        kosong.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-1"></i><p class="text-xs font-bold text-gray-500">Antrean bersih! Tidak ada laporan pending.</p>`;
+                        kosong.classList.remove("hidden");
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const isAccWakasek = item.status === "ACC WAKASEK";
+                        const badgeColor = isAccWakasek ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-800";
+                        const badgeText = isAccWakasek ? "✓ ACC WAKASEK" : "PENDING";
+
+                        const card = document.createElement("div");
+                        card.className = "p-3 sm:p-4 border border-gray-200 rounded-xl bg-gray-50 space-y-3 shadow-xs";
+                        card.innerHTML = `
+                            <div class="flex justify-between items-center bg-gray-200/60 p-2 rounded-lg text-xs font-bold text-gray-600">
+                                <span><i class="fa-solid fa-hashtag text-emerald-600"></i> Baris Sheet: #${item.row}</span>
+                                <span class="${badgeColor} px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wide">${badgeText}</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-[11px] sm:text-xs">
+                                <div><span class="text-gray-400">Unit:</span> <strong class="text-gray-700">${item.unit}</strong></div>
+                                <div><span class="text-gray-400">Tanggal:</span> <strong class="text-gray-700">${item.tanggal}</strong></div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase">Judul Berita</label>
+                                <input type="text" id="editJudul-${item.row}" value="${item.judul}" class="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs font-semibold focus:outline-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase">Isi Cerita Narasi</label>
+                                <textarea id="editCerita-${item.row}" rows="4" class="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs leading-relaxed focus:outline-emerald-500">${item.cerita}</textarea>
+                            </div>
+                            
+                            <div class="pt-3 border-t border-gray-200 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                                <div class="flex items-center">
+                                    <button onclick="eksekusiKurasi(${item.row}, 'ACC WAKASEK', true)" class="w-full lg:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95">
+                                        <i class="fa-solid fa-user-check"></i> ACC Wakasek (Simpan)
+                                    </button>
+                                </div>
+
+                                <div class="flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 bg-gray-100 p-2 rounded-lg border border-gray-200">
+                                    <div class="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-start">
+                                        <span class="text-[10px] font-bold text-gray-500 uppercase"><i class="fa-solid fa-shield-halved"></i> PIN:</span>
+                                        <input type="password" id="pinAksi-${item.row}" placeholder="PIN" inputmode="numeric" class="w-16 px-1.5 py-1 border border-gray-300 bg-white rounded text-xs text-center font-bold tracking-wider focus:outline-amber-500">
+                                    </div>
+                                    <div class="flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                                        <button onclick="eksekusiKurasi(${item.row}, 'TOLAK', false)" class="flex-1 sm:flex-none text-center px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded text-xs cursor-pointer active:scale-95">
+                                            <i class="fa-solid fa-xmark"></i> Tolak
+                                        </button>
+                                        <button onclick="eksekusiKurasi(${item.row}, 'TAYANG', false)" class="flex-1 sm:flex-none text-center px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs cursor-pointer active:scale-95">
+                                            <i class="fa-solid fa-paper-plane"></i> Tayangkan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                    container.classList.remove("hidden");
+                })
+                .catch(err => {
+                    loading.classList.add("hidden");
+                    kosong.innerHTML = `<p class="text-xs text-rose-600 font-bold">Gagal sinkronisasi data: ${err.toString()}</p>`;
+                    kosong.classList.remove("hidden");
+                });
+        }
+
+        function eksekusiKurasi(rowId, statusBaru, isWakasekAction) {
+            const judulTerbaru = document.getElementById(`editJudul-${rowId}`).value.trim();
+            const ceritaTerbaru = document.getElementById(`editCerita-${rowId}`).value.trim();
+            let pinAksi = "";
+
+            if (!isWakasekAction) {
+                pinAksi = document.getElementById(`pinAksi-${rowId}`).value;
+                if (!pinAksi) {
+                    alert("⚠️ PIN Konfirmasi diperlukan untuk menolak atau menayangkan berita!");
+                    return;
+                }
+            }
+
+            let pesanKonfirmasi = `Konfirmasi: Ubah status baris #${rowId} menjadi [${statusBaru}]?`;
+            if (isWakasekAction) {
+                pesanKonfirmasi = `Wakasek: Simpan perubahan dan beri tanda ACC pada baris #${rowId}?`;
+            }
+
+            if (!confirm(pesanKonfirmasi)) {
+                return;
+            }
+
+            const payload = {
+                action: "kurasiBerita",
+                row: rowId,
+                status: statusBaru,
+                judul: judulTerbaru,
+                cerita: ceritaTerbaru,
+                pin: pinAksi 
+            };
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                alert(`Selesai! Perintah [${statusBaru}] berhasil diproses.`);
+                muatAntreanPending();
+            })
+            .catch(err => alert("Gagal memproses perubahan: " + err.toString()));
+        }
+    </script>
+</body>
+</html>
