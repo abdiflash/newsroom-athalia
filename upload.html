@@ -58,7 +58,7 @@
                         </tr>
                     </thead>
                     <tbody id="bodyTabelAntrean" class="divide-y divide-gray-100 font-medium text-gray-700">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -111,7 +111,7 @@
                             <p class="text-xs text-gray-400 mb-3">*Centang atau pilih maksimal 5 foto terbaik yang akan tampil di halaman depan website.</p>
                             
                             <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-gray-100 pt-5">
@@ -223,7 +223,7 @@
                 });
         }
 
-        // 2. Membuka form detail baris & memotong (parsing) link foto dari sel spreadsheet ke elemen visual
+        // 2. Membuka form detail baris & mengolah data foto terlampir
         function pilihBarisBerita(rowNo) {
             const areaForm = document.getElementById("areaFormKurasi");
             areaForm.classList.add("hidden");
@@ -252,44 +252,66 @@
                     document.getElementById("linkAlbum").value = res.linkAlbum === "-" ? "" : (res.linkAlbum || "");
                     document.getElementById("linkVideo").value = res.linkVideo === "-" ? "" : (res.linkVideo || "");
 
-                    // RESET PILIHAN FOTO DENGAN MEM-PARSING SEL LINK_FOTO
+                    // RESET & RENDER PILIHAN FOTO BERDASARKAN REAL-OBJECT ATAU FALLBACK STRING
                     const containerFoto = document.getElementById("containerOpsiFoto");
                     containerFoto.innerHTML = "";
                     rawUrlsArrayFromSheet = [];
 
-                    // Baca string panjang isi kumpulan link foto dari spreadsheet, pisah berdasarkan tanda koma
-                    let rawLinksString = res.existingLinkFoto || "";
-                    if (rawLinksString && rawLinksString !== "-") {
-                        // Bersihkan spasi-spasi kosong di sekitar link
-                        rawUrlsArrayFromSheet = rawLinksString.split(",").map(url => url.trim()).filter(url => url.length > 10);
-                    }
-
-                    if (rawUrlsArrayFromSheet.length > 0) {
-                        rawUrlsArrayFromSheet.forEach((url, index) => {
-                            // Konversi link view Drive biasa agar ramah dijadikan src tag <img> gambar HTML
-                            let renderUrl = url;
-                            if (url.includes("drive.google.com/file/d/")) {
-                                let fileId = url.split("/file/d/")[1].split("/")[0];
-                                renderUrl = "https://docs.google.com/uc?export=view&id=" + fileId;
-                            }
+                    // OPSI A: Jika backend code.gs mengirimkan format array objek baru (res.fotos)
+                    if (res.fotos && Array.isArray(res.fotos) && res.fotos.length > 0) {
+                        res.fotos.forEach((foto) => {
+                            rawUrlsArrayFromSheet.push(foto.url);
 
                             const wrapper = document.createElement("label");
-                            wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1";
+                            wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1 group";
                             wrapper.innerHTML = `
-                                <input type="checkbox" name="thumbnailFoto" value="${url}" onchange="kontrolMaksimalFoto(this)">
-                                <img src="${renderUrl}" alt="Foto Berita" class="w-full h-24 object-cover rounded">
+                                <input type="checkbox" name="thumbnailFoto" value="${foto.url}" onchange="kontrolMaksimalFoto(this)">
+                                <img src="${foto.url}" alt="${foto.name || 'Foto Berita'}" class="w-full h-24 object-cover rounded">
                                 <div class="checked-badge absolute top-1.5 right-1.5 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow-md">
                                     <i class="fa-solid fa-check"></i>
                                 </div>
+                                ${foto.driveUrl ? `
+                                <a href="${foto.driveUrl}" target="_blank" class="absolute bottom-1 left-1 right-1 bg-black/75 text-white text-[9px] py-0.5 rounded text-center opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1" onclick="event.stopPropagation();">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i> Cek Drive
+                                </a>
+                                ` : ''}
                             `;
                             containerFoto.appendChild(wrapper);
                         });
-                    } else {
-                        containerFoto.innerHTML = `
-                            <div class="col-span-full text-center py-6 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs">
-                                <i class="fa-solid fa-triangle-exclamation text-lg mb-1 block"></i> Kolom Link_Foto kosong atau format link tidak sesuai.
-                            </div>
-                        `;
+                    } 
+                    // OPSI B: Fallback jika properti res.fotos kosong, potong string res.existingLinkFoto lama
+                    else {
+                        let rawLinksString = res.existingLinkFoto || "";
+                        if (rawLinksString && rawLinksString !== "-") {
+                            rawUrlsArrayFromSheet = rawLinksString.split(",").map(url => url.trim()).filter(url => url.length > 10);
+                        }
+
+                        if (rawUrlsArrayFromSheet.length > 0) {
+                            rawUrlsArrayFromSheet.forEach((url) => {
+                                let renderUrl = url;
+                                if (url.includes("drive.google.com/file/d/")) {
+                                    let fileId = url.split("/file/d/")[1].split("/")[0];
+                                    renderUrl = "https://docs.google.com/uc?export=view&id=" + fileId;
+                                }
+
+                                const wrapper = document.createElement("label");
+                                wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1";
+                                wrapper.innerHTML = `
+                                    <input type="checkbox" name="thumbnailFoto" value="${url}" onchange="kontrolMaksimalFoto(this)">
+                                    <img src="${renderUrl}" alt="Foto Berita" class="w-full h-24 object-cover rounded">
+                                    <div class="checked-badge absolute top-1.5 right-1.5 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow-md">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                `;
+                                containerFoto.appendChild(wrapper);
+                            });
+                        } else {
+                            containerFoto.innerHTML = `
+                                <div class="col-span-full text-center py-6 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs">
+                                    <i class="fa-solid fa-triangle-exclamation text-lg mb-1 block"></i> Kolom Link_Foto kosong atau format tidak didukung.
+                                </div>
+                            `;
+                        }
                     }
 
                     document.getElementById("pin").value = "";
@@ -307,7 +329,7 @@
             const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
             if (checkedBoxes.length > 5) {
                 alert("⚠️ Batasan Tercapai: Wakasek hanya diperbolehkan memilih maksimal 5 foto sebagai thumbnail!");
-                element.checked = false; // Batalkan centangan ke-6
+                element.checked = false; 
             }
         }
 
@@ -342,7 +364,7 @@
                 "statusBerita": statusBerita,
                 "pin": pinValue,
                 "selectedUrls": selectedUrlsArray,
-                "existingLinkFoto": rawUrlsArrayFromSheet.join(", ") // fallback referensi
+                "existingLinkFoto": rawUrlsArrayFromSheet.join(", ") 
             };
 
             btn.disabled = true;
