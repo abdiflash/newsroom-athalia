@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Athalia Newsroom System - Form Guru</title>
+    <title>Athalia Newsroom System</title>
     <style>
         body, html {
             margin: 0;
@@ -11,19 +11,33 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            backgroundColor: #f3f4f6;
+            background-color: #f3f4f6; /* FIX: Koreksi sintaks CSS dari backgroundColor */
         }
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <iframe src="https://script.google.com/a/macros/sekolahathalia.sch.id/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec"></iframe>
+    <iframe id="newsroomIframe" src="https://script.google.com/a/macros/sekolahathalia.sch.id/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec"></iframe>
     
+    <script>
+        // FIX UTAMA: Skrip penerus parameter URL (Dynamic Routing)
+        // Skrip ini membaca parameter dari browser dan meneruskannya ke dalam Google Apps Script.
+        document.addEventListener("DOMContentLoaded", function() {
+            const iframe = document.getElementById("newsroomIframe");
+            const URLParameters = window.location.search; // Mengambil '?page=index' dari URL GitHub
+            
+            if (URLParameters) {
+                // Menggabungkan URL utama iframe dengan parameter halaman baru
+                iframe.src = iframe.src + URLParameters;
+            }
+        });
+    </script>
 
 </body>
 </html>
