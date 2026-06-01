@@ -7,27 +7,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .image-checkbox {
-            position: relative;
-            cursor: pointer;
-        }
-        .image-checkbox input[type="checkbox"] {
-            display: none;
-        }
-        .image-checkbox img {
-            border: 4px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .image-checkbox input[type="checkbox"]:checked + img {
-            border-color: #3b82f6;
-            transform: scale(0.98);
-        }
-        .image-checkbox .checked-badge {
-            display: none;
-        }
-        .image-checkbox input[type="checkbox"]:checked ~ .checked-badge {
-            display: flex;
-        }
+        .image-checkbox { position: relative; cursor: pointer; }
+        .image-checkbox input[type="checkbox"] { display: none; }
+        .image-checkbox img { border: 4px solid transparent; transition: all 0.2s ease; }
+        .image-checkbox input[type="checkbox"]:checked + img { border-color: #3b82f6; transform: scale(0.98); }
+        .image-checkbox .checked-badge { display: none; }
+        .image-checkbox input[type="checkbox"]:checked ~ .checked-badge { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 min-h-screen pb-12">
@@ -45,7 +30,6 @@
     </header>
 
     <main class="max-w-4xl mx-auto px-4">
-        
         <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
             <h2 class="text-lg font-bold text-gray-700 mb-4"><i class="fa-solid fa-magnifying-glass mr-2 text-blue-500"></i>Pilih Baris Berita Berdasarkan ID Google Sheet</h2>
             <div class="flex flex-col sm:flex-row gap-4 items-end">
@@ -61,7 +45,6 @@
 
         <section id="areaFormKurasi" class="hidden space-y-6">
             <form id="formKurasiBerita" onsubmit="simpanPerubahanKurasi(event)" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                
                 <div class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
                     <span class="text-sm font-bold text-gray-600">EDITOR BERITA BARIS: <span id="labelRowNumber" class="text-blue-600">#</span></span>
                     <span id="badgeUnit" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider">-</span>
@@ -74,7 +57,7 @@
                             <input type="text" id="judul" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label for="tanggal" class="block text-xs font-bold uppercase text-gray-500 mb-2">Tanggal Kegiatan (YYYY-MM-DD)</label>
+                            <label for="tanggal" class="block text-xs font-bold uppercase text-gray-500 mb-2">Tanggal Kegiatan</label>
                             <input type="date" id="tanggal" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
                         </div>
                     </div>
@@ -98,10 +81,7 @@
                     <div class="border-t border-gray-200 pt-6">
                         <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Pilih Foto Utama (Thumbnail Website)</label>
                         <p class="text-xs text-gray-400 mb-4">*Foto yang Anda centang akan disalin otomatis ke folder publik sebagai aset website.</p>
-                        
-                        <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            </div>
-                        
+                        <div id="containerOpsiFoto" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
                         <div id="areaExistingLink" class="mt-4 text-xs bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-200 hidden">
                             <i class="fa-solid fa-link mr-1"></i> <strong>Link Foto Saat Ini:</strong> <span id="textExistingLink" class="break-all font-mono"></span>
                         </div>
@@ -110,7 +90,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-6">
                         <div>
                             <label for="linkAlbum" class="block text-xs font-bold uppercase text-gray-500 mb-2"><i class="fa-solid fa-images mr-1 text-green-500"></i> Link Dokumentasi Tambahan (Optional)</label>
-                            <input type="url" id="linkAlbum" placeholder="https://photos.google.com/..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
+                            <input type="url" id="linkAlbum" placeholder="http://..." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono">
                         </div>
                         <div>
                             <label for="linkVideo" class="block text-xs font-bold uppercase text-gray-500 mb-2"><i class="fa-brands fa-youtube mr-1 text-red-500"></i> Link Video Dokumentasi (Optional)</label>
@@ -128,8 +108,8 @@
                             </select>
                         </div>
                         <div>
-                            <label for="pin" class="block text-xs font-bold uppercase text-blue-700 mb-2">PIN Keamanan Verifikasi</label>
-                            <input type="password" id="pin" required placeholder="Masukkan PIN Wakasek" class="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-widest text-center text-lg">
+                            <label for="pin" class="block text-xs font-bold uppercase text-blue-700 mb-2">PIN Keamanan Verifikasi (Khusus Tim Publikasi)</label>
+                            <input type="password" id="pin" placeholder="Isi hanya jika status TAYANG" class="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-widest text-center text-lg">
                         </div>
                     </div>
                 </div>
@@ -146,19 +126,14 @@
 
     <script>
         // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec";
+        const WEB_APP_URL = "URL_WEB_APP_GAS_ANDA_DISINI";
 
-        
-        // Variabel penampung cadangan link foto lama
         let globalExistingLinkFoto = "-";
 
-        /**
-         * FUNGSI A: MENARIK DATA DETAIL DARI GOOGLE SHEET (GET)
-         */
         function muatDataBerita() {
             const rowNo = document.getElementById("inputRowNumber").value.trim();
             if (!rowNo || parseInt(rowNo) < 2) {
-                alert("Mohon masukkan nomor baris Google Sheet yang valid (minimal baris ke-2)!");
+                alert("Mohon masukkan nomor baris Google Sheet yang valid!");
                 return;
             }
 
@@ -166,7 +141,6 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Menghubungkan...';
 
-            // Panggil fungsi getDetailBerita() di Apps Script via URL Parameter JSONP/CORS Fetch
             const urlTarget = `${WEB_APP_URL}?action=getDetail&rowId=${rowNo}`;
 
             fetch(urlTarget)
@@ -175,14 +149,12 @@
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-download"></i> Tarik Data Berita';
 
-                    // Validasi jika terjadi error di Apps Script
                     if (res.status === "error" || !res.judul) {
-                        alert("Gagal memuat data! Baris mungkin kosong atau struktur kolom salah.\nDetail: " + (res.message || "Data null"));
+                        alert("Gagal memuat data! Baris mungkin kosong.\nDetail: " + (res.message || "Data null"));
                         document.getElementById("areaFormKurasi").classList.add("hidden");
                         return;
                     }
 
-                    // TAMPILKAN FORM DAN ISI DATA SECARA OTOMATIS (AUTO-FILL)
                     document.getElementById("areaFormKurasi").classList.remove("hidden");
                     document.getElementById("labelRowNumber").innerText = "#" + rowNo;
                     document.getElementById("badgeUnit").innerText = res.unit || "UMUM";
@@ -194,15 +166,12 @@
                     document.getElementById("linkAlbum").value = res.linkAlbum === "-" ? "" : (res.linkAlbum || "");
                     document.getElementById("linkVideo").value = res.linkVideo === "-" ? "" : (res.linkVideo || "");
                     
-                    // PENETAPAN FORMAT TANGGAL YANG AMAN (YYYY-MM-DD)
-                    // Komponen input type="date" membutuhkan string berformat persis YYYY-MM-DD
                     if (res.tanggal) {
                         document.getElementById("tanggal").value = res.tanggal;
                     } else {
                         document.getElementById("tanggal").value = "";
                     }
 
-                    // Backup data link foto lama
                     globalExistingLinkFoto = res.existingLinkFoto || "-";
                     const txtExist = document.getElementById("textExistingLink");
                     if (globalExistingLinkFoto !== "-") {
@@ -212,15 +181,12 @@
                         document.getElementById("areaExistingLink").classList.add("hidden");
                     }
 
-                    // AMBIL DATA PILIHAN FOTO DI DRIVE UNTUK THUMBNAIL
                     const containerFoto = document.getElementById("containerOpsiFoto");
-                    containerFoto.innerHTML = ""; // Bersihkan kontainer lama
+                    containerFoto.innerHTML = ""; 
 
                     if (res.fotos && res.fotos.length > 0) {
                         res.fotos.forEach((foto, i) => {
-                            // Cek apakah link foto ini sudah tersimpan sebagai thumbnail aktif sebelumnya
                             const isChecked = globalExistingLinkFoto.includes(foto.id) ? "checked" : "";
-                            
                             const wrapper = document.createElement("label");
                             wrapper.className = "image-checkbox relative block rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1";
                             wrapper.innerHTML = `
@@ -240,72 +206,68 @@
                         `;
                     }
 
-                    // Reset field password PIN setiap kali ganti data baris
                     document.getElementById("pin").value = "";
-                    
-                    // Scroll otomatis ke area form biar user fokus
+                    document.getElementById("status").value = "PENDING"; // Default pilihan dropdown kembali ke PENDING saat load data baru
                     document.getElementById("areaFormKurasi").scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(err => {
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-download"></i> Tarik Data Berita';
-                    alert("Terjadi kendala jaringan saat berkomunikasi dengan Apps Script!\nDetail: " + err.toString());
+                    alert("Terjadi kendala jaringan!\nDetail: " + err.toString());
                 });
         }
 
-        /**
-         * FUNGSI B: MENYIMPAN PERUBAHAN DATA KURASI (POST)
-         */
         function simpanPerubahanKurasi(event) {
-            event.preventDefault(); // Mencegah reload halaman bawaan form
+            event.preventDefault(); 
 
             const rowNo = document.getElementById("inputRowNumber").value.trim();
             const btn = document.getElementById("btnSimpan");
+            
+            const statusBerita = document.getElementById("status").value;
+            const pinValue = document.getElementById("pin").value.trim();
 
-            // Kumpulkan daftar URL foto yang dicentang oleh Wakasek
+            // DINAMIS VALIDATION: PIN hanya dicegat di sisi web jika status dipilih TAYANG
+            if (statusBerita === "TAYANG" && !pinValue) {
+                alert("⚠️ Validasi Gagal: PIN Keamanan wajib diisi oleh Tim Publikasi jika status diubah menjadi TAYANG!");
+                return;
+            }
+
             const checkedBoxes = document.querySelectorAll('input[name="thumbnailFoto"]:checked');
             let selectedUrlsArray = [];
             checkedBoxes.forEach(box => {
                 selectedUrlsArray.push(box.value);
             });
 
-            // Siapkan payload paket JSON data perubahan
             const payload = {
                 "action": "updateWakasek",
                 "rowNumber": parseInt(rowNo),
                 "judul": document.getElementById("judul").value.trim(),
-                "tanggal": document.getElementById("tanggal").value, // Format otomatis terkirim: YYYY-MM-DD
+                "tanggal": document.getElementById("tanggal").value, 
                 "kelas": document.getElementById("kelas").value.trim(),
                 "nilai": document.getElementById("nilai").value.trim(),
                 "cerita": document.getElementById("cerita").value.trim(),
                 "linkAlbum": document.getElementById("linkAlbum").value.trim() || "-",
                 "linkVideo": document.getElementById("linkVideo").value.trim() || "-",
-                "statusBerita": document.getElementById("status").value,
-                "pin": document.getElementById("pin").value,
+                "statusBerita": statusBerita,
+                "pin": pinValue,
                 "selectedUrls": selectedUrlsArray,
                 "existingLinkFoto": globalExistingLinkFoto
             };
 
-            // Kunci tombol proses loading
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Menyimpan Perubahan...';
 
-            // Kirim data menggunakan metode HTTP POST Fetch API
             fetch(WEB_APP_URL, {
                 method: "POST",
-                mode: "no-cors", // Mode aman bypass CORS Google Apps Script Redirect
+                mode: "no-cors", 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                // Catatan: Karena mode 'no-cors' tidak bisa membaca kembalian body JSON secara langsung, 
-                // asalkan tidak masuk ke blok catch (.catch), berarti data telah sukses menyentuh server Apps Script.
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Berita';
                 
-                alert(`Selamat! Data Baris #${rowNo} berhasil diproses dan disimpan ke Google Sheet.`);
-                
-                // Sembunyikan kembali form untuk proses entri selanjutnya
+                alert(`Sukses! Data Baris #${rowNo} berhasil diperbarui di Google Sheet.`);
                 document.getElementById("areaFormKurasi").classList.add("hidden");
                 document.getElementById("inputRowNumber").value = "";
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -313,15 +275,12 @@
             .catch(err => {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Berita';
-                alert("Gagal melakukan penyimpanan data!\nDetail: " + err.toString());
+                alert("Gagal menyimpan data!\nDetail: " + err.toString());
             });
         }
 
-        /**
-         * FUNGSI C: MENUTUP / MEMBATALKAN FORM EDIT
-         */
         function batalEdit() {
-            if(confirm("Apakah Anda yakin ingin membatalkan perubahan data yang sedang diedit?")) {
+            if(confirm("Apakah Anda yakin ingin membatalkan perubahan data?")) {
                 document.getElementById("areaFormKurasi").classList.add("hidden");
                 document.getElementById("inputRowNumber").value = "";
                 window.scrollTo({ top: 0, behavior: 'smooth' });
