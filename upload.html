@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capture Moment - Sekolah Athalia</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-4 antialiased text-slate-800">
+
+  <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-6">
+    
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center">
+      <div class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+        <i class="fa-solid fa-camera-retro text-2xl text-white"></i>
+      </div>
+      <h1 class="text-xl font-bold tracking-tight">Capture Moment</h1>
+      <p class="text-xs text-blue-100 mt-1">Setor data dokumentasi kegiatan sekolah dengan cepat</p>
+    </div>
+
+    <div id="loginSection" class="p-8 text-center flex flex-col items-center justify-center space-y-5">
+      <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
+        <i class="fa-solid fa-id-card-alt text-2xl"></i>
+      </div>
+      <div>
+        <h3 class="text-md font-bold text-slate-900">Pilih Akun Terdaftar</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">
+          Sistem mendeteksi daftar profil Google di perangkat Anda. Tandai akun resmi sekolah untuk melanjutkan.
+        </p>
+      </div>
+      
+      <div class="w-full space-y-2.5 my-2 text-left" id="accountRadioGroup">
+        <div id="g_id_onload"
+             data-client_id="855909193138-0g2b76vpsb2o8e335chatalia.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="tangkapSinyalLoginGoogle"
+             data-auto_prompt="true">
+        </div>
+        <div class="flex justify-center py-2">
+          <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+        </div>
+        
+        <div class="relative flex items-center justify-center my-4">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+          <span class="relative bg-white px-3 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Hasil Verifikasi Domain</span>
+        </div>
+
+        <div id="radioContainerPlaceholder" class="text-center py-4 text-xs text-slate-400 italic">
+          Silakan klik tombol Google di atas untuk memunculkan daftar email Anda...
+        </div>
+      </div>
+
+      <button type="button" id="btnProsesMasukForm" disabled class="w-full bg-slate-300 text-slate-500 font-bold p-3 rounded-xl text-xs tracking-wider cursor-not-allowed transition-all">
+        Buka Formulir Berita
+      </button>
+    </div>
+
+    <form id="uploadForm" class="p-6 space-y-5 hidden">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm" id="userInitial">A</div>
+          <div>
+            <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Akun Athalia Valid:</p>
+            <p class="text-xs font-semibold text-slate-700" id="userEmailDisplay">-</p>
+          </div>
+        </div>
+        <button type="button" onclick="logout()" class="text-xs text-red-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer"><i class="fa-solid fa-sign-out-alt"></i>Keluar</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Unit Sekolah *</label>
+          <select id="unit" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none">
+            <option value="" disabled selected>Pilih Unit</option>
+            <option value="KB-TK">KB-TK</option>
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA">SMA</option>
+            <option value="UMUM">UMUM</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tanggal Kegiatan *</label>
+          <input type="date" id="tanggal" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Kelas / Pelaksana *</label>
+          <input type="text" id="kelas" placeholder="Misal: Kelas 1A, Tim OSIS" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nilai Karakter Athalia *</label>
+          <input type="text" id="nilai" placeholder="Misal: Integritas, Peduli" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Judul Kegiatan *</label>
+        <input type="text" id="judul" placeholder="Tulis judul singkat, padat, dan jelas" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none">
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cerita Singkat (5W+1H) *</label>
+        <textarea id="cerita" rows="4" placeholder="Tulis rincian acara. Apa kegiatannya? Siapa yang ikut? Di mana?" required class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs resize-none outline-none leading-relaxed"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Dokumentasi (Maksimal 25 Gambar) *</label>
+        <div class="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center bg-slate-50 hover:bg-slate-100/70 transition-all relative group">
+          <input type="file" id="fileInput" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+          <i class="fa-solid fa-images text-xl text-slate-400 group-hover:text-blue-500 mb-1.5"></i>
+          <p class="text-xs font-semibold text-slate-600">Klik atau seret foto ke sini</p>
+        </div>
+        
+        <div id="imagePreviewGrid" class="grid grid-cols-4 sm:grid-cols-5 gap-2 mt-3"></div>
+
+        <div id="fileCounter" class="text-xs font-medium text-slate-500 mt-2.5 hidden flex items-center justify-between bg-slate-100 p-2.5 rounded-xl">
+          <span><i class="fa-solid fa-paperclip text-slate-400 mr-1"></i> <span id="countNum" class="font-bold text-slate-700">0</span> foto siap diunggah.</span>
+          <button type="button" onclick="clearFiles()" class="text-red-600 font-semibold hover:underline">Hapus Semua</button>
+        </div>
+      </div>
+
+      <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold p-3.5 rounded-xl shadow-md text-xs tracking-wide cursor-pointer">
+        <i class="fa-solid fa-paper-plane mr-1"></i> Kirim ke Antrean Berita
+      </button>
+    </form>
+
+    <div id="loadingOverlay" class="hidden p-8 text-center flex flex-col items-center justify-center space-y-4 bg-white">
+      <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div>
+        <p class="text-sm font-bold text-slate-800" id="loadingText">Sedang mengompres gambar...</p>
+        <p class="text-xs text-slate-400 mt-1">Mohon tunggu sebentar...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "PASANG_URL_EXEC_APPS_SCRIPT_ANDA_DISINI"; 
+    
+    let userEmail = "";
+    let selectedFilesBase64 = [];
+
+    // Decode JWT token bawaan Google GIS untuk membaca alamat email riil tanpa pop-up jendela luar
+    function decodeJwtResponse(token) {
+      let base64Url = token.split('.')[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    // =================================================================================
+    // LOGIKA GENERATE PILIHAN RADIO BUTTON BERDASARKAN EMAIL AKTIF
+    // =================================================================================
+    function tangkapSinyalLoginGoogle(response) {
+      const responsePayload = decodeJwtResponse(response.credential);
+      const emailTerpilih = responsePayload.email.toLowerCase();
+      
+      const placeholder = document.getElementById("radioContainerPlaceholder");
+      placeholder.innerHTML = ""; // bersihkan panduan awal
+
+      // Ciptakan struktur komponen Radio Button Kustom ke dalam UI
+      const labelCard = document.createElement("label");
+      const isAthalia = emailTerpilih.endsWith("@sekolahathalia.sch.id");
+      
+      labelCard.className = `flex items-center justify-between p-3 border.5 rounded-xl cursor-pointer transition-all ${
+        isAthalia ? 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50' : 'border-red-200 bg-red-50/50'
+      }`;
+
+      labelCard.innerHTML = `
+        <div class="flex items-center space-x-3">
+          <input type="radio" name="googleAccountRadio" value="${emailTerpilih}" ${isAthalia ? 'checked' : ''} data-valid="${isAthalia}" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+          <div>
+            <p class="text-xs font-bold text-slate-700">${responsePayload.name}</p>
+            <p class="text-[11px] text-slate-500">${emailTerpilih}</p>
+          </div>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${isAthalia ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'}">
+          ${isAthalia ? 'VALID' : 'Bukan Akun Sekolah'}
+        </span>
+      `;
+
+      placeholder.appendChild(labelCard);
+      
+      // Jalankan evaluasi pengunci tombol masuk berdasarkan status keabsahan radio button
+      evaluasiStatusRadio();
+
+      // Dengarkan perubahan jika di kemudian hari ada banyak radio button tambahan
+      labelCard.querySelector('input[type="radio"]').addEventListener('change', evaluasiStatusRadio);
+    }
+
+    function evaluasiStatusRadio() {
+      const radioAktif = document.querySelector('input[name="googleAccountRadio"]:checked');
+      const btnMasuk = document.getElementById("btnProsesMasukForm");
+
+      if (radioAktif && radioAktif.getAttribute("data-valid") === "true") {
+        userEmail = radioAktif.value;
+        btnMasuk.disabled = false;
+        btnMasuk.className = "w-full bg-blue-600 text-white font-bold p-3 rounded-xl text-xs tracking-wider hover:bg-blue-700 cursor-pointer transition-all shadow-md";
+      } else {
+        userEmail = "";
+        btnMasuk.disabled = true;
+        btnMasuk.className = "w-full bg-slate-300 text-slate-500 font-bold p-3 rounded-xl text-xs tracking-wider cursor-not-allowed transition-all";
+      }
+    }
+
+    // Aksi Klik Tombol Pembuka Form Utama
+    document.getElementById("btnProsesMasukForm").addEventListener("click", function() {
+      if(!userEmail) return;
+      
+      document.getElementById("userEmailDisplay").innerText = userEmail;
+      document.getElementById("userInitial").innerText = userEmail.charAt(0).toUpperCase();
+      
+      document.getElementById("loginSection").classList.add("hidden");
+      document.getElementById("uploadForm").classList.remove("hidden");
+    });
+
+    function logout() {
+      userEmail = "";
+      selectedFilesBase64 = [];
+      document.getElementById("uploadForm").reset();
+      document.getElementById("imagePreviewGrid").innerHTML = "";
+      document.getElementById("fileCounter").classList.add("hidden");
+      document.getElementById("uploadForm").classList.add("hidden");
+      document.getElementById("loginSection").classList.remove("hidden");
+      document.getElementById("radioContainerPlaceholder").innerHTML = "Silakan klik tombol Google di atas untuk memunculkan daftar email Anda...";
+      evaluasiStatusRadio();
+    }
+
+    // =================================================================================
+    // LOGIKA FILE COMPRESSOR & GRID LIVE PREVIEW
+    // =================================================================================
+    document.getElementById("fileInput").addEventListener("change", function(e) {
+      const files = e.target.files;
+      if (files.length === 0) return;
+      
+      if (selectedFilesBase64.length + files.length > 25) {
+        alert("Batas maksimal pengiriman adalah 25 foto dalam satu antrean!");
+        this.value = "";
+        return;
+      }
+
+      let processedCount = 0;
+      const totalFiles = files.length;
+
+      Array.from(files).forEach((file) => {
+        if (!file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(event) {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = function() {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            const maxDimension = 1200;
+
+            if (width > height && width > maxDimension) {
+              height *= maxDimension / width;
+              width = maxDimension;
+            } else if (height > maxDimension) {
+              width *= maxDimension / height;
+              height = maxDimension;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+            
+            selectedFilesBase64.push({
+              mimeType: "image/jpeg",
+              base64Data: compressedBase64,
+              previewUrl: canvas.toDataURL("image/jpeg", 0.3)
+            });
+
+            processedCount++;
+            if (processedCount === totalFiles) {
+              renderPreviewGrid();
+            }
+          };
+        };
+      });
+      this.value = "";
+    });
+
+    function renderPreviewGrid() {
+      const grid = document.getElementById("imagePreviewGrid");
+      grid.innerHTML = "";
+      
+      if(selectedFilesBase64.length > 0) {
+        document.getElementById("countNum").innerText = selectedFilesBase64.length;
+        document.getElementById("fileCounter").classList.remove("hidden");
+      } else {
+        document.getElementById("fileCounter").classList.add("hidden");
+      }
+
+      selectedFilesBase64.forEach((fileObj, idx) => {
+        const wrap = document.createElement("div");
+        wrap.className = "relative aspect-square border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-xs";
+        wrap.innerHTML = `
+          <img src="${fileObj.previewUrl}" class="w-full h-full object-cover">
+          <button type="button" data-id="${idx}" class="absolute top-1 right-1 w-4 h-4 bg-slate-900/70 text-white rounded-full flex items-center justify-center text-[8px] cursor-pointer">✕</button>
+        `;
+        
+        wrap.querySelector("button").addEventListener("click", function() {
+          const deleteIdx = parseInt(this.getAttribute("data-id"));
+          selectedFilesBase64.splice(deleteIdx, 1);
+          renderPreviewGrid();
+        });
+        
+        grid.appendChild(wrap);
+      });
+    }
+
+    function clearFiles() {
+      selectedFilesBase64 = [];
+      renderPreviewGrid();
+    }
+
+    // =================================================================================
+    // EKSEKUSI PENGIRIMAN DATA VIA AJAX POST (NO-CORS SAFE TRANSFER)
+    // =================================================================================
+    document.getElementById("uploadForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      if (!userEmail) {
+        alert("Sesi verifikasi akun sekolah tidak ditemukan.");
+        return;
+      }
+
+      if (selectedFilesBase64.length === 0) {
+        alert("Wajib Dokumentasi: Harap masukkan minimal 1 foto kegiatan!");
+        return;
+      }
+
+      document.getElementById("uploadForm").classList.add("hidden");
+      document.getElementById("loadingOverlay").classList.remove("hidden");
+      document.getElementById("loadingText").innerText = "Mengompres & mentransfer paket data ke server...";
+
+      const payload = {
+        unit: document.getElementById("unit").value,
+        tanggal: document.getElementById("tanggal").value,
+        namaKegiatan: document.getElementById("judul").value.trim(),
+        email: userEmail,
+        data5W1H: {
+          kelas: document.getElementById("kelas").value.trim(),
+          nilai: document.getElementById("nilai").value.trim(),
+          cerita: document.getElementById("cerita").value.trim()
+        },
+        files: selectedFilesBase64.map(f => ({ mimeType: f.mimeType, base64Data: f.base64Data }))
+      };
+
+      fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        document.getElementById("loadingText").innerText = "Menyimpan data antrean...";
+        setTimeout(() => {
+          alert("Sukses! Berita dan dokumen foto Anda berhasil terkirim ke antrean kurasi Wakasek.");
+          document.getElementById("uploadForm").reset();
+          clearFiles();
+          logout();
+        }, 1000);
+      })
+      .catch(error => {
+        alert("Gagal mengirim data, silakan periksa koneksi Anda: " + error.toString());
+      })
+      .finally(() => {
+        document.getElementById("loadingOverlay").classList.add("hidden");
+      });
+    });
+  </script>
+</body>
+</html>
