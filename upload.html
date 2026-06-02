@@ -1,323 +1,554 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Capture Moment - Sekolah Athalia</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-50 font-sans min-h-screen flex flex-col items-center justify-center p-4">
+// =================================================================================
+// 1. KONFIGURASI ID FOLDER INDUK GOOGLE DRIVE (KEGIATAN UNIT & THUMBNAIL)
+// =================================================================================
+const FOLDER_MAP = {
+  "KB-TK": { 
+    "kegiatan": "1viDTb2fO0Y0XRQ-V4cJqc_G-wK3ZKlKC",
+    "thumbnail": "176Y-uQwBh3J7m4SooAWdyeVAbp6F3XGk"
+  },
+  "SD": { 
+    "kegiatan": "1HFgGoXLvO7VYqGSqr2qiS6ddUbL2jaWC",
+    "thumbnail": "1uJlJ5F8QUYZU75gyFo3qig5xjHr6VEvU"
+  },
+  "SMP": { 
+    "kegiatan": "1DsMrb05exf1UdMDLd3mJ3LdKi_NJ4Rjy",
+    "thumbnail": "15gGC6cA7gx4qUFDkqvTZJBA_c-IbJmqA"
+  },
+  "SMA": { 
+    "kegiatan": "13fYk6ePBu2rBYHAX2B77slgsEAUNxEnK",
+    "thumbnail": "1TOioGZz1nBxlJ4maDJjYTs_LIc3_iWxA"
+  },
+  "UMUM": { 
+    "kegiatan": "1fIuL4_gyhj6rT8ti8Ugwo4X3wBu_ODlf",
+    "thumbnail": "1lnMQIEUVKvyTgYcUsLC6iUlaPFIOvm_r"
+  }
+};
 
-  <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center">
-      <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
-        <i class="fa-solid fa-camera-retro text-3xl text-white"></i>
-      </div>
-      <h1 class="text-2xl font-bold tracking-tight">Capture Moment</h1>
-      <p class="text-sm text-blue-100 mt-1">Setor data documentation kegiatan sekolah dengan cepat</p>
-    </div>
+const SECRET_PIN = "1234"; 
 
-    <div id="loginSection" class="p-8 text-center flex flex-col items-center justify-center space-y-5">
-      <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl">
-        <i class="fa-solid fa-shield-halved"></i>
-      </div>
-      <div>
-        <h3 class="text-lg font-semibold text-gray-700">Verifikasi Akun Otentik</h3>
-        <p class="text-sm text-gray-500 max-w-sm mt-1">Sistem mendeteksi Anda belum masuk. Silakan verifikasi akun Google Workspace Sekolah Athalia Anda.</p>
-      </div>
+// =================================================================================
+// GLOBALS & CORS HANDLING (PENGAMAN STRUKTUR UTAMA)
+// =================================================================================
+function doOptions(e) {
+  return ContentService.createTextOutput("")
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+// =================================================================================
+// 2. FUNGSI GET (VERSI GABUNGAN: DETAIL BERITA, LIST DATA, & VERIFIKASI LOGIN UTK UPLOAD)
+// =================================================================================
+function doGet(e) {
+  try {
+    // -----------------------------------------------------------------------------
+    // FITUR A: ANTARMUKA POP-UP VERIFIKASI LOGIN (VERSI MODERN, CLEAN, & ELEGAN)
+    // -----------------------------------------------------------------------------
+    if (e && e.parameter && e.parameter.action === undefined && e.parameter.rowId === undefined && e.parameter.unit === undefined && e.parameter.search === undefined) {
       
-      <button type="button" onclick="openAuthWindow()" class="w-full max-w-xs bg-white text-gray-700 font-semibold border border-gray-300 p-3 rounded-full text-sm shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Color_Logo.svg" alt="Google" class="w-5 h-5">
-        <span>Masuk dengan Akun Google</span>
-      </button>
+      const activeEmail = Session.getActiveUser().getEmail().toLowerCase();
+      const userName = activeEmail.split('@')[0].replace('.', ' ').toUpperCase();
+      const isValidDomain = activeEmail.endsWith("@sekolahathalia.sch.id");
       
-      <p id="loginError" class="text-sm font-semibold text-red-600 hidden bg-red-50 px-4 py-2 rounded-lg border border-red-200 max-w-md mx-auto"></p>
-    </div>
-
-    <form id="uploadForm" class="p-6 space-y-5 hidden">
-      <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm" id="userInitial">A</div>
-          <div>
-            <p class="text-xs text-gray-500">Reporter Terverifikasi:</p>
-            <p class="text-sm font-semibold text-gray-800" id="userEmailDisplay">-</p>
-          </div>
-        </div>
-        <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline flex items-center gap-1"><i class="fa-solid fa-sign-out-alt"></i>Keluar</button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Unit Sekolah</label>
-          <select id="unit" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm outline-none">
-            <option value="" disabled selected>Pilih Unit</option>
-            <option value="KB-TK">KB-TK</option>
-            <option value="SD">SD</option>
-            <option value="SMP">SMP</option>
-            <option value="SMA">SMA</option>
-            <option value="UMUM">UMUM</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tanggal Kegiatan</label>
-          <input type="date" id="tanggal" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm outline-none">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kelas / Pelaksana</label>
-          <input type="text" id="kelas" placeholder="Misal: Kelas 1A, Tim OSIS" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nilai Karakter Athalia</label>
-          <input type="text" id="nilai" placeholder="Misal: Integritas, Peduli" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm outline-none">
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Judul Kegiatan</label>
-        <input type="text" id="judul" placeholder="Tulis judul singkat, padat, dan jelas" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm outline-none">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cerita / Narasi Singkat (5W+1H)</label>
-        <textarea id="cerita" rows="4" placeholder="Tulis rincian acara. Apa kegiatannya? Siapa yang ikut? Di mana? Mengapa diadakan? Bagaimana jalannya acara?" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm resize-none outline-none"></textarea>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Dokumentasi Foto (Maksimal 25 Gambar)</label>
-        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer relative" id="dropzone">
-          <input type="file" id="fileInput" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-          <i class="fa-solid fa-images text-2xl text-gray-400 mb-2"></i>
-          <p class="text-sm font-medium text-gray-600">Klik atau seret foto ke sini</p>
-          <p class="text-xs text-gray-400 mt-1">Bisa langsung dari Kamera HP atau Galeri Foto</p>
-        </div>
-        <div id="fileCounter" class="text-xs font-medium text-gray-500 mt-2 hidden flex items-center justify-between bg-gray-100 p-2 rounded-lg">
-          <span><i class="fa-solid fa-paperclip mr-1"></i> <span id="countNum">0</span> foto siap diunggah.</span>
-          <button type="button" onclick="clearFiles()" class="text-red-500 hover:underline">Hapus Semua</button>
-        </div>
-      </div>
-
-      <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold p-3.5 rounded-xl shadow-md hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer">
-        <i class="fa-solid fa-paper-plane"></i>
-        <span>Kirim ke Antrean Berita</span>
-      </button>
-    </form>
-
-    <div id="loadingOverlay" class="hidden p-8 text-center flex flex-col items-center justify-center space-y-3 bg-white">
-      <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-sm font-semibold text-gray-700" id="loadingText">Sedang mengompres data gambar...</p>
-      <p class="text-xs text-gray-400">Mohon jangan menutup halaman ini sampai selesai.</p>
-    </div>
-  </div>
-
-  <script>
-    // =================================================================================
-    // CONFIG: URL WEB APP APPS SCRIPT ANDA
-    // =================================================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec"; 
-    
-
-    let userEmail = "";
-    let selectedFilesBase64 = [];
-    let authWindow = null;
-
-    // Buka Jendela Kecil Pop-Up Mengarah ke Google Auth via Script Server
-    function openAuthWindow() {
-      document.getElementById("loginError").classList.add("hidden");
-      const width = 450, height = 550;
-      const left = (window.innerWidth / 2) - (width / 2);
-      const top = (window.innerHeight / 2) - (height / 2);
-      
-      authWindow = window.open(
-        API_URL, 
-        "GoogleAuthAthalia", 
-        `width=${width},height=${height},left=${left},top=${top},menubar=no,status=no,toolbar=no`
-      );
-    }
-
-    // Mendengarkan data kiriman balik dari pop-up Google Apps Script secara asinkronus
-    window.addEventListener("message", function(event) {
-      if (!event.data) return;
-
-      let data;
-      try {
-        // Deteksi apakah data dikirim dalam bentuk teks string JSON atau objek langsung
-        data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-      } catch (e) {
-        // Fallback jika tidak berhasil di-parse sebagai JSON
-        if (event.data && event.data.success !== undefined) {
-          data = event.data;
-        } else {
-          return; 
-        }
-      }
-      
-      // Jika data valid dan terotentikasi sukses
-      if (data && (data.success === true || data.success === "true")) {
-        userEmail = data.email;
-        
-        // Tampilkan email pengguna di bar navigasi/avatar formulir
-        const emailDisplay = document.getElementById("userEmailDisplay");
-        if (emailDisplay) emailDisplay.innerText = data.email;
-        
-        // Membuat inisial huruf depan otomatis untuk avatar profil
-        const userInitial = document.getElementById("userInitial");
-        if (userInitial && data.name) {
-          userInitial.innerText = data.name.charAt(0).toUpperCase();
-        }
-        
-        // === EKSEKUSI: BUKA FORMULIR UTAMA DAN SEMBUNYIKAN PANEL LOGIN ===
-        const loginSection = document.getElementById("loginSection");
-        const uploadForm = document.getElementById("uploadForm");
-        const errorEl = document.getElementById("loginError");
-
-        if (errorEl) errorEl.classList.add("hidden");
-        if (loginSection) loginSection.classList.add("hidden");
-        if (uploadForm) uploadForm.classList.remove("hidden");
-        
-      } else if (data && (data.success === false || data.success === "false")) {
-        const errorEl = document.getElementById("loginError");
-        if (errorEl) {
-          errorEl.innerText = `Akses Ditolak! Akun (${data.email}) tidak diizinkan. Anda wajib login menggunakan email resmi @sekolahathalia.sch.id`;
-          errorEl.classList.remove("hidden");
-        }
-      }
-    }, false);
-
-    function logout() {
-      userEmail = "";
-      document.getElementById("uploadForm").reset();
-      clearFiles();
-      document.getElementById("uploadForm").classList.add("hidden");
-      document.getElementById("loginSection").classList.remove("hidden");
-    }
-
-    // =================================================================================
-    // LOGIKA CLIENT-SIDE IMAGE COMPRESSOR
-    // =================================================================================
-    document.getElementById("fileInput").addEventListener("change", function(e) {
-      const files = e.target.files;
-      if (files.length === 0) return;
-      
-      if (files.length > 25) {
-        alert("Batas maksimal pengiriman sekali kirim adalah 25 foto!");
-        this.value = "";
-        return;
-      }
-
-      selectedFilesBase64 = [];
-      let loadedCount = 0;
-
-      Array.from(files).forEach((file) => {
-        if (!file.type.startsWith("image/")) return;
-
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function(event) {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = function() {
-            const canvas = document.createElement("canvas");
-            let width = img.width;
-            let height = img.height;
-            const maxDimension = 1200;
-
-            if (width > height && width > maxDimension) {
-              height *= maxDimension / width;
-              width = maxDimension;
-            } else if (height > maxDimension) {
-              width *= maxDimension / height;
-              height = maxDimension;
+      // Tampilan HTML baru dengan gaya minimalis, font modern, shadow halus, dan transisi smooth
+      const loginHtmlOutput = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Verifikasi Akun Athalia</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              min-height: 100vh; 
+              background-color: #f4f6f9; 
+              padding: 20px;
             }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-
-            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+            .container { 
+              width: 100%; 
+              max-width: 340px; 
+              background: #ffffff; 
+              border-radius: 16px; 
+              padding: 32px 24px; 
+              text-align: center; 
+              box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.03);
+              border: 1px solid rgba(0, 0, 0, 0.03);
+            }
+            .icon-wrapper {
+              width: 64px;
+              height: 64px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 20px auto;
+            }
+            .success-bg { background-color: #f0fdf4; color: #16a34a; }
+            .error-bg { background-color: #fef2f2; color: #dc2626; }
             
-            selectedFilesBase64.push({
-              mimeType: "image/jpeg",
-              base64Data: compressedBase64
-            });
-
-            loadedCount++;
-            if (loadedCount === files.length) {
-              document.getElementById("countNum").innerText = selectedFilesBase64.length;
-              document.getElementById("fileCounter").classList.remove("hidden");
+            h3 { 
+              font-size: 18px; 
+              font-weight: 600; 
+              color: #1f2937; 
+              margin-bottom: 8px; 
             }
-          };
-        };
-      });
-    });
+            p { 
+              font-size: 13px; 
+              color: #6b7280; 
+              line-height: 1.5; 
+            }
+            .status-msg {
+              margin-top: 16px;
+              font-size: 12px;
+              font-weight: 500;
+              color: #2563eb;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 6px;
+            }
+            .dot-flashing {
+              position: relative;
+              width: 4px;
+              height: 4px;
+              border-radius: 2px;
+              background-color: #2563eb;
+              animation: dotFlashing 1s infinite linear alternate;
+              animation-delay: .5s;
+            }
+            .dot-flashing::before, .dot-flashing::after {
+              content: '';
+              display: inline-block;
+              position: absolute;
+              top: 0;
+              width: 4px;
+              height: 4px;
+              border-radius: 2px;
+              background-color: #2563eb;
+              animation: dotFlashing 1s infinite linear alternate;
+            }
+            .dot-flashing::before { left: -8px; animation-delay: 0s; }
+            .dot-flashing::after { left: 8px; animation-delay: 1s; }
 
-    function clearFiles() {
-      document.getElementById("fileInput").value = "";
-      selectedFilesBase64 = [];
-      document.getElementById("fileCounter").classList.add("hidden");
+            @keyframes dotFlashing {
+              0% { background-color: #2563eb; }
+              50%, 100% { background-color: rgba(37, 99, 235, 0.2); }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            ${isValidDomain ? `
+              <div class="icon-wrapper success-bg">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h3>Verifikasi Berhasil</h3>
+              <p>Akun internal Anda terverifikasi resmi.</p>
+              <div class="status-msg">
+                <span>Menghubungkan ke formulir</span>
+                <div class="dot-flashing"></div>
+              </div>
+            ` : `
+              <div class="icon-wrapper error-bg">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </div>
+              <h3>Akses Ditolak</h3>
+              <p>Gunakan akun email Google Workspace resmi dengan akhiran <b>@sekolahathalia.sch.id</b></p>
+            `}
+          </div>
+          
+          <script>
+            (function() {
+              var authData = {
+                success: ${isValidDomain},
+                email: "${activeEmail}",
+                name: "${userName}"
+              };
+              
+              var payloadString = JSON.stringify(authData);
+              
+              if (window.opener) {
+                // Kirim data langsung ke jendela GitHub utama
+                window.opener.postMessage(payloadString, "*");
+                
+                // LANGKAH ANTI STUCK: Tutup paksa jendela dalam waktu 600 milidetik setelah postMessage terpicu
+                setTimeout(function() { 
+                  window.close(); 
+                }, 600);
+              } else {
+                alert("Halaman utama tidak terdeteksi. Silakan muat ulang halaman form di browser Anda.");
+              }
+            })();
+          </script>
+        </body>
+        </html>
+      `;
+      
+      return HtmlService.createHtmlOutput(loginHtmlOutput)
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     }
 
-    // =================================================================================
-    // EKSEKUSI PENGIRIMAN DATA
-    // =================================================================================
-    document.getElementById("uploadForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      
-      if (!userEmail) {
-        alert("Sesi login Anda tidak valid.");
-        return;
-      }
+    // -----------------------------------------------------------------------------
+    // FITUR B: JEMBATAN DETAIL BERITA UNTUK MODAL WAKASEK (BAWAAN)
+    // -----------------------------------------------------------------------------
+    if (e && e.parameter && e.parameter.action === 'getDetail') {
+      const detailData = getDetailBerita(e.parameter.rowId);
+      return ContentService.createTextOutput(JSON.stringify(detailData))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
-      if (selectedFilesBase64.length === 0) {
-        alert("Harap masukkan minimal 1 foto dokumentasi kegiatan!");
-        return;
-      }
+    // -----------------------------------------------------------------------------
+    // FITUR C: PENARIKAN LIST DATA BERITA & PAGINATION (BAWAAN)
+    // -----------------------------------------------------------------------------
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Form_Responses");
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({"status": "error", "message": "Sheet Form_Responses tidak ditemukan"}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
-      document.getElementById("uploadForm").classList.add("hidden");
-      document.getElementById("loadingOverlay").classList.remove("hidden");
-      document.getElementById("loadingText").innerText = "Sedang memproses & mengunggah foto ke Google Drive...";
+    const isInternal = e && e.parameter && e.parameter.internal === "true";
+    const filterUnit = (e && e.parameter && e.parameter.unit) ? e.parameter.unit.toUpperCase() : "ALL";
+    const filterTahun = (e && e.parameter && e.parameter.tahun) ? e.parameter.tahun : "ALL";
+    const filterSearch = (e && e.parameter && e.parameter.search) ? e.parameter.search.toLowerCase().trim() : "";
+    const filterSort = (e && e.parameter && e.parameter.sort) ? e.parameter.sort.toUpperCase() : "DESC"; 
+    
+    const page = (e && e.parameter && e.parameter.page) ? parseInt(e.parameter.page) : 1;
+    const limit = (e && e.parameter && e.parameter.limit) ? parseInt(e.parameter.limit) : 9;
 
-      const payload = {
-        unit: document.getElementById("unit").value,
-        tanggal: document.getElementById("tanggal").value,
-        namaKegiatan: document.getElementById("judul").value,
-        email: userEmail,
-        data5W1H: {
-          kelas: document.getElementById("kelas").value,
-          nilai: document.getElementById("nilai").value,
-          cerita: document.getElementById("cerita").value
-        },
-        files: selectedFilesBase64
-      };
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const rows = data.slice(1);
 
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(response => {
-        if (response.status === "success") {
-          alert("Berhasil! Berita dan foto Anda masuk ke antrean kurasi Wakasek.");
-          document.getElementById("uploadForm").reset();
-          clearFiles();
+    let filteredData = rows.map((row, index) => {
+      let obj = { "rowNumber": index + 2 }; 
+      headers.forEach((header, i) => { 
+        let val = row[i];
+        
+        if (val instanceof Date && !isNaN(val.getTime())) {
+          let d = val.getDate();
+          let m = val.getMonth() + 1;
+          let y = val.getFullYear();
+          val = y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d;
+        } else if (val && val.toString().includes("/")) { 
+          let parts = val.toString().split("/");
+          if (parts.length === 3) {
+            val = parts[2] + '-' + parts[1] + '-' + parts[0];
+          } else {
+            val = val.toString();
+          }
+        } else if (val === "") {
+          val = "";
         } else {
-          alert("Gagal memproses data: " + response.message);
+          val = val.toString();
         }
-      })
-      .catch(error => {
-        alert("Gagal terhubung ke server: " + error.toString());
-      })
-      .finally(() => {
-        document.getElementById("loadingOverlay").classList.add("hidden");
-        document.getElementById("uploadForm").classList.remove("hidden");
+        obj[header] = val; 
       });
+      return obj;
+    }).filter(item => {
+      const status = item["Status"] ? item["Status"].toString().toUpperCase() : "";
+      const isTayang = isInternal ? true : (status === "TAYANG");
+
+      const unitItem = item["Unit"] ? item["Unit"].toString().toUpperCase() : "";
+      const isUnitMatch = (filterUnit === "ALL" || unitItem === filterUnit);
+
+      const tglStr = item["Tanggal"] ? item["Tanggal"].toString() : "";
+      const partsTgl = tglStr.split("-");
+      const itemYear = partsTgl.length === 3 ? partsTgl[0] : "";
+      const taItem = item["Tahun_Ajaran"] ? item["Tahun_Ajaran"].toString() : "";
+      const isTahunMatch = (filterTahun === "ALL" || itemYear === filterTahun || taItem.includes(filterTahun));
+
+      const judul = (item["Judul_Kegiatan"] || "").toString().toLowerCase();
+      const cerita = (item["Cerita"] || "").toString().toLowerCase();
+      const kelas = (item["Kelas"] || "").toString().toLowerCase();
+      const nilai = (item["Nilai"] || "").toString().toLowerCase();
+      
+      const isSearchMatch = (filterSearch === "" || 
+        judul.includes(filterSearch) || 
+        cerita.includes(filterSearch) || 
+        kelas.includes(filterSearch) || 
+        nilai.includes(filterSearch) || 
+        tglStr.includes(filterSearch)
+      );
+
+      return isTayang && isUnitMatch && isTahunMatch && isSearchMatch;
     });
-  </script>
-</body>
-</html>
+
+    filteredData.sort((a, b) => {
+      const partsA = (a["Tanggal"] || "").toString().split("-");
+      const partsB = (b["Tanggal"] || "").toString().split("-");
+      
+      const dateA = partsA.length === 3 ? new Date(parseInt(partsA[0], 10), parseInt(partsA[1], 10) - 1, parseInt(partsA[2], 10)) : new Date(0);
+      const dateB = partsB.length === 3 ? new Date(parseInt(partsB[0], 10), parseInt(partsB[1], 10) - 1, parseInt(partsB[2], 10)) : new Date(0);
+      
+      if (filterSort === "ASC") {
+        return dateA.getTime() - dateB.getTime(); 
+      } else {
+        return dateB.getTime() - dateA.getTime(); 
+      }
+    });
+
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+    const startIndex = (page - 1) * limit;
+    const paginatedData = filteredData.slice(startIndex, startIndex + limit);
+
+    return ContentService.createTextOutput(JSON.stringify({ 
+      "totalItems": totalItems,
+      "totalPages": totalPages,
+      "currentPage": page,
+      "data": paginatedData 
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ 
+      "status": "error", 
+      "message": "Terjadi kesalahan internal server (GET): " + error.toString() 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// =================================================================================
+// 3. FUNGSI JEMBATAN PENGAMBIL DATA RIIL UNTUK MODAL KURASI (BAWAAN)
+// =================================================================================
+function getDetailBerita(rowId) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form_Responses");
+    const row = parseInt(rowId);
+    const data = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
+    
+    let unit = data[1] ? data[1].toString() : "";    
+    let judul = data[2] ? data[2].toString() : "";   
+    let tanggal = data[3];                                                                                                                                                                        
+    let kelas = data[4] ? data[4].toString() : "";   
+    let nilai = data[5] ? data[5].toString() : "";   
+    let cerita = data[6] ? data[6].toString() : "";  
+    let linkFoto = data[7] ? data[7].toString() : "-"; 
+    let linkAlbum = data[8] ? data[8].toString() : "-"; 
+    let linkVideo = data[9] ? data[9].toString() : "-"; 
+    
+    if (tanggal instanceof Date) {
+      tanggal = Utilities.formatDate(tanggal, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    } else {
+      tanggal = tanggal ? tanggal.toString() : "";
+      if(tanggal.includes("/")) {
+        let p = tanggal.split("/");
+        if(p.length === 3) tanggal = `${p[2]}-${p[1]}-${p[0]}`;
+      }
+    }
+
+    const daftarFotoDrive = getPhotosFromFolder(unit, tanggal, judul);
+    
+    return {
+      "status": "success",
+      "unit": unit,
+      "judul": judul,
+      "tanggal": tanggal,
+      "kelas": kelas,
+      "nilai": nilai,
+      "cerita": cerita,
+      "existingLinkFoto": linkFoto,
+      "linkAlbum": linkAlbum,
+      "linkVideo": linkVideo,
+      "fotos": daftarFotoDrive 
+    };
+  } catch(err) {
+    return { "status": "error", "message": err.toString() };
+  }
+}
+
+function getPhotosFromFolder(unit, tanggal, judulBerita) {
+  var photos = [];
+  const unitConfig = FOLDER_MAP[unit.toUpperCase()];
+  if (!unitConfig) return photos;
+
+  var dateParts = (tanggal || "").toString().split("-");
+  if (dateParts.length !== 3) return photos;
+  
+  var folderKegiatanName = tanggal + " " + judulBerita;
+  
+  try {
+    var parentFolder = DriveApp.getFolderById(unitConfig.kegiatan);
+    var kegiatanFolders = parentFolder.getFoldersByName(folderKegiatanName);
+    
+    if (kegiatanFolders.hasNext()) {
+      var folder = kegiatanFolders.next();
+      var files = folder.getFiles();
+      var count = 0;
+      
+      while (files.hasNext() && count < 25) {
+        var file = files.next();
+        var mime = file.getMimeType();
+        if (mime.indexOf("image/") !== -1) {
+          photos.push({
+            url: "https://docs.google.com/uc?export=view&id=" + file.getId(),
+            id: file.getId()
+          });
+          count++;
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log("Error mengambil data folder Drive: " + e.toString());
+  }
+  return photos;
+}
+
+// =================================================================================
+// 4. FUNGSI POST (UPDATE WAKASEK & INPUT BARU NATIVE YYYY-MM-DD)
+// =================================================================================
+function doPost(e) {
+  try {
+    const requestData = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Form_Responses");
+
+    if (requestData.action === "updateWakasek" || requestData.rowNumber) {
+      const targetRow = parseInt(requestData.rowNumber);
+      if (isNaN(targetRow) || targetRow < 2) {
+        return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": "Nomor baris tidak valid!" })).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      let currentStatus = "PENDING";
+      if (requestData.statusBerita) {
+        currentStatus = requestData.statusBerita.toString().toUpperCase();
+      } else if (requestData.status) {
+        currentStatus = requestData.status.toString().toUpperCase();
+      }
+      
+      if (currentStatus.includes("PENDING")) {
+        currentStatus = "PENDING";
+      }
+
+      if ((currentStatus === "TAYANG" || currentStatus === "TOLAK") && requestData.pin !== SECRET_PIN) {
+        return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": "PIN Keamanan Salah! Proses verifikasi gagal." })).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const unitBaris = sheet.getRange(targetRow, 2).getValue().toString().toUpperCase();
+      const unitConfig = FOLDER_MAP[unitBaris];
+      let finalLinkFoto = "-";
+
+      if (requestData.selectedUrls && requestData.selectedUrls.length > 0 && unitConfig) {
+        let arrayThumbnailBaru = [];
+        const folderTargetThumbnail = DriveApp.getFolderById(unitConfig.thumbnail);
+        
+        requestData.selectedUrls.forEach(function(link) {
+          try {
+            const cleanLink = link.trim();
+            const match = cleanLink.match(/[-\w]{25,}/);
+            if (match) {
+              const fileIdAsli = match[0];
+              const fileAsli = DriveApp.getFileById(fileIdAsli);
+              
+              const fileThumbnail = fileAsli.makeCopy(fileAsli.getName(), folderTargetThumbnail);
+              fileThumbnail.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+              
+              arrayThumbnailBaru.push("https://docs.google.com/uc?export=view&id=" + fileThumbnail.getId());
+            }
+          } catch (err) {
+            Logger.log("Gagal melakukan copy thumbnail: " + err.toString());
+          }
+        });
+        
+        if(arrayThumbnailBaru.length > 0) {
+          finalLinkFoto = arrayThumbnailBaru.join(", ");
+        }
+      } else {
+        finalLinkFoto = requestData.existingLinkFoto || "-";
+      }
+
+      let textJudul  = requestData.judul || requestData.judulBerita || "-";
+      let textKelas  = requestData.kelas || "-";
+      let textNilai  = requestData.nilai || requestData.nilaiKarakter || "-";
+      let textCerita = requestData.cerita || requestData.narasiBerita || "-";
+      let textAlbum  = requestData.linkAlbum || "-";
+      let textVideo  = requestData.linkVideo || "-";
+
+      sheet.getRange(targetRow, 3).setValue(textJudul);     
+      sheet.getRange(targetRow, 5).setValue(textKelas);     
+      sheet.getRange(targetRow, 6).setValue(textNilai);     
+      sheet.getRange(targetRow, 7).setValue(textCerita);    
+      sheet.getRange(targetRow, 8).setValue(finalLinkFoto); 
+      sheet.getRange(targetRow, 9).setValue(textAlbum);     
+      sheet.getRange(targetRow, 10).setValue(textVideo);    
+      sheet.getRange(targetRow, 11).setValue(currentStatus);
+
+      return ContentService.createTextOutput(JSON.stringify({ "status": "success", "message": "Perubahan berhasil disimpan!" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const unit = requestData.unit;
+    const tanggal = requestData.tanggal; 
+    const namaKegiatan = requestData.namaKegiatan;
+    const data5W1H = requestData.data5W1H;
+    const files = requestData.files;
+    const email = requestData.email;
+
+    let tanggalFormated = tanggal;
+
+    if (tanggal.includes("/")) {
+      const parts = tanggal.split("/");
+      tanggalFormated = `${parts[2]}-${parts[1]}-${parts[0]}`; 
+    } else if (tanggal.includes("-")) {
+      const parts = tanggal.split("-");
+      if (parts[0].length !== 4) { 
+        tanggalFormated = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
+
+    const unitConfig = FOLDER_MAP[unit.toUpperCase()];
+    if (!unitConfig) throw new Error("Unit sekolah tidak terdaftar.");
+    const parentFolder = DriveApp.getFolderById(unitConfig.kegiatan);
+    
+    const namaFolderBaru = `${tanggalFormated} ${namaKegiatan}`;
+    let folderKegiatan;
+    const folderLama = parentFolder.getFoldersByName(namaFolderBaru);
+    if (folderLama.hasNext()) {
+      folderKegiatan = folderLama.next();
+    } else {
+      folderKegiatan = parentFolder.createFolder(namaFolderBaru);
+    }
+
+    let linkFotoArray = [];
+    if (files && files.length > 0) {
+      files.forEach((file, index) => {
+        const decodedFile = Utilities.base64Decode(file.base64Data);
+        const blob = Utilities.newBlob(decodedFile, file.mimeType, `${namaFolderBaru}_${index + 1}`);
+        const uploadedFile = folderKegiatan.createFile(blob);
+        linkFotoArray.push("https://docs.google.com/uc?export=view&id=" + uploadedFile.getId());
+      });
+    }
+
+    const partsTgl = tanggalFormated.split("-");
+    const thn = parseInt(partsTgl[0]);
+    const bln = parseInt(partsTgl[1]);
+    let tahunAjaranOtomatis = (bln >= 7) ? `${thn}/${thn + 1}` : `${thn - 1}/${thn}`;
+
+    sheet.appendRow([
+      new Date(),                      
+      unit,                                
+      namaKegiatan,                    
+      tanggalFormated,                 
+      data5W1H.kelas || "",            
+      data5W1H.nilai || "",            
+      data5W1H.cerita || "",           
+      linkFotoArray.join(", "),        
+      "-",                             
+      "-",                             
+      "PENDING",                       
+      email,                           
+      tahunAjaranOtomatis              
+    ]);
+
+    return ContentService.createTextOutput(JSON.stringify({ "status": "success", "message": "Berita masuk antrean!" })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": "Terjadi kesalahan internal server (POST): " + error.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
