@@ -142,21 +142,35 @@
 
     // Mendengarkan data kiriman balik dari pop-up Google Apps Script secara asinkronus
     window.addEventListener("message", function(event) {
-      const data = event.data;
-      // Validasi struktur data kiriman balik dari pop-up
+      let data;
+      
+      // Mengamankan proses pembacaan data lintas domain menggunakan metode JSON Parse
+      try {
+        data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+      } catch (e) {
+        return; // Abaikan jika pesan yang masuk bukan format string JSON otentikasi
+      }
+      
+      // Validasi struktur data agar tidak bentrok dengan ekstensi browser lain
       if (!data || data.success === undefined) return;
 
       const errorEl = document.getElementById("loginError");
 
-      if (data.success === true) {
+      if (data.success === true || data.success === "true") {
         userEmail = data.email;
         document.getElementById("userEmailDisplay").innerText = data.email;
-        document.getElementById("userInitial").innerText = data.name.charAt(0).toUpperCase();
         
+        // Membuat inisial huruf depan otomatis untuk avatar profil
+        if (data.name) {
+          document.getElementById("userInitial").innerText = data.name.charAt(0).toUpperCase();
+        }
+        
+        // Sembunyikan panel login dan langsung tampilkan formulir utama secara otomatis
         errorEl.classList.add("hidden");
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("uploadForm").classList.remove("hidden");
       } else {
+        // Tampilkan pesan error jika user memaksakan login pakai email selain @sekolahathalia.sch.id
         errorEl.innerText = `Akses Ditolak! Akun (${data.email}) tidak diizinkan. Anda wajib login menggunakan email resmi @sekolahathalia.sch.id`;
         errorEl.classList.remove("hidden");
       }
