@@ -1,554 +1,322 @@
-// =================================================================================
-// 1. KONFIGURASI ID FOLDER INDUK GOOGLE DRIVE (KEGIATAN UNIT & THUMBNAIL)
-// =================================================================================
-const FOLDER_MAP = {
-  "KB-TK": { 
-    "kegiatan": "1viDTb2fO0Y0XRQ-V4cJqc_G-wK3ZKlKC",
-    "thumbnail": "176Y-uQwBh3J7m4SooAWdyeVAbp6F3XGk"
-  },
-  "SD": { 
-    "kegiatan": "1HFgGoXLvO7VYqGSqr2qiS6ddUbL2jaWC",
-    "thumbnail": "1uJlJ5F8QUYZU75gyFo3qig5xjHr6VEvU"
-  },
-  "SMP": { 
-    "kegiatan": "1DsMrb05exf1UdMDLd3mJ3LdKi_NJ4Rjy",
-    "thumbnail": "15gGC6cA7gx4qUFDkqvTZJBA_c-IbJmqA"
-  },
-  "SMA": { 
-    "kegiatan": "13fYk6ePBu2rBYHAX2B77slgsEAUNxEnK",
-    "thumbnail": "1TOioGZz1nBxlJ4maDJjYTs_LIc3_iWxA"
-  },
-  "UMUM": { 
-    "kegiatan": "1fIuL4_gyhj6rT8ti8Ugwo4X3wBu_ODlf",
-    "thumbnail": "1lnMQIEUVKvyTgYcUsLC6iUlaPFIOvm_r"
-  }
-};
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Upload Berita Kegiatan - Sekolah Athalia</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased">
 
-const SECRET_PIN = "1234"; 
-
-// =================================================================================
-// GLOBALS & CORS HANDLING (PENGAMAN STRUKTUR UTAMA)
-// =================================================================================
-function doOptions(e) {
-  return ContentService.createTextOutput("")
-    .setMimeType(ContentService.MimeType.TEXT);
-}
-
-// =================================================================================
-// 2. FUNGSI GET (VERSI GABUNGAN: DETAIL BERITA, LIST DATA, & VERIFIKASI LOGIN UTK UPLOAD)
-// =================================================================================
-function doGet(e) {
-  try {
-    // -----------------------------------------------------------------------------
-    // FITUR A: ANTARMUKA POP-UP VERIFIKASI LOGIN (VERSI MODERN, CLEAN, & ELEGAN)
-    // -----------------------------------------------------------------------------
-    if (e && e.parameter && e.parameter.action === undefined && e.parameter.rowId === undefined && e.parameter.unit === undefined && e.parameter.search === undefined) {
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm shadow-blue-500/20">A</div>
+        <div>
+          <h1 class="text-sm font-bold text-slate-900 tracking-tight leading-none">Warta Athalia</h1>
+          <span class="text-[11px] font-medium text-slate-400">Konten & Jurnal Kegiatan</span>
+        </div>
+      </div>
       
-      const activeEmail = Session.getActiveUser().getEmail().toLowerCase();
-      const userName = activeEmail.split('@')[0].replace('.', ' ').toUpperCase();
-      const isValidDomain = activeEmail.endsWith("@sekolahathalia.sch.id");
-      
-      // Tampilan HTML baru dengan gaya minimalis, font modern, shadow halus, dan transisi smooth
-      const loginHtmlOutput = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Verifikasi Akun Athalia</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-              display: flex; 
-              align-items: center; 
-              justify-content: center; 
-              min-height: 100vh; 
-              background-color: #f4f6f9; 
-              padding: 20px;
-            }
-            .container { 
-              width: 100%; 
-              max-width: 340px; 
-              background: #ffffff; 
-              border-radius: 16px; 
-              padding: 32px 24px; 
-              text-align: center; 
-              box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.03);
-              border: 1px solid rgba(0, 0, 0, 0.03);
-            }
-            .icon-wrapper {
-              width: 64px;
-              height: 64px;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto 20px auto;
-            }
-            .success-bg { background-color: #f0fdf4; color: #16a34a; }
-            .error-bg { background-color: #fef2f2; color: #dc2626; }
-            
-            h3 { 
-              font-size: 18px; 
-              font-weight: 600; 
-              color: #1f2937; 
-              margin-bottom: 8px; 
-            }
-            p { 
-              font-size: 13px; 
-              color: #6b7280; 
-              line-height: 1.5; 
-            }
-            .status-msg {
-              margin-top: 16px;
-              font-size: 12px;
-              font-weight: 500;
-              color: #2563eb;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-            }
-            .dot-flashing {
-              position: relative;
-              width: 4px;
-              height: 4px;
-              border-radius: 2px;
-              background-color: #2563eb;
-              animation: dotFlashing 1s infinite linear alternate;
-              animation-delay: .5s;
-            }
-            .dot-flashing::before, .dot-flashing::after {
-              content: '';
-              display: inline-block;
-              position: absolute;
-              top: 0;
-              width: 4px;
-              height: 4px;
-              border-radius: 2px;
-              background-color: #2563eb;
-              animation: dotFlashing 1s infinite linear alternate;
-            }
-            .dot-flashing::before { left: -8px; animation-delay: 0s; }
-            .dot-flashing::after { left: 8px; animation-delay: 1s; }
+      <div id="userProfile" class="hidden flex items-center gap-2.5 bg-slate-100/80 border border-slate-200/60 pl-3 pr-1.5 py-1 rounded-full text-xs font-medium text-slate-600">
+        <span id="userEmailDisplay" class="max-w-[140px] truncate sm:max-w-xs"></span>
+        <div id="userAvatar" class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold uppercase text-[10px]">U</div>
+      </div>
+    </div>
+  </header>
 
-            @keyframes dotFlashing {
-              0% { background-color: #2563eb; }
-              50%, 100% { background-color: rgba(37, 99, 235, 0.2); }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            ${isValidDomain ? `
-              <div class="icon-wrapper success-bg">
-                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h3>Verifikasi Berhasil</h3>
-              <p>Akun internal Anda terverifikasi resmi.</p>
-              <div class="status-msg">
-                <span>Menghubungkan ke formulir</span>
-                <div class="dot-flashing"></div>
-              </div>
-            ` : `
-              <div class="icon-wrapper error-bg">
-                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </div>
-              <h3>Akses Ditolak</h3>
-              <p>Gunakan akun email Google Workspace resmi dengan akhiran <b>@sekolahathalia.sch.id</b></p>
-            `}
+  <main class="max-w-2xl mx-auto px-4 py-8">
+
+    <section id="authLayer" class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 text-center shadow-xs mt-4">
+      <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900 mb-2">Verifikasi Akses Internal</h2>
+      <p class="text-sm text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
+        Halaman kontribusi berita ini dilindungi secara khusus. Silakan masuk menggunakan akun Google resmi ekosistem Sekolah Athalia.
+      </p>
+      <button id="btnLogin" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl cursor-pointer transition shadow-md shadow-slate-900/10 active:scale-[0.98]">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 1.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Masuk via Akun Athalia
+      </button>
+    </section>
+
+    <form id="formLayer" class="hidden space-y-6 mt-4">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
+        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3">Formulir Pengisian Berita</h2>
+        
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Unit Penyelenggara <span class="text-red-500">*</span></label>
+          <select id="unitSelect" required class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-sm font-medium rounded-xl p-3 outline-none transition appearance-none">
+            <option value="" disabled selected>Pilih Unit Sekolah...</option>
+            <option value="KB-TK">KB-TK ATHALIA</option>
+            <option value="SD">SD ATHALIA</option>
+            <option value="SMP">SMP ATHALIA</option>
+            <option value="SMA">SMA ATHALIA</option>
+            <option value="UMUM">UMUM / YAYASAN</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Nama / Judul Kegiatan <span class="text-red-500">*</span></label>
+            <input type="text" id="judulInput" required placeholder="Contoh: Retret Karakter Siswa Kelas 9" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-sm rounded-xl p-3 outline-none transition placeholder:text-slate-400">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Tanggal Kegiatan <span class="text-red-500">*</span></label>
+            <input type="date" id="tanggalInput" required class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-sm rounded-xl p-3 outline-none transition">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Kelas / Angkatan Terlibat <span class="text-red-500">*</span></label>
+            <input type="text" id="kelasInput" required placeholder="Contoh: Kelas 1-3, Seluruh Siswa" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-sm rounded-xl p-3 outline-none transition placeholder:text-slate-400">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Pilar / Nilai Karakter Inti <span class="text-red-500">*</span></label>
+            <input type="text" id="nilaiInput" required placeholder="Contoh: Integritas, Peduli, Kerjasama" class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-sm rounded-xl p-3 outline-none transition placeholder:text-slate-400">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Narasi Berita Komplit (Mengandung unsur 5W+1H) <span class="text-red-500">*</span></label>
+          <textarea id="ceritaInput" required rows="6" placeholder="Tuliskan jalannya rangkaian kegiatan secara lengkap di sini..." class="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white text-sm rounded-xl p-3 outline-none transition placeholder:text-slate-400 resize-y leading-relaxed"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Dokumentasi Foto Berita (Maksimal 5 File Gambar) <span class="text-red-500">*</span></label>
+          <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50/50 transition relative group">
+            <input type="file" id="fileInput" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            <div class="space-y-1.5">
+              <svg class="w-7 h-7 mx-auto text-slate-400 group-hover:text-blue-500 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <p class="text-xs font-semibold text-slate-600">Klik untuk jelajah berkas atau tarik dokumen foto ke sini</p>
+              <p class="text-[11px] text-slate-400">Format yang didukung: PNG, JPG, JPEG (Rekomendasi ukuran file < 2MB)</p>
+            </div>
           </div>
           
-          <script>
-            (function() {
-              var authData = {
-                success: ${isValidDomain},
-                email: "${activeEmail}",
-                name: "${userName}"
-              };
-              
-              var payloadString = JSON.stringify(authData);
-              
-              if (window.opener) {
-                // Kirim data langsung ke jendela GitHub utama
-                window.opener.postMessage(payloadString, "*");
-                
-                // LANGKAH ANTI STUCK: Tutup paksa jendela dalam waktu 600 milidetik setelah postMessage terpicu
-                setTimeout(function() { 
-                  window.close(); 
-                }, 600);
-              } else {
-                alert("Halaman utama tidak terdeteksi. Silakan muat ulang halaman form di browser Anda.");
-              }
-            })();
-          </script>
-        </body>
-        </html>
-      `;
+          <div id="previewGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3">
+        <button type="reset" id="btnReset" class="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl cursor-pointer transition">Kosongkan Form</button>
+        <button type="submit" id="btnSubmit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl cursor-pointer transition shadow-md shadow-blue-600/10 active:scale-[0.98]">Kirim Berita</button>
+      </div>
+    </form>
+
+    <div id="loadingModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white border border-slate-200 p-6 rounded-2xl w-full max-w-xs text-center shadow-xl">
+        <div class="w-10 h-10 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-sm font-semibold text-slate-900 mb-1">Sedang Memproses Berita</p>
+        <p id="loadingStatusText" class="text-xs text-slate-400">Mengonversi file dokumentasi...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // URL Web App hasil deploy Google Apps Script (Code.gs) Anda
+    const SCRIPT_URL = "URL_WEB_APP_DEPLOYMENT_ANDA_DI_SINI";
+
+    // Manajemen State Otentikasi & Penyimpanan Objek Gambar
+    let authenticatedUser = { success: false, email: "", name: "" };
+    let attachedFilesArray = [];
+
+    // Akses Instan Elemen DOM Utama
+    const authLayer = document.getElementById("authLayer");
+    const formLayer = document.getElementById("formLayer");
+    const btnLogin = document.getElementById("btnLogin");
+    const userProfile = document.getElementById("userProfile");
+    const userEmailDisplay = document.getElementById("userEmailDisplay");
+    const userAvatar = document.getElementById("userAvatar");
+    const fileInput = document.getElementById("fileInput");
+    const previewGrid = document.getElementById("previewGrid");
+    const loadingModal = document.getElementById("loadingModal");
+    const loadingStatusText = document.getElementById("loadingStatusText");
+
+    // -----------------------------------------------------------------------------
+    // LOGIKA LOGIN POP-UP & TRANSMISI POSTMESSAGE LINTAS DOMAIN
+    // -----------------------------------------------------------------------------
+    btnLogin.addEventListener("click", function() {
+      // Buka pop-up otentikasi Google Apps Script
+      const loginWindow = window.open(SCRIPT_URL, "Verifikasi Akun Athalia", "width=420,height=560,resizable=yes,scrollbars=yes");
       
-      return HtmlService.createHtmlOutput(loginHtmlOutput)
-        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-    }
+      if (!loginWindow) {
+        alert("Pop-up diblokir browser! Izinkan akses jendela pop-up untuk melakukan login.");
+      }
+    });
 
-    // -----------------------------------------------------------------------------
-    // FITUR B: JEMBATAN DETAIL BERITA UNTUK MODAL WAKASEK (BAWAAN)
-    // -----------------------------------------------------------------------------
-    if (e && e.parameter && e.parameter.action === 'getDetail') {
-      const detailData = getDetailBerita(e.parameter.rowId);
-      return ContentService.createTextOutput(JSON.stringify(detailData))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    // -----------------------------------------------------------------------------
-    // FITUR C: PENARIKAN LIST DATA BERITA & PAGINATION (BAWAAN)
-    // -----------------------------------------------------------------------------
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("Form_Responses");
-    if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({"status": "error", "message": "Sheet Form_Responses tidak ditemukan"}))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    const isInternal = e && e.parameter && e.parameter.internal === "true";
-    const filterUnit = (e && e.parameter && e.parameter.unit) ? e.parameter.unit.toUpperCase() : "ALL";
-    const filterTahun = (e && e.parameter && e.parameter.tahun) ? e.parameter.tahun : "ALL";
-    const filterSearch = (e && e.parameter && e.parameter.search) ? e.parameter.search.toLowerCase().trim() : "";
-    const filterSort = (e && e.parameter && e.parameter.sort) ? e.parameter.sort.toUpperCase() : "DESC"; 
-    
-    const page = (e && e.parameter && e.parameter.page) ? parseInt(e.parameter.page) : 1;
-    const limit = (e && e.parameter && e.parameter.limit) ? parseInt(e.parameter.limit) : 9;
-
-    const data = sheet.getDataRange().getValues();
-    const headers = data[0];
-    const rows = data.slice(1);
-
-    let filteredData = rows.map((row, index) => {
-      let obj = { "rowNumber": index + 2 }; 
-      headers.forEach((header, i) => { 
-        let val = row[i];
+    // Mendengarkan respon postMessage yang terlempar aman dari Code.gs
+    window.addEventListener("message", function(event) {
+      try {
+        // Abaikan data asing yang tidak berbentuk string JSON
+        if (typeof event.data !== "string") return;
         
-        if (val instanceof Date && !isNaN(val.getTime())) {
-          let d = val.getDate();
-          let m = val.getMonth() + 1;
-          let y = val.getFullYear();
-          val = y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d;
-        } else if (val && val.toString().includes("/")) { 
-          let parts = val.toString().split("/");
-          if (parts.length === 3) {
-            val = parts[2] + '-' + parts[1] + '-' + parts[0];
+        const responseData = JSON.parse(event.data);
+        
+        // Memastikan payload berisi kunci otentikasi yang valid
+        if (responseData && responseData.hasOwnProperty("success")) {
+          if (responseData.success === true) {
+            authenticatedUser = responseData;
+            jalankanProsedurAksesBerhasil();
           } else {
-            val = val.toString();
+            alert("Akses Ditolak: Anda wajib login menggunakan email domain resmi @sekolahathalia.sch.id");
           }
-        } else if (val === "") {
-          val = "";
-        } else {
-          val = val.toString();
         }
-        obj[header] = val; 
-      });
-      return obj;
-    }).filter(item => {
-      const status = item["Status"] ? item["Status"].toString().toUpperCase() : "";
-      const isTayang = isInternal ? true : (status === "TAYANG");
-
-      const unitItem = item["Unit"] ? item["Unit"].toString().toUpperCase() : "";
-      const isUnitMatch = (filterUnit === "ALL" || unitItem === filterUnit);
-
-      const tglStr = item["Tanggal"] ? item["Tanggal"].toString() : "";
-      const partsTgl = tglStr.split("-");
-      const itemYear = partsTgl.length === 3 ? partsTgl[0] : "";
-      const taItem = item["Tahun_Ajaran"] ? item["Tahun_Ajaran"].toString() : "";
-      const isTahunMatch = (filterTahun === "ALL" || itemYear === filterTahun || taItem.includes(filterTahun));
-
-      const judul = (item["Judul_Kegiatan"] || "").toString().toLowerCase();
-      const cerita = (item["Cerita"] || "").toString().toLowerCase();
-      const kelas = (item["Kelas"] || "").toString().toLowerCase();
-      const nilai = (item["Nilai"] || "").toString().toLowerCase();
-      
-      const isSearchMatch = (filterSearch === "" || 
-        judul.includes(filterSearch) || 
-        cerita.includes(filterSearch) || 
-        kelas.includes(filterSearch) || 
-        nilai.includes(filterSearch) || 
-        tglStr.includes(filterSearch)
-      );
-
-      return isTayang && isUnitMatch && isTahunMatch && isSearchMatch;
-    });
-
-    filteredData.sort((a, b) => {
-      const partsA = (a["Tanggal"] || "").toString().split("-");
-      const partsB = (b["Tanggal"] || "").toString().split("-");
-      
-      const dateA = partsA.length === 3 ? new Date(parseInt(partsA[0], 10), parseInt(partsA[1], 10) - 1, parseInt(partsA[2], 10)) : new Date(0);
-      const dateB = partsB.length === 3 ? new Date(parseInt(partsB[0], 10), parseInt(partsB[1], 10) - 1, parseInt(partsB[2], 10)) : new Date(0);
-      
-      if (filterSort === "ASC") {
-        return dateA.getTime() - dateB.getTime(); 
-      } else {
-        return dateB.getTime() - dateA.getTime(); 
+      } catch (err) {
+        // Mengabaikan error parse di luar transaksi autentikasi
       }
     });
 
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / limit) || 1;
-    const startIndex = (page - 1) * limit;
-    const paginatedData = filteredData.slice(startIndex, startIndex + limit);
-
-    return ContentService.createTextOutput(JSON.stringify({ 
-      "totalItems": totalItems,
-      "totalPages": totalPages,
-      "currentPage": page,
-      "data": paginatedData 
-    })).setMimeType(ContentService.MimeType.JSON);
-
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ 
-      "status": "error", 
-      "message": "Terjadi kesalahan internal server (GET): " + error.toString() 
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-// =================================================================================
-// 3. FUNGSI JEMBATAN PENGAMBIL DATA RIIL UNTUK MODAL KURASI (BAWAAN)
-// =================================================================================
-function getDetailBerita(rowId) {
-  try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Form_Responses");
-    const row = parseInt(rowId);
-    const data = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
-    
-    let unit = data[1] ? data[1].toString() : "";    
-    let judul = data[2] ? data[2].toString() : "";   
-    let tanggal = data[3];                                                                                                                                                                        
-    let kelas = data[4] ? data[4].toString() : "";   
-    let nilai = data[5] ? data[5].toString() : "";   
-    let cerita = data[6] ? data[6].toString() : "";  
-    let linkFoto = data[7] ? data[7].toString() : "-"; 
-    let linkAlbum = data[8] ? data[8].toString() : "-"; 
-    let linkVideo = data[9] ? data[9].toString() : "-"; 
-    
-    if (tanggal instanceof Date) {
-      tanggal = Utilities.formatDate(tanggal, Session.getScriptTimeZone(), "yyyy-MM-dd");
-    } else {
-      tanggal = tanggal ? tanggal.toString() : "";
-      if(tanggal.includes("/")) {
-        let p = tanggal.split("/");
-        if(p.length === 3) tanggal = `${p[2]}-${p[1]}-${p[0]}`;
-      }
+    function jalankanProsedurAksesBerhasil() {
+      // Sembunyikan layer login, buka formulir utama
+      authLayer.classList.add("hidden");
+      formLayer.classList.remove("hidden");
+      
+      // Update data UI profil di header
+      userProfile.classList.remove("hidden");
+      userEmailDisplay.textContent = authenticatedUser.email;
+      userAvatar.textContent = authenticatedUser.name.charAt(0);
     }
 
-    const daftarFotoDrive = getPhotosFromFolder(unit, tanggal, judul);
-    
-    return {
-      "status": "success",
-      "unit": unit,
-      "judul": judul,
-      "tanggal": tanggal,
-      "kelas": kelas,
-      "nilai": nilai,
-      "cerita": cerita,
-      "existingLinkFoto": linkFoto,
-      "linkAlbum": linkAlbum,
-      "linkVideo": linkVideo,
-      "fotos": daftarFotoDrive 
-    };
-  } catch(err) {
-    return { "status": "error", "message": err.toString() };
-  }
-}
-
-function getPhotosFromFolder(unit, tanggal, judulBerita) {
-  var photos = [];
-  const unitConfig = FOLDER_MAP[unit.toUpperCase()];
-  if (!unitConfig) return photos;
-
-  var dateParts = (tanggal || "").toString().split("-");
-  if (dateParts.length !== 3) return photos;
-  
-  var folderKegiatanName = tanggal + " " + judulBerita;
-  
-  try {
-    var parentFolder = DriveApp.getFolderById(unitConfig.kegiatan);
-    var kegiatanFolders = parentFolder.getFoldersByName(folderKegiatanName);
-    
-    if (kegiatanFolders.hasNext()) {
-      var folder = kegiatanFolders.next();
-      var files = folder.getFiles();
-      var count = 0;
+    // -----------------------------------------------------------------------------
+    // PROSEDUR MULTIPLE FILE ATTACHMENT & PRATINJAU GAMBAR
+    // -----------------------------------------------------------------------------
+    fileInput.addEventListener("change", function(e) {
+      const selectedFiles = Array.from(e.target.files);
       
-      while (files.hasNext() && count < 25) {
-        var file = files.next();
-        var mime = file.getMimeType();
-        if (mime.indexOf("image/") !== -1) {
-          photos.push({
-            url: "https://docs.google.com/uc?export=view&id=" + file.getId(),
-            id: file.getId()
+      // Batasi total akumulasi file maksimal 5 gambar
+      if (attachedFilesArray.length + selectedFiles.length > 5) {
+        alert("Batas Maksimal Terlampaui: Anda hanya boleh mengunggah maksimal 5 gambar dokumentasi.");
+        fileInput.value = "";
+        return;
+      }
+
+      selectedFiles.forEach(file => {
+        if (!file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          // Ekstrak string data base64 murni untuk dikirim ke DriveApp server Google
+          const rawBase64 = event.target.result.split(",")[1];
+          
+          attachedFilesArray.push({
+            mimeType: file.type,
+            base64Data: rawBase64,
+            fileName: file.name
           });
-          count++;
-        }
-      }
-    }
-  } catch (e) {
-    Logger.log("Error mengambil data folder Drive: " + e.toString());
-  }
-  return photos;
-}
 
-// =================================================================================
-// 4. FUNGSI POST (UPDATE WAKASEK & INPUT BARU NATIVE YYYY-MM-DD)
-// =================================================================================
-function doPost(e) {
-  try {
-    const requestData = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("Form_Responses");
-
-    if (requestData.action === "updateWakasek" || requestData.rowNumber) {
-      const targetRow = parseInt(requestData.rowNumber);
-      if (isNaN(targetRow) || targetRow < 2) {
-        return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": "Nomor baris tidak valid!" })).setMimeType(ContentService.MimeType.JSON);
-      }
-
-      let currentStatus = "PENDING";
-      if (requestData.statusBerita) {
-        currentStatus = requestData.statusBerita.toString().toUpperCase();
-      } else if (requestData.status) {
-        currentStatus = requestData.status.toString().toUpperCase();
-      }
+          renderPreviewGrid();
+        };
+        reader.readAsDataURL(file);
+      });
       
-      if (currentStatus.includes("PENDING")) {
-        currentStatus = "PENDING";
-      }
+      // Reset input agar file yang sama bisa dipilih ulang jika sempat dihapus
+      fileInput.value = "";
+    });
 
-      if ((currentStatus === "TAYANG" || currentStatus === "TOLAK") && requestData.pin !== SECRET_PIN) {
-        return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": "PIN Keamanan Salah! Proses verifikasi gagal." })).setMimeType(ContentService.MimeType.JSON);
-      }
-
-      const unitBaris = sheet.getRange(targetRow, 2).getValue().toString().toUpperCase();
-      const unitConfig = FOLDER_MAP[unitBaris];
-      let finalLinkFoto = "-";
-
-      if (requestData.selectedUrls && requestData.selectedUrls.length > 0 && unitConfig) {
-        let arrayThumbnailBaru = [];
-        const folderTargetThumbnail = DriveApp.getFolderById(unitConfig.thumbnail);
+    function renderPreviewGrid() {
+      previewGrid.innerHTML = "";
+      attachedFilesArray.forEach((item, index) => {
+        const itemContainer = document.createElement("div");
+        itemContainer.className = "relative aspect-square border border-slate-200 rounded-xl overflow-hidden bg-slate-100 group shadow-xs";
         
-        requestData.selectedUrls.forEach(function(link) {
-          try {
-            const cleanLink = link.trim();
-            const match = cleanLink.match(/[-\w]{25,}/);
-            if (match) {
-              const fileIdAsli = match[0];
-              const fileAsli = DriveApp.getFileById(fileIdAsli);
-              
-              const fileThumbnail = fileAsli.makeCopy(fileAsli.getName(), folderTargetThumbnail);
-              fileThumbnail.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-              
-              arrayThumbnailBaru.push("https://docs.google.com/uc?export=view&id=" + fileThumbnail.getId());
-            }
-          } catch (err) {
-            Logger.log("Gagal melakukan copy thumbnail: " + err.toString());
-          }
+        itemContainer.innerHTML = `
+          <img src="data:${item.mimeType};base64,${item.base64Data}" class="w-full h-full object-cover">
+          <button type="button" data-index="${index}" class="absolute top-1.5 right-1.5 w-5 h-5 bg-slate-950/70 hover:bg-slate-950 text-white rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition shadow-sm opacity-90 sm:opacity-0 sm:group-hover:opacity-100">
+            ✕
+          </button>
+        `;
+
+        // Daftarkan event hapus file
+        itemContainer.querySelector("button").addEventListener("click", function() {
+          const targetIdx = parseInt(this.getAttribute("data-index"));
+          attachedFilesArray.splice(targetIdx, 1);
+          renderPreviewGrid();
         });
-        
-        if(arrayThumbnailBaru.length > 0) {
-          finalLinkFoto = arrayThumbnailBaru.join(", ");
-        }
-      } else {
-        finalLinkFoto = requestData.existingLinkFoto || "-";
-      }
 
-      let textJudul  = requestData.judul || requestData.judulBerita || "-";
-      let textKelas  = requestData.kelas || "-";
-      let textNilai  = requestData.nilai || requestData.nilaiKarakter || "-";
-      let textCerita = requestData.cerita || requestData.narasiBerita || "-";
-      let textAlbum  = requestData.linkAlbum || "-";
-      let textVideo  = requestData.linkVideo || "-";
-
-      sheet.getRange(targetRow, 3).setValue(textJudul);     
-      sheet.getRange(targetRow, 5).setValue(textKelas);     
-      sheet.getRange(targetRow, 6).setValue(textNilai);     
-      sheet.getRange(targetRow, 7).setValue(textCerita);    
-      sheet.getRange(targetRow, 8).setValue(finalLinkFoto); 
-      sheet.getRange(targetRow, 9).setValue(textAlbum);     
-      sheet.getRange(targetRow, 10).setValue(textVideo);    
-      sheet.getRange(targetRow, 11).setValue(currentStatus);
-
-      return ContentService.createTextOutput(JSON.stringify({ "status": "success", "message": "Perubahan berhasil disimpan!" })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    const unit = requestData.unit;
-    const tanggal = requestData.tanggal; 
-    const namaKegiatan = requestData.namaKegiatan;
-    const data5W1H = requestData.data5W1H;
-    const files = requestData.files;
-    const email = requestData.email;
-
-    let tanggalFormated = tanggal;
-
-    if (tanggal.includes("/")) {
-      const parts = tanggal.split("/");
-      tanggalFormated = `${parts[2]}-${parts[1]}-${parts[0]}`; 
-    } else if (tanggal.includes("-")) {
-      const parts = tanggal.split("-");
-      if (parts[0].length !== 4) { 
-        tanggalFormated = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
-    }
-
-    const unitConfig = FOLDER_MAP[unit.toUpperCase()];
-    if (!unitConfig) throw new Error("Unit sekolah tidak terdaftar.");
-    const parentFolder = DriveApp.getFolderById(unitConfig.kegiatan);
-    
-    const namaFolderBaru = `${tanggalFormated} ${namaKegiatan}`;
-    let folderKegiatan;
-    const folderLama = parentFolder.getFoldersByName(namaFolderBaru);
-    if (folderLama.hasNext()) {
-      folderKegiatan = folderLama.next();
-    } else {
-      folderKegiatan = parentFolder.createFolder(namaFolderBaru);
-    }
-
-    let linkFotoArray = [];
-    if (files && files.length > 0) {
-      files.forEach((file, index) => {
-        const decodedFile = Utilities.base64Decode(file.base64Data);
-        const blob = Utilities.newBlob(decodedFile, file.mimeType, `${namaFolderBaru}_${index + 1}`);
-        const uploadedFile = folderKegiatan.createFile(blob);
-        linkFotoArray.push("https://docs.google.com/uc?export=view&id=" + uploadedFile.getId());
+        previewGrid.appendChild(itemContainer);
       });
     }
 
-    const partsTgl = tanggalFormated.split("-");
-    const thn = parseInt(partsTgl[0]);
-    const bln = parseInt(partsTgl[1]);
-    let tahunAjaranOtomatis = (bln >= 7) ? `${thn}/${thn + 1}` : `${thn - 1}/${thn}`;
+    // -----------------------------------------------------------------------------
+    // LOGIKA PENGIRIMAN DATA FORMULIR KE SERVER SCRIPT GOOGLE via POST METHOD
+    // -----------------------------------------------------------------------------
+    formLayer.addEventListener("submit", function(e) {
+      e.preventDefault();
 
-    sheet.appendRow([
-      new Date(),                      
-      unit,                                
-      namaKegiatan,                    
-      tanggalFormated,                 
-      data5W1H.kelas || "",            
-      data5W1H.nilai || "",            
-      data5W1H.cerita || "",           
-      linkFotoArray.join(", "),        
-      "-",                             
-      "-",                             
-      "PENDING",                       
-      email,                           
-      tahunAjaranOtomatis              
-    ]);
+      if (!authenticatedUser.success || !authenticatedUser.email) {
+        alert("Sesi login Anda kedaluwarsa. Silakan lakukan proses verifikasi ulang.");
+        window.location.reload();
+        return;
+      }
 
-    return ContentService.createTextOutput(JSON.stringify({ "status": "success", "message": "Berita masuk antrean!" })).setMimeType(ContentService.MimeType.JSON);
+      if (attachedFilesArray.length === 0) {
+        alert("Wajib Lampiran: Silakan masukkan minimal 1 foto dokumentasi sebagai syarat utama publikasi berita.");
+        return;
+      }
 
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": "Terjadi kesalahan internal server (POST): " + error.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+      // Aktifkan Tampilan Modal Loading
+      loadingModal.classList.remove("hidden");
+      loadingStatusText.textContent = "Mengunggah paket foto ke Google Drive...";
+
+      // Bungkus Payload Sesuai Kontrak Data Google Script (doPost)
+      const payload = {
+        unit: document.getElementById("unitSelect").value,
+        tanggal: document.getElementById("tanggalInput").value,
+        namaKegiatan: document.getElementById("judulInput").value.trim(),
+        email: authenticatedUser.email,
+        data5W1H: {
+          kelas: document.getElementById("kelasInput").value.trim(),
+          nilai: document.getElementById("nilaiInput").value.trim(),
+          cerita: document.getElementById("ceritaInput").value.trim()
+        },
+        files: attachedFilesArray
+      };
+
+      // Tembakkan request menggunakan Fetch API
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Mode aman lintas origin untuk mencegah blokir CORS Google Web App
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        // no-cors tidak membaca objek JSON respon secara langsung, melainkan berasumsi sukses jika tidak terlempar ke blok catch
+        loadingStatusText.textContent = "Menyimpan baris antrean berita...";
+        setTimeout(() => {
+          loadingModal.classList.add("hidden");
+          alert("Sukses! Konten warta Anda berhasil dikirim ke sistem dan masuk antrean kurasi Wakasek.");
+          
+          // Reset status formulir pasca sukses
+          formLayer.reset();
+          attachedFilesArray = [];
+          renderPreviewGrid();
+        }, 1200);
+      })
+      .catch(error => {
+        loadingModal.classList.add("hidden");
+        console.error("Gagal mengirim data:", error);
+        alert("Terjadi kesalahan koneksi saat mengirim data. Silakan coba kembali beberapa saat lagi.");
+      });
+    });
+
+  </script>
+</body>
+</html>
