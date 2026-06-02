@@ -6,7 +6,6 @@
   <title>Capture Moment - Sekolah Athalia</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-gray-50 font-sans min-h-screen flex flex-col items-center justify-center p-4">
 
@@ -20,20 +19,18 @@
     </div>
 
     <div id="loginSection" class="p-8 text-center flex flex-col items-center justify-center space-y-4">
-      <i class="fa-solid fa-shield-halved text-5xl text-gray-300"></i>
+      <i class="fa-solid fa-envelope-circle-check text-5xl text-blue-500"></i>
       <div>
         <h3 class="text-lg font-semibold text-gray-700">Verifikasi Akun</h3>
-        <p class="text-sm text-gray-500 max-w-sm mt-1">Silakan masuk menggunakan akun email resmi Sekolah Athalia untuk membuka formulir.</p>
+        <p class="text-sm text-gray-500 max-w-sm mt-1">Silakan masukkan email resmi Sekolah Athalia Anda untuk masuk ke formulir capture moment.</p>
       </div>
       
-      <div id="g_id_onload"
-           data-client_id="MASUKKAN_CLIENT_ID_GOOGLE_ANDA_DISINI.apps.googleusercontent.com"
-           data-context="signin"
-           data-ux_mode="popup"
-           data-callback="handleCredentialResponse"
-           data-auto_prompt="false">
+      <div class="w-full max-w-sm space-y-3">
+        <input type="email" id="manualEmailInput" placeholder="nama.anda@sekolahathalia.sch.id" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm text-center font-medium outline-none transition-all">
+        <button type="button" onclick="handleManualLogin()" class="w-full bg-blue-600 text-white font-semibold p-2.5 rounded-xl text-sm shadow-md hover:bg-blue-700 active:scale-[0.99] transition-all">
+          Masuk ke Formulir
+        </button>
       </div>
-      <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
       
       <p id="loginError" class="text-sm font-semibold text-red-600 hidden bg-red-50 px-4 py-2 rounded-lg border border-red-200"></p>
     </div>
@@ -47,13 +44,13 @@
             <p class="text-sm font-semibold text-gray-800" id="userEmailDisplay">-</p>
           </div>
         </div>
-        <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline"><i class="fa-solid fa-sign-out-alt mr-1"></i>Keluar</button>
+        <button type="button" onclick="logout()" class="text-xs text-red-600 font-medium hover:underline flex items-center gap-1"><i class="fa-solid fa-sign-out-alt"></i>Keluar</button>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Unit Sekolah</label>
-          <select id="unit" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm">
+          <select id="unit" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none">
             <option value="" disabled selected>Pilih Unit</option>
             <option value="KB-TK">KB-TK</option>
             <option value="SD">SD</option>
@@ -65,30 +62,30 @@
 
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tanggal Kegiatan</label>
-          <input type="date" id="tanggal" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm">
+          <input type="date" id="tanggal" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none">
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Kelas / Pelaksana</label>
-          <input type="text" id="kelas" placeholder="Misal: Kelas 1A, Tim OSIS" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm">
+          <input type="text" id="kelas" placeholder="Misal: Kelas 1A, Tim OSIS" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nilai Karakter</label>
-          <input type="text" id="nilai" placeholder="Misal: Integritas, Peduli" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Nilai Karakter Athalia</label>
+          <input type="text" id="nilai" placeholder="Misal: Integritas, Peduli" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none">
         </div>
       </div>
 
       <div>
         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Judul Kegiatan</label>
-        <input type="text" id="judul" placeholder="Tulis judul singkat, padat, dan jelas" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm">
+        <input type="text" id="judul" placeholder="Tulis judul singkat, padat, dan jelas" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm outline-none">
       </div>
 
       <div>
         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Cerita / Narasi Singkat (5W+1H)</label>
-        <textarea id="cerita" rows="4" placeholder="Tulis rincian acara. Apa kegiatannya? Siapa yang ikut? Di mana? Mengapa diadakan? Bagaimana jalannya acara?" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm resize-none"></textarea>
+        <textarea id="cerita" rows="4" placeholder="Tulis rincian acara. Apa kegiatannya? Siapa yang ikut? Di mana? Mengapa diadakan? Bagaimana jalannya acara?" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm resize-none outline-none"></textarea>
       </div>
 
       <div>
@@ -105,7 +102,7 @@
         </div>
       </div>
 
-      <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold p-3.5 rounded-xl shadow-md hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] transition-all flex items-center justify-center space-x-2">
+      <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold p-3.5 rounded-xl shadow-md hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] transition-all flex items-center justify-center space-x-2 cursor-pointer">
         <i class="fa-solid fa-paper-plane"></i>
         <span>Kirim ke Antrean Berita</span>
       </button>
@@ -119,64 +116,62 @@
   </div>
 
   <script>
-    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-    const API_URL = "https://script.google.com/macros/s/XXXXXXXXX/exec"; 
+    // =================================================================================
+    // CONFIG: MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+    // =================================================================================
+    const API_URL = "PASANG_URL_EXEC_APPS_SCRIPT_ANDA_DISINI"; 
     
     let userEmail = "";
     let selectedFilesBase64 = [];
 
     // =================================================================================
-    // LOGIKA LOGIN GOOGLE (MENGUNCI DOMAIN EMAIL)
+    // LOGIKA LOGIN DENGAN UNTUK MEMBATASI AKUN SEKOLAH ATHALIA
     // =================================================================================
-    function decodeJwtResponse(token) {
-      let base64Url = token.split('.')[1];
-      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-          return '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    }
+    function handleManualLogin() {
+      const emailInput = document.getElementById("manualEmailInput").value.trim().toLowerCase();
+      const errorEl = document.getElementById("loginError");
 
-    function handleCredentialResponse(response) {
-      const responsePayload = decodeJwtResponse(response.credential);
-      const email = responsePayload.email;
-
-      // PENGUNCI DOMAIN UTAMA
-      if (!email.endsWith("@sekolahathalia.sch.id")) {
-        const errorEl = document.getElementById("loginError");
-        errorEl.innerText = "Akses Ditolak! Anda harus login menggunakan email resmi @sekolahathalia.sch.id";
+      if (!emailInput) {
+        errorEl.innerText = "Harap masukkan alamat email Anda!";
         errorEl.classList.remove("hidden");
         return;
       }
 
-      userEmail = email;
-      document.getElementById("userEmailDisplay").innerText = email;
-      document.getElementById("userInitial").innerText = responsePayload.given_name.charAt(0).toUpperCase();
+      // PENGUNCI EKSTENSI EMAIL UTAMA
+      if (!emailInput.endsWith("@sekolahathalia.sch.id")) {
+        errorEl.innerText = "Akses Ditolak! Anda wajib menggunakan email resmi @sekolahathalia.sch.id";
+        errorEl.classList.remove("hidden");
+        return;
+      }
+
+      // Jika email valid
+      userEmail = emailInput;
+      document.getElementById("userEmailDisplay").innerText = emailInput;
+      document.getElementById("userInitial").innerText = emailInput.charAt(0).toUpperCase();
       
-      // Tukar Tampilan Screen Login ke Form
+      errorEl.classList.add("hidden");
       document.getElementById("loginSection").classList.add("hidden");
       document.getElementById("uploadForm").classList.remove("hidden");
     }
 
     function logout() {
       userEmail = "";
+      document.getElementById("manualEmailInput").value = "";
       document.getElementById("uploadForm").reset();
-      selectedFilesBase64 = [];
-      document.getElementById("fileCounter").classList.add("hidden");
+      clearFiles();
       document.getElementById("uploadForm").classList.add("hidden");
-      document.getElementById("loginError").classList.add("hidden");
       document.getElementById("loginSection").classList.remove("hidden");
     }
 
     // =================================================================================
-    // KOMPRESI GAMBAR & PEMBACAAN FILE INPUT
+    // LOGIKA CLIENT-SIDE IMAGE COMPRESSOR (Mencegah macet saat upload 25 foto)
     // =================================================================================
     document.getElementById("fileInput").addEventListener("change", function(e) {
       const files = e.target.files;
       if (files.length === 0) return;
       
       if (files.length > 25) {
-        alert("Batas maksimal pengiriman sekaligus adalah 25 foto!");
+        alert("Batas maksimal pengiriman sekali kirim adalah 25 foto!");
         this.value = "";
         return;
       }
@@ -193,7 +188,7 @@
           const img = new Image();
           img.src = event.target.result;
           img.onload = function() {
-            // Logika Kompresi Canvas Sisi Client (Maks lebar/tinggi 1200px kualitas 0.7)
+            // Kompresi Canvas: Batasi dimensi terpanjang maksimal 1200 piksel
             const canvas = document.createElement("canvas");
             let width = img.width;
             let height = img.height;
@@ -212,7 +207,7 @@
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Ubah ke format JPEG ringkas dengan kompresi kualitas 70%
+            // Output diubah menjadi JPEG ringan dengan kualitas kompresi 70%
             const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
             
             selectedFilesBase64.push({
@@ -237,7 +232,7 @@
     }
 
     // =================================================================================
-    // SUBMIT DATA KE GOOGLE APPS SCRIPT BACKEND
+    // EKSEKUSI PENGIRIMAN DATA KE BACKEND APPS SCRIPT
     // =================================================================================
     document.getElementById("uploadForm").addEventListener("submit", function(e) {
       e.preventDefault();
@@ -248,16 +243,16 @@
       }
 
       if (selectedFilesBase64.length === 0) {
-        alert("Harap pilih atau jepret minimal 1 foto dokumentasi!");
+        alert("Harap masukkan minimal 1 foto dokumentasi kegiatan!");
         return;
       }
 
-      // Aktifkan Screen Loading
+      // Aktifkan Efek Loading Screen
       document.getElementById("uploadForm").classList.add("hidden");
       document.getElementById("loadingOverlay").classList.remove("hidden");
-      document.getElementById("loadingText").innerText = "Sedang mengunggah data dan foto ke Google Drive...";
+      document.getElementById("loadingText").innerText = "Sedang memproses & mengunggah foto ke Google Drive...";
 
-      // Kemas Payload JSON sesuai struktur doPost backend kita
+      // Bangun Payload JSON agar cocok dengan fungsi doPost di code.gs
       const payload = {
         unit: document.getElementById("unit").value,
         tanggal: document.getElementById("tanggal").value,
@@ -271,7 +266,7 @@
         files: selectedFilesBase64
       };
 
-      // Tembakkan Kiriman Menggunakan Fetch API NATIVE
+      // Kirim data ke Apps Script API
       fetch(API_URL, {
         method: "POST",
         body: JSON.stringify(payload)
@@ -279,18 +274,18 @@
       .then(res => res.json())
       .then(response => {
         if (response.status === "success") {
-          alert("Berhasil! Berita Anda telah masuk antrean untuk ditinjau Wakasek.");
+          alert("Berhasil! Berita dan foto Anda masuk ke antrean kurasi Wakasek.");
           document.getElementById("uploadForm").reset();
           clearFiles();
         } else {
-          alert("Gagal mengirim: " + response.message);
+          alert("Gagal memproses data: " + response.message);
         }
       })
       .catch(error => {
-        alert("Terjadi masalah jaringan internet: " + error.toString());
+        alert("Gagal terhubung ke server (Cek jaringan Anda): " + error.toString());
       })
       .finally(() => {
-        // Kembalikan ke Tampilan Form Normal
+        // Matikan loading screen dan buka form kembali
         document.getElementById("loadingOverlay").classList.add("hidden");
         document.getElementById("uploadForm").classList.remove("hidden");
       });
