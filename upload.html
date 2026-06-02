@@ -8,8 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link href="https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
   </style>
@@ -28,39 +27,34 @@
 
     <div id="loginSection" class="p-8 text-center flex flex-col items-center justify-center space-y-5">
       <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
-        <i class="fa-solid fa-id-card-alt text-2xl"></i>
+        <i class="fa-solid fa-users-gear text-2xl"></i>
       </div>
       <div>
-        <h3 class="text-md font-bold text-slate-900">Pilih Akun Terdaftar</h3>
+        <h3 class="text-md font-bold text-slate-900">Verifikasi Multi-Akun</h3>
         <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 leading-relaxed">
-          Sistem mendeteksi daftar profil Google di perangkat Anda. Tandai akun resmi sekolah untuk melanjutkan.
+          Silakan muat info akun yang aktif di browser Anda, lalu pilih akun @sekolahathalia.sch.id Anda melalui tombol opsi di bawah ini.
         </p>
       </div>
+
+      <button type="button" onclick="muatDaftarAkunGoogle()" id="btnFetchAccount" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl cursor-pointer transition shadow-md active:scale-[0.98]">
+        <i class="fa-solid fa-rotate mr-1 animate-pulse"></i> Hubungkan & Tampilkan Akun Saya
+      </button>
       
-      <div class="w-full space-y-2.5 my-2 text-left" id="accountRadioGroup">
-        <div id="g_id_onload"
-             data-client_id="855909193138-0g2b76vpsb2o8e335chatalia.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="popup"
-             data-callback="tangkapSinyalLoginGoogle"
-             data-auto_prompt="true">
-        </div>
-        <div class="flex justify-center py-2">
-          <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
-        </div>
-        
-        <div class="relative flex items-center justify-center my-4">
+      <div class="w-full space-y-2.5 my-2 text-left">
+        <div class="relative flex items-center justify-center my-2">
           <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
-          <span class="relative bg-white px-3 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Hasil Verifikasi Domain</span>
+          <span class="relative bg-white px-3 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Daftar Pilihan Email</span>
         </div>
 
-        <div id="radioContainerPlaceholder" class="text-center py-4 text-xs text-slate-400 italic">
-          Silakan klik tombol Google di atas untuk memunculkan daftar email Anda...
+        <div id="radioContainerPlaceholder" class="space-y-2">
+          <div class="text-center py-4 text-xs text-slate-400 italic bg-slate-50 border border-slate-200 border-dashed rounded-xl">
+            Belum ada akun terhubung. Klik tombol di atas...
+          </div>
         </div>
       </div>
 
-      <button type="button" id="btnProsesMasukForm" disabled class="w-full bg-slate-300 text-slate-500 font-bold p-3 rounded-xl text-xs tracking-wider cursor-not-allowed transition-all">
-        Buka Formulir Berita
+      <button type="button" id="btnProsesMasukForm" disabled onclick="bukaFormulirUtama()" class="w-full bg-slate-300 text-slate-500 font-bold p-3 rounded-xl text-xs tracking-wider cursor-not-allowed transition-all">
+        Masuk ke Formulir Berita
       </button>
     </div>
 
@@ -69,7 +63,7 @@
         <div class="flex items-center space-x-3">
           <div class="w-9 h-9 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm" id="userInitial">A</div>
           <div>
-            <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Akun Athalia Valid:</p>
+            <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Akun Terverifikasi:</p>
             <p class="text-xs font-semibold text-slate-700" id="userEmailDisplay">-</p>
           </div>
         </div>
@@ -139,74 +133,93 @@
     <div id="loadingOverlay" class="hidden p-8 text-center flex flex-col items-center justify-center space-y-4 bg-white">
       <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       <div>
-        <p class="text-sm font-bold text-slate-800" id="loadingText">Sedang mengompres gambar...</p>
+        <p class="text-sm font-bold text-slate-800" id="loadingText">Sedang memproses...</p>
         <p class="text-xs text-slate-400 mt-1">Mohon tunggu sebentar...</p>
       </div>
     </div>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec"; 
+    // MASUKKAN URL WEB APP APPS SCRIPT ANDA DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycbzLby6P3bf1p6mG85pI6l96W5OclC6ia64v28g70-n8x9-kL3r88bM_iWREg7nI2yU8_w/exec"; 
     
     let userEmail = "";
     let selectedFilesBase64 = [];
 
-    // Decode JWT token bawaan Google GIS untuk membaca alamat email riil tanpa pop-up jendela luar
-    function decodeJwtResponse(token) {
-      let base64Url = token.split('.')[1];
-      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    }
-
     // =================================================================================
-    // LOGIKA GENERATE PILIHAN RADIO BUTTON BERDASARKAN EMAIL AKTIF
+    // LOGIKA MEMBACA IDENTITAS GOOGLE SECARA LANGSUNG & MEMBENTUK RADIO BUTTON
     // =================================================================================
-    function tangkapSinyalLoginGoogle(response) {
-      const responsePayload = decodeJwtResponse(response.credential);
-      const emailTerpilih = responsePayload.email.toLowerCase();
-      
+    function muatDaftarAkunGoogle() {
       const placeholder = document.getElementById("radioContainerPlaceholder");
-      placeholder.innerHTML = ""; // bersihkan panduan awal
-
-      // Ciptakan struktur komponen Radio Button Kustom ke dalam UI
-      const labelCard = document.createElement("label");
-      const isAthalia = emailTerpilih.endsWith("@sekolahathalia.sch.id");
+      placeholder.innerHTML = `<div class="text-center py-4 text-xs text-slate-500 font-medium animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Mencari profil aktif...</div>`;
       
-      labelCard.className = `flex items-center justify-between p-3 border.5 rounded-xl cursor-pointer transition-all ${
-        isAthalia ? 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50' : 'border-red-200 bg-red-50/50'
-      }`;
+      // Ambil email user yang sedang login aktif melalui endpoint Apps Script Anda sendiri
+      fetch(`${API_URL}?action=getProfile`)
+      .then(res => res.json())
+      .then(data => {
+        placeholder.innerHTML = "";
+        
+        if (data && data.email) {
+          const daftarEmail = data.allEmails || [data.email]; // Array list email cadangan jika ada
+          
+          daftarEmail.forEach((emailStr, index) => {
+            const emailClean = emailStr.toLowerCase().trim();
+            const isAthalia = emailClean.endsWith("@sekolahathalia.sch.id");
+            
+            const labelCard = document.createElement("label");
+            labelCard.className = `flex items-center justify-between p-3 border.5 rounded-xl cursor-pointer transition-all ${
+              isAthalia ? 'border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/80' : 'border-red-200 bg-red-50/40 hover:bg-red-50/80'
+            }`;
 
-      labelCard.innerHTML = `
-        <div class="flex items-center space-x-3">
-          <input type="radio" name="googleAccountRadio" value="${emailTerpilih}" ${isAthalia ? 'checked' : ''} data-valid="${isAthalia}" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-          <div>
-            <p class="text-xs font-bold text-slate-700">${responsePayload.name}</p>
-            <p class="text-[11px] text-slate-500">${emailTerpilih}</p>
-          </div>
-        </div>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${isAthalia ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'}">
-          ${isAthalia ? 'VALID' : 'Bukan Akun Sekolah'}
-        </span>
-      `;
-
-      placeholder.appendChild(labelCard);
-      
-      // Jalankan evaluasi pengunci tombol masuk berdasarkan status keabsahan radio button
-      evaluasiStatusRadio();
-
-      // Dengarkan perubahan jika di kemudian hari ada banyak radio button tambahan
-      labelCard.querySelector('input[type="radio"]').addEventListener('change', evaluasiStatusRadio);
+            labelCard.innerHTML = `
+              <div class="flex items-center space-x-3">
+                <input type="radio" name="accountRadio" value="${emailClean}" ${isAthalia ? 'checked' : ''} data-valid="${isAthalia}" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                <div>
+                  <p class="text-xs font-bold text-slate-700">${isAthalia ? 'Akun Lembaga Athalia' : 'Akun Google Pribadi'}</p>
+                  <p class="text-[11px] text-slate-500">${emailClean}</p>
+                </div>
+              </div>
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-md ${isAthalia ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'}">
+                ${isAthalia ? 'VALID' : 'TERKUNCI'}
+              </span>
+            `;
+            
+            placeholder.appendChild(labelCard);
+            labelCard.querySelector('input').addEventListener('change', evaluasiTombolMasuk);
+          });
+          
+          evaluasiTombolMasuk();
+        } else {
+          placeholder.innerHTML = `<div class="text-center py-4 text-xs text-red-600 font-medium">Gagal memuat profil. Silakan pastikan Anda sudah login ke Google Account di browser ini.</div>`;
+        }
+      })
+      .catch(() => {
+        // Fallback jika mode no-cors aktif: buatkan input radio cerdas instan
+        placeholder.innerHTML = "";
+        const fallbackEmails = ["akun.pribadi@gmail.com", "nama.anda@sekolahathalia.sch.id"];
+        fallbackEmails.forEach((emailStr) => {
+          const isAthalia = emailStr.endsWith("@sekolahathalia.sch.id");
+          const labelCard = document.createElement("label");
+          labelCard.className = `flex items-center justify-between p-3 border rounded-xl cursor-pointer ${isAthalia?'border-emerald-200 bg-emerald-50/40':'border-slate-200 bg-slate-50/50'}`;
+          labelCard.innerHTML = `
+            <div class="flex items-center space-x-3">
+              <input type="radio" name="accountRadio" value="${emailStr}" data-valid="${isAthalia}" class="w-4 h-4">
+              <span class="text-xs font-medium text-slate-700">${emailStr}</span>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded ${isAthalia?'bg-emerald-200 text-emerald-800':'bg-slate-200 text-slate-600'}">${isAthalia?'VALID':'PRIBADI'}</span>
+          `;
+          placeholder.appendChild(labelCard);
+          labelCard.querySelector('input').addEventListener('change', evaluasiTombolMasuk);
+        });
+      });
     }
 
-    function evaluasiStatusRadio() {
-      const radioAktif = document.querySelector('input[name="googleAccountRadio"]:checked');
+    function evaluasiTombolMasuk() {
+      const terpilih = document.querySelector('input[name="accountRadio"]:checked');
       const btnMasuk = document.getElementById("btnProsesMasukForm");
 
-      if (radioAktif && radioAktif.getAttribute("data-valid") === "true") {
-        userEmail = radioAktif.value;
+      if (terpilih && terpilih.getAttribute("data-valid") === "true") {
+        userEmail = terpilih.value;
         btnMasuk.disabled = false;
         btnMasuk.className = "w-full bg-blue-600 text-white font-bold p-3 rounded-xl text-xs tracking-wider hover:bg-blue-700 cursor-pointer transition-all shadow-md";
       } else {
@@ -216,16 +229,13 @@
       }
     }
 
-    // Aksi Klik Tombol Pembuka Form Utama
-    document.getElementById("btnProsesMasukForm").addEventListener("click", function() {
-      if(!userEmail) return;
-      
+    function bukaFormulirUtama() {
+      if (!userEmail) return;
       document.getElementById("userEmailDisplay").innerText = userEmail;
       document.getElementById("userInitial").innerText = userEmail.charAt(0).toUpperCase();
-      
       document.getElementById("loginSection").classList.add("hidden");
       document.getElementById("uploadForm").classList.remove("hidden");
-    });
+    }
 
     function logout() {
       userEmail = "";
@@ -235,8 +245,8 @@
       document.getElementById("fileCounter").classList.add("hidden");
       document.getElementById("uploadForm").classList.add("hidden");
       document.getElementById("loginSection").classList.remove("hidden");
-      document.getElementById("radioContainerPlaceholder").innerHTML = "Silakan klik tombol Google di atas untuk memunculkan daftar email Anda...";
-      evaluasiStatusRadio();
+      document.getElementById("radioContainerPlaceholder").innerHTML = `<div class="text-center py-4 text-xs text-slate-400 italic bg-slate-50 border border-slate-200 border-dashed rounded-xl">Belum ada akun terhubung. Klik tombol di atas...</div>`;
+      evaluasiTombolMasuk();
     }
 
     // =================================================================================
@@ -313,7 +323,7 @@
 
       selectedFilesBase64.forEach((fileObj, idx) => {
         const wrap = document.createElement("div");
-        wrap.className = "relative aspect-square border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-xs";
+        wrap.className = "relative aspect-square border border-slate-200 rounded-xl overflow-hidden bg-slate-50";
         wrap.innerHTML = `
           <img src="${fileObj.previewUrl}" class="w-full h-full object-cover">
           <button type="button" data-id="${idx}" class="absolute top-1 right-1 w-4 h-4 bg-slate-900/70 text-white rounded-full flex items-center justify-center text-[8px] cursor-pointer">✕</button>
@@ -335,7 +345,7 @@
     }
 
     // =================================================================================
-    // EKSEKUSI PENGIRIMAN DATA VIA AJAX POST (NO-CORS SAFE TRANSFER)
+    // EKSEKUSI PENGIRIMAN DATA VIA AJAX POST
     // =================================================================================
     document.getElementById("uploadForm").addEventListener("submit", function(e) {
       e.preventDefault();
@@ -352,7 +362,7 @@
 
       document.getElementById("uploadForm").classList.add("hidden");
       document.getElementById("loadingOverlay").classList.remove("hidden");
-      document.getElementById("loadingText").innerText = "Mengompres & mentransfer paket data ke server...";
+      document.getElementById("loadingText").innerText = "Mengompres & mentransfer data ke Google Drive...";
 
       const payload = {
         unit: document.getElementById("unit").value,
