@@ -15,7 +15,7 @@
         <i class="fa-solid fa-camera-retro text-3xl text-white"></i>
       </div>
       <h1 class="text-2xl font-bold tracking-tight">Capture Moment</h1>
-      <p class="text-sm text-blue-100 mt-1">Setor data dokumentasi kegiatan sekolah dengan cepat</p>
+      <p class="text-sm text-blue-100 mt-1">Setor data documentation kegiatan sekolah dengan cepat</p>
     </div>
 
     <div id="loginSection" class="p-8 text-center flex flex-col items-center justify-center space-y-5">
@@ -117,10 +117,9 @@
 
   <script>
     // =================================================================================
-    // CONFIG: PASTIKAN URL BERIKUT ADALAH TAUTAN WEB APP APPS SCRIPT VERSI TERBARU ANDA
+    // CONFIG: URL WEB APP APPS SCRIPT ANDA
     // =================================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbwpXRT9wUoT1BiG_1BmM7b_jM4jnhJYK2FW3mr-kGwDmjUYtnb-w4M5TEbBMYo-1tIR/exec"; 
-    
 
     let userEmail = "";
     let selectedFilesBase64 = [];
@@ -142,37 +141,50 @@
 
     // Mendengarkan data kiriman balik dari pop-up Google Apps Script secara asinkronus
     window.addEventListener("message", function(event) {
+      if (!event.data) return;
+
       let data;
-      
-      // Mengamankan proses pembacaan data lintas domain menggunakan metode JSON Parse
       try {
+        // Deteksi apakah data dikirim dalam bentuk teks string JSON atau objek langsung
         data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
       } catch (e) {
-        return; // Abaikan jika pesan yang masuk bukan format string JSON otentikasi
+        // Fallback jika tidak berhasil di-parse sebagai JSON
+        if (event.data && event.data.success !== undefined) {
+          data = event.data;
+        } else {
+          return; 
+        }
       }
       
-      // Validasi struktur data agar tidak bentrok dengan ekstensi browser lain
-      if (!data || data.success === undefined) return;
-
-      const errorEl = document.getElementById("loginError");
-
-      if (data.success === true || data.success === "true") {
+      // Jika data valid dan terotentikasi sukses
+      if (data && (data.success === true || data.success === "true")) {
         userEmail = data.email;
-        document.getElementById("userEmailDisplay").innerText = data.email;
+        
+        // Tampilkan email pengguna di bar navigasi/avatar formulir
+        const emailDisplay = document.getElementById("userEmailDisplay");
+        if (emailDisplay) emailDisplay.innerText = data.email;
         
         // Membuat inisial huruf depan otomatis untuk avatar profil
-        if (data.name) {
-          document.getElementById("userInitial").innerText = data.name.charAt(0).toUpperCase();
+        const userInitial = document.getElementById("userInitial");
+        if (userInitial && data.name) {
+          userInitial.innerText = data.name.charAt(0).toUpperCase();
         }
         
-        // Sembunyikan panel login dan langsung tampilkan formulir utama secara otomatis
-        errorEl.classList.add("hidden");
-        document.getElementById("loginSection").classList.add("hidden");
-        document.getElementById("uploadForm").classList.remove("hidden");
-      } else {
-        // Tampilkan pesan error jika user memaksakan login pakai email selain @sekolahathalia.sch.id
-        errorEl.innerText = `Akses Ditolak! Akun (${data.email}) tidak diizinkan. Anda wajib login menggunakan email resmi @sekolahathalia.sch.id`;
-        errorEl.classList.remove("hidden");
+        // === EKSEKUSI: BUKA FORMULIR UTAMA DAN SEMBUNYIKAN PANEL LOGIN ===
+        const loginSection = document.getElementById("loginSection");
+        const uploadForm = document.getElementById("uploadForm");
+        const errorEl = document.getElementById("loginError");
+
+        if (errorEl) errorEl.classList.add("hidden");
+        if (loginSection) loginSection.classList.add("hidden");
+        if (uploadForm) uploadForm.classList.remove("hidden");
+        
+      } else if (data && (data.success === false || data.success === "false")) {
+        const errorEl = document.getElementById("loginError");
+        if (errorEl) {
+          errorEl.innerText = `Akses Ditolak! Akun (${data.email}) tidak diizinkan. Anda wajib login menggunakan email resmi @sekolahathalia.sch.id`;
+          errorEl.classList.remove("hidden");
+        }
       }
     }, false);
 
