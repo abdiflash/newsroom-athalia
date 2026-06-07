@@ -137,14 +137,17 @@
         const itemsLimit = 9;
         let globalNewsData = [];
 
+        
         function fixDriveLink(url) {
             if (!url || url === "-" || url.trim() === "") return [];
-            
+    
             return url.split(",").map(link => {
                 const clean = link.trim(); 
                 if (clean.includes("googleusercontent.com")) return clean;
                 const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
-                return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400` : clean;
+        
+                // Mengubah sz=w400 menjadi sz=w1200 agar gambar ditarik dalam resolusi HD yang tajam
+                return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1200` : clean;
             });
         }
 
