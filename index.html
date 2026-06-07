@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATHALIA Newsroom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .modal-open { overflow: hidden; }
+    </style>
+</head>
+<body>
+
+<header class="bg-[#1e3a8a] text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-center sm:text-left">
+            <h1 class="text-2xl font-bold tracking-tight flex items-center justify-center sm:justify-start gap-2">
+                <span class="text-white">ATHALIA</span> <span class="text-slate-300 font-light text-xl">NEWSROOM</span>
+            </h1>
+            <p class="text-xs text-slate-300 italic mt-0.5">More Impact - More Value</p>
+        </div>
+        <div class="flex items-center">
+            <a href="https://script.google.com/macros/s/AKfycbxNi5mIL16Z-VJU_FNFZVlidavx9BDWq8lcKLDonABQeOsz9CRzrOJcOIKYTgLK0gur/exec" 
+               target="_blank" 
+               class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square"></i> ISI FORMULIR BERITA 
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-8 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <div class="relative md:col-span-4">
+            <input type="text" id="searchInput" placeholder="Cari berita..."  
+                class="w-full pl-4 pr-10 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+            <button type="button" id="searchBtn" class="absolute inset-y-0 right-0 flex items-center pr-3 pl-2 text-slate-400 hover:text-blue-600 transition cursor-pointer" aria-label="Cari">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-2 md:col-span-4">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Unit:</label>
+            <select id="unitFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Semua Unit</option>
+                <option value="KB-TK">KB-TK</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA">SMA</option>
+                <option value="UMUM">UMUM</option>
+            </select>
+        </div>
+
+        <div class="flex items-center gap-2 md:col-span-4">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">Tahun:</label>
+            <select id="tahunFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Semua Tahun</option>
+                <option value="2027">2027</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="loadingState" class="hidden py-20 flex flex-col items-center justify-center gap-3">
+        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sm text-slate-500 font-medium animate-pulse">Menghubungkan ke server Athalia...</p>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
+        <i class="fa-regular fa-folder-open text-slate-300 text-5xl mb-3"></i>
+        <p class="text-slate-600 font-medium text-base">Tidak Ada Berita Ditemukan</p>
+    </div>
+
+    <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <div id="paginationPanel" class="mt-12 flex justify-center items-center gap-2"></div>
+</main>
+
+<div id="newsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300" onclick="closeModal(event)">
+    <div class="bg-white w-full max-w-2xl rounded-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl scale-95 transition-transform duration-300" onclick="event.stopPropagation()">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <span id="modalValue" class="text-xs font-bold text-blue-600 uppercase tracking-wider">VALUE</span>
+            <button onclick="closeModal(null)" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 space-y-4">
+            <h2 id="modalTitle" class="text-xl font-bold text-slate-800 leading-snug">Judul Berita Lengkap</h2>
+            <div class="flex flex-col gap-0.5 text-xs text-slate-400 font-medium border-b border-slate-100 pb-3">
+                <span id="modalContributor" class="text-slate-600 font-semibold">Tim Publikasi Unit Athalia</span>
+                <span id="modalTime">Tanggal Tayang</span>
+                <span id="modalTA" class="text-slate-400 mt-1 block">Tahun Ajaran</span>
+            </div>
+
+            <div id="modalCarouselContainer" class="relative w-full bg-slate-100 rounded-xl overflow-hidden shadow-sm h-60 sm:h-72 md:h-[380px]">
+                <div id="modalImagesWrapper" class="w-full h-full bg-slate-900"></div>
+                <button onclick="changeModalSlide(-1)" id="modalPrevBtn" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition z-10">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button onclick="changeModalSlide(1)" id="modalNextBtn" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition z-10">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <div id="modalCarouselBadge" class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[11px] text-white px-2.5 py-1 rounded-md font-medium flex items-center gap-1 z-10">
+                    <i class="fa-regular fa-images"></i> <span id="modalBadgeIdx">1</span>/<span id="modalBadgeTotal">1</span> FOTO
+                </div>
+            </div>
+
+            <p id="modalStory" class="text-sm text-slate-600 leading-relaxed whitespace-pre-line pt-2"></p>
+        </div>
+        <div class="p-4 border-t border-slate-100 bg-slate-50 flex flex-wrap gap-2 justify-between items-center">
+            <button id="modalCopyBtn" class="text-blue-600 hover:text-blue-700 text-xs font-semibold flex items-center gap-1 bg-blue-50 px-3 py-2 rounded-xl transition">
+                <i class="fa-regular fa-copy"></i> SALIN CAPTION
+            </button>
+            <div class="flex gap-2">
+                <a id="modalAlbumBtn" href="#" target="_blank" class="hidden bg-slate-800 hover:bg-slate-900 text-white text-xs px-4 py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images mr-1"></i> Lihat Album</a>
+                <a id="modalVideoBtn" href="#" target="_blank" class="hidden bg-red-600 hover:bg-red-700 text-white text-xs px-4 py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video mr-1"></i> Video</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-white border-t border-slate-200 mt-20 py-6 text-center text-xs text-slate-400 font-medium">
+    © 2026 Sekolah Athalia. All Rights Reserved.
+</footer>
+
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxNi5mIL16Z-VJU_FNFZVlidavx9BDWq8lcKLDonABQeOsz9CRzrOJcOIKYTgLK0gur/exec";
+    let currentPage = 1;
+    const itemsLimit = 9;
+    let globalNewsData = [];
+
+    function fixDriveLink(url) {
+        if (!url || url === "-" || url.trim() === "") return [];
+        return url.split(",").map(link => {
+            const clean = link.trim(); 
+            if (clean.includes("googleusercontent.com")) return clean;
+            const match = clean.match(/id=([-\w]{25,})/) || clean.match(/file\/d\/([-\w]{25,})/);
+            return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1200` : clean;
+        });
+    }
+
+    function parseTanggalKeObject(timestampStr) {
+        if (!timestampStr || timestampStr === "-") return new Date(0);
+        const d = new Date(timestampStr);
+        if (!isNaN(d.getTime())) return d;
+
+        let dateString = timestampStr.toString().trim().split(" ")[0];
+        if (dateString.includes("-")) {
+            const dateParts = dateString.split("-");
+            if (dateParts.length === 3) {
+                return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            }
+        }
+
+        if (dateString.includes("/")) {
+            const dateParts = dateString.split("/");
+            if (dateParts.length === 3) {
+                let val1 = parseInt(dateParts[0], 10);
+                let val2 = parseInt(dateParts[1], 10);
+                let year = parseInt(dateParts[2], 10);
+                
+                let monthIdx, day;
+                if (val1 > 12) { 
+                    day = val1;
+                    monthIdx = val2 - 1;
+                } else if (val2 > 12) { 
+                    day = val2;
+                    monthIdx = val1 - 1;
+                } else { 
+                    day = val1;
+                    monthIdx = val2 - 1;
+                }
+                
+                return new Date(year, monthIdx, day);
+            }
+        }
+        
+        return new Date(0);
+    }
+
+    function formatKompasDateTime(timestampStr) {
+        try {
+            if (!timestampStr || timestampStr === "-") return "";
+            let dateString = timestampStr.toString().trim().split(" ")[0]; 
+            const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                               "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const d = new Date(timestampStr);
+            if (!isNaN(d.getTime())) {
+                return `${d.getDate()} ${namaBulan[d.getMonth()]} ${d.getFullYear()}`;
+            }
+
+            if (dateString.includes("-")) {
+                const dateParts = dateString.split("-");
+                if (dateParts.length === 3) {
+                    const year = dateParts[0];
+                    const monthIdx = parseInt(dateParts[1], 10) - 1;
+                    const day = parseInt(dateParts[2], 10);
+                    if (monthIdx >= 0 && monthIdx <= 11) {
+                        return `${day} ${namaBulan[monthIdx]} ${year}`;
+                    }
+                }
+            }
+            
+            if (dateString.includes("/")) {
+                const dateParts = dateString.split("/");
+                if (dateParts.length === 3) {
+                    const day = parseInt(dateParts[0], 10);
+                    const monthIdx = parseInt(dateParts[1], 10) - 1;
+                    const year = dateParts[2];
+                    if (monthIdx >= 0 && monthIdx <= 11) {
+                        return `${day} ${namaBulan[monthIdx]} ${year}`;
+                    }
+                }
+            }
+
+            return dateString;
+        } catch(e) {
+            console.error("Gagal memproses parsing tanggal:", e);
+            return timestampStr;
+        }
+    }
+
+    function changeSlide(btn, direction, event) {
+        if(event) event.stopPropagation();
+        const container = btn.parentElement;
+        const images = container.querySelectorAll('.carousel-img');
+        const badge = container.querySelector('.carousel-badge-idx');
+        let activeIdx = -1;
+        images.forEach((img, idx) => {
+            if(!img.classList.contains('hidden')) activeIdx = idx;
+        });
+        if(activeIdx === -1) return;
+        images[activeIdx].classList.add('hidden');
+        let nextIdx = activeIdx + direction;
+        if(nextIdx >= images.length) nextIdx = 0;
+        if(nextIdx < 0) nextIdx = images.length - 1;
+        images[nextIdx].classList.remove('hidden');
+        if(badge) badge.innerText = nextIdx + 1;
+    }
+
+    function changeModalSlide(direction) {
+        const container = document.getElementById("modalImagesWrapper");
+        if (!container) return;
+        const images = container.querySelectorAll('.modal-slider-img');
+        if (images.length <= 1) return;
+        
+        let activeIdx = -1;
+        images.forEach((img, idx) => {
+            if(!img.classList.contains('hidden')) activeIdx = idx;
+        });
+        if(activeIdx === -1) return;
+        images[activeIdx].classList.add('hidden');
+        
+        let nextIdx = activeIdx + direction;
+        if(nextIdx >= images.length) nextIdx = 0;
+        if(nextIdx < 0) nextIdx = images.length - 1;
+        
+        images[nextIdx].classList.remove('hidden');
+        const badgeIdx = document.getElementById("modalBadgeIdx");
+        if(badgeIdx) badgeIdx.innerText = nextIdx + 1;
+    }
+
+    async function fetchNews() {
+        const grid = document.getElementById("newsGrid");
+        const loader = document.getElementById("loadingState");
+        const empty = document.getElementById("emptyState");
+        const pager = document.getElementById("paginationPanel");
+
+        grid.innerHTML = ""; pager.innerHTML = "";
+        loader.classList.remove("hidden"); empty.classList.add("hidden");
+        const unit = document.getElementById("unitFilter").value;
+        const tahun = document.getElementById("tahunFilter").value;
+        const search = document.getElementById("searchInput").value;
+        const sort = "DESC"; 
+
+        const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&page=${currentPage}&limit=${itemsLimit}`;
+        try {
+            const response = await fetch(finalUrl);
+            const result = await response.json();
+
+            if (!result.data || result.data.length === 0) {
+                loader.classList.add("hidden");
+                empty.classList.remove("hidden"); 
+                return;
+            }
+
+            let sortedData = result.data;
+            if (tahun !== "ALL") {
+                sortedData = sortedData.filter(item => {
+                    const d = parseTanggalKeObject(item.Tanggal);
+                    return d.getFullYear().toString() === tahun;
+                });
+            }
+
+            sortedData.sort((a, b) => {
+                const dateA = parseTanggalKeObject(a.Tanggal).getTime();
+                const dateB = parseTanggalKeObject(b.Tanggal).getTime();
+                return sort === "DESC" ? dateB - dateA : dateA - dateB;
+            });
+
+            globalNewsData = sortedData;
+            const imagePromises = [];
+            const cardsData = [];
+
+            globalNewsData.forEach((item, index) => {
+                const arrPhotos = fixDriveLink(item.Link_Foto);
+                const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
+                const mainImgUrl = arrPhotos.length > 0 ? arrPhotos[0] : defaultImg;
+
+                const imgPromise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = mainImgUrl;
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
+                });
+                imagePromises.push(imgPromise);
+
+                let imagesHtml = "";
+                if(arrPhotos.length === 0) {
+                    imagesHtml = `<img src="${defaultImg}" class="w-full h-full object-cover carousel-img">`;
+                } else {
+                    arrPhotos.forEach((src, idx) => {
+                        imagesHtml += `<img src="${src}" class="w-full h-full object-cover carousel-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
+                    });
+                }
+
+                cardsData.push({ item, arrPhotos, imagesHtml, index });
+            });
+
+            await Promise.all(imagePromises);
+            loader.classList.add("hidden");
+
+            cardsData.forEach(({ item, arrPhotos, imagesHtml, index }) => {
+                const formattedTime = formatKompasDateTime(item.Tanggal);
+                
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md cursor-pointer group transition duration-300";
+                card.setAttribute("data-index", index);
+                
+                card.onclick = () => openModal(index);
+                
+                card.innerHTML = `
+                    <div class="relative bg-slate-100 h-48 w-full overflow-hidden">
+                        ${imagesHtml}
+                        ${arrPhotos.length > 1 ? `
+                            <button onclick="changeSlide(this, -1, event)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button onclick="changeSlide(this, 1, event)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1 z-10">
+                                <i class="fa-regular fa-images"></i> <span class="carousel-badge-idx">1</span>/${arrPhotos.length} FOTO
+                            </div>
+                        ` : arrPhotos.length === 1 ? `
+                            <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10">
+                                1 FOTO
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">${item.Nilai || 'GENERAL'}</span>
+                            <h3 class="text-base font-bold text-slate-800 leading-snug mb-1 group-hover:text-blue-600 transition line-clamp-2">${item.Judul_Kegiatan}</h3>
+                            
+                            <div class="flex flex-col gap-0.5 mb-3 text-[11px] text-slate-400 font-medium border-b border-slate-100 pb-2">
+                                <span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${item.Unit} Athalia</span>
+                                <span><i class="fa-regular fa-calendar mr-1"></i>${formattedTime}</span>
+                            </div>
+                            
+                            <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-1"><strong>Halo Athalians, –</strong> ${item.Cerita}</p>
+                            <span class="text-blue-600 hover:text-blue-700 font-bold text-[11px] tracking-wide inline-block mb-4">BACA SELENGKAPNYA...</span>
+                        </div>
+                        <div class="pt-4 border-t border-slate-50 flex flex-col gap-3">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
+                                <span><i class="fa-regular fa-calendar-days mr-1"></i> TA: ${item.Tahun_Ajaran || '-'}</span>
+                                <button onclick="event.stopPropagation(); copyCaptionByIndex(${index})" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md transition">
+                                    <i class="fa-regular fa-copy"></i> SALIN CAPTION
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-1" onclick="event.stopPropagation()">
+                                ${item.Link_Album && item.Link_Album !== "-" ? `<a href="${item.Link_Album}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
+                                ${item.Link_Video && item.Link_Video !== "-" ? `<a href="${item.Link_Video}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            renderPagination(result.totalPages, result.currentPage);
+        } catch (error) {
+            if (loader) loader.classList.add("hidden");
+            alert("Gagal memuat data dari server Newsroom.");
+        }
+    }
+
+    function openModal(index) {
+        const data = globalNewsData[index];
+        if(!data) return;
+
+        const modalValue = document.getElementById("modalValue");
+        if(modalValue) modalValue.innerText = data.Nilai || 'GENERAL';
+
+        const modalTitle = document.getElementById("modalTitle");
+        if(modalTitle) modalTitle.innerText = data.Judul_Kegiatan;
+        const modalContributor = document.getElementById("modalContributor");
+        if(modalContributor) modalContributor.innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${data.Unit} Athalia`;
+        
+        const modalTime = document.getElementById("modalTime");
+        if(modalTime) modalTime.innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
+        
+        const modalTA = document.getElementById("modalTA");
+        if(modalTA) modalTA.innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
+
+        const modalStory = document.getElementById("modalStory");
+        if(modalStory) modalStory.innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
+
+        const wrapper = document.getElementById("modalImagesWrapper");
+        if(wrapper) wrapper.innerHTML = "";
+
+        const carouselBadge = document.getElementById("modalCarouselBadge");
+        if(carouselBadge) {
+            carouselBadge.innerHTML = `<i class="fa-regular fa-images"></i> <span id="modalBadgeIdx">1</span>/<span id="modalBadgeTotal">1</span> FOTO`;
+        }
+
+        const badgeIdx = document.getElementById("modalBadgeIdx");
+        if(badgeIdx) badgeIdx.innerText = "1";
+        const arrPhotos = fixDriveLink(data.Link_Foto);
+        const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
+        
+        if (arrPhotos.length === 0) {
+            if(wrapper) wrapper.innerHTML = `<img src="${defaultImg}" class="w-full h-full object-cover modal-slider-img">`;
+            const prevBtn = document.getElementById("modalPrevBtn");
+            if(prevBtn) prevBtn.classList.add("hidden");
+            const nextBtn = document.getElementById("modalNextBtn");
+            if(nextBtn) nextBtn.classList.add("hidden");
+            if(carouselBadge) carouselBadge.classList.add("hidden");
+        } else {
+            arrPhotos.forEach((src, idx) => {
+                if(wrapper) wrapper.innerHTML += `<img src="${src}" class="w-full h-full object-cover modal-slider-img ${idx > 0 ? 'hidden' : ''}" onerror="this.src='${defaultImg}'">`;
+            });
+            const badgeTotal = document.getElementById("modalBadgeTotal");
+            if(badgeTotal) badgeTotal.innerText = arrPhotos.length;
+
+            const prevBtn = document.getElementById("modalPrevBtn");
+            const nextBtn = document.getElementById("modalNextBtn");
+            if (arrPhotos.length > 1) {
+                if(prevBtn) prevBtn.classList.remove("hidden");
+                if(nextBtn) nextBtn.classList.remove("hidden");
+                if(carouselBadge) carouselBadge.classList.remove("hidden");
+            } else {
+                if(prevBtn) prevBtn.classList.add("hidden");
+                if(nextBtn) nextBtn.classList.add("hidden");
+                if(carouselBadge) {
+                    carouselBadge.classList.remove("hidden");
+                    carouselBadge.innerHTML = `<i class="fa-regular fa-images"></i> 1 FOTO`;
+                }
+            }
+        }
+
+        const copyBtn = document.getElementById("modalCopyBtn");
+        if(copyBtn) copyBtn.onclick = () => copyCaption(data.Cerita);
+
+        const albumBtn = document.getElementById("modalAlbumBtn");
+        if(albumBtn) {
+            if(data.Link_Album && data.Link_Album !== "-") {
+                albumBtn.href = data.Link_Album;
+                albumBtn.classList.remove("hidden");
+            } else {
+                albumBtn.classList.add("hidden");
+            }
+        }
+
+        const videoBtn = document.getElementById("modalVideoBtn");
+        if(videoBtn) {
+            if(data.Link_Video && data.Link_Video !== "-") {
+                videoBtn.href = data.Link_Video;
+                videoBtn.classList.remove("hidden");
+            } else {
+                videoBtn.classList.add("hidden");
+            }
+        }
+
+        const modal = document.getElementById("newsModal");
+        if(modal) {
+            document.body.classList.add("modal-open");
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                const internalDiv = modal.querySelector("div");
+                if(internalDiv) internalDiv.classList.remove("scale-95");
+            }, 10);
+        }
+    }
+
+    function closeModal(event) {
+        const modal = document.getElementById("newsModal");
+        if (!modal) return;
+        modal.classList.add("opacity-0");
+        const internalDiv = modal.querySelector("div");
+        if(internalDiv) internalDiv.classList.add("scale-95");
+        document.body.classList.remove("modal-open");
+        setTimeout(() => {
+            modal.classList.add("hidden");
+        }, 300);
+    }
+
+    function renderPagination(total, current) {
+        const panel = document.getElementById("paginationPanel");
+        if (!panel || total <= 1) return;
+
+        const prevBtn = document.createElement("button");
+        prevBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+        prevBtn.innerHTML = '<i class="fa-solid fa-angle-left"></i>';
+        if (current > 1) prevBtn.onclick = () => { currentPage--; fetchNews(); };
+        panel.appendChild(prevBtn);
+        for (let i = 1; i <= total; i++) {
+            const numBtn = document.createElement("button");
+            numBtn.className = `w-8 h-8 rounded-lg border text-xs font-bold ${i === current ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+            numBtn.innerText = i;
+            numBtn.onclick = () => { currentPage = i; fetchNews(); };
+            panel.appendChild(numBtn);
+        }
+
+        const nextBtn = document.createElement("button");
+        nextBtn.className = `px-3 py-1.5 rounded-lg border text-xs font-semibold ${current === total ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
+        nextBtn.innerHTML = '<i class="fa-solid fa-angle-right"></i>';
+        if (current < total) nextBtn.onclick = () => { currentPage++; fetchNews(); };
+        panel.appendChild(nextBtn);
+    }
+
+    // ==========================================
+    // PERBAIKAN: FUNGSI SALIN CAPTION & FALLBACK
+    // ==========================================
+    function copyCaption(text) {
+        if(!text) return;
+        
+        // Memformat teks agar menyertakan header resmi Newsroom saat ditempel
+        const fullText = text.startsWith("SERPONG, ATHALIA NEWSROOM") ? text : `SERPONG, ATHALIA NEWSROOM – ${text}`;
+
+        // Cek ketersediaan API modern navigator.clipboard (Hanya aktif di HTTPS / Localhost)
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullText)
+                .then(() => alert("Caption narasi berita berhasil disalin!"))
+                .catch(() => fallbackCopyText(fullText));
+        } else {
+            // Jalankan alternatif jika tidak didukung (HTTP / In-app Webview)
+            fallbackCopyText(fullText);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        // Membuat elemen textarea sementara di luar layar
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // Mencegah gangguan visual & scrolling otomatis halaman saat difokuskan
+        textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.width = "2em";
+        textArea.style.height = "2em";
+        textArea.style.padding = "0";
+        textArea.style.border = "none";
+        textArea.style.outline = "none";
+        textArea.style.boxShadow = "none";
+        textArea.style.background = "transparent";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert("Caption narasi berita berhasil disalin!");
+            } else {
+                alert("Gagal menyalin caption.");
+            }
+        } catch (err) {
+            alert("Gagal menyalin caption, silakan blok dan salin teks secara manual.");
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    function copyCaptionByIndex(index) {
+        const data = globalNewsData[index];
+        if (data && data.Cerita) {
+            copyCaption(data.Cerita);
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchNews();
+
+        document.getElementById("unitFilter").addEventListener("change", () => {
+            currentPage = 1;
+            fetchNews();
+        });
+
+        document.getElementById("tahunFilter").addEventListener("change", () => {
+            currentPage = 1;
+            fetchNews();
+        });
+
+        document.getElementById("searchBtn").addEventListener("click", () => {
+            currentPage = 1;
+            fetchNews();
+        });
+
+        document.getElementById("searchInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                currentPage = 1;
+                fetchNews();
+            }
+        });
+    });
+</script>
+</body>
+</html>
