@@ -464,7 +464,7 @@
         }
 
         const copyBtn = document.getElementById("modalCopyBtn");
-        if(copyBtn) copyBtn.onclick = () => copyCaption(data.Cerita);
+        if(copyBtn) copyBtn.onclick = () => copyCaption(data.Cerita, data.Link_Album, data.Link_Video);
 
         const albumBtn = document.getElementById("modalAlbumBtn");
         if(albumBtn) {
@@ -535,31 +535,39 @@
     }
 
     // ==========================================
-    // PERBAIKAN: FUNGSI SALIN CAPTION & FALLBACK
+    // PERBAIKAN: FUNGSI SALIN CAPTION + LINK BERITA
     // ==========================================
-    function copyCaption(text) {
+    function copyCaption(text, linkAlbum = "-", linkVideo = "-") {
         if(!text) return;
         
-        // Memformat teks agar menyertakan header resmi Newsroom saat ditempel
-        const fullText = text.startsWith("SERPONG, ATHALIA NEWSROOM") ? text : `SERPONG, ATHALIA NEWSROOM – ${text}`;
+        // 1. Tambahkan prefiks kota & media resmi
+        let fullText = text.startsWith("Serpong, ATHALIA NEWSROOM") ? text : `Serpong, ATHALIA NEWSROOM – ${text}`;
 
-        // Cek ketersediaan API modern navigator.clipboard (Hanya aktif di HTTPS / Localhost)
+        // 2. Susun tautan lampiran secara dinamis jika datanya valid (bukan strip "-")
+        let linkSection = "";
+        if ((linkAlbum && linkAlbum !== "-") || (linkVideo && linkVideo !== "-")) {
+            linkSection += "\n\nBaca berita selengkapnya atau lihat dokumentasi di:";
+            if (linkAlbum && linkAlbum !== "-") linkSection += `\n🔗 Album Foto: ${linkAlbum.trim()}`;
+            if (linkVideo && linkVideo !== "-") linkSection += `\n🎬 Video Kegiatan: ${linkVideo.trim()}`;
+        }
+        
+        // Gabungkan teks narasi berita dengan lampiran link
+        fullText += linkSection;
+
+        // Eksekusi penyalinan utama (Navigator API) atau Fallback (execCommand)
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(fullText)
-                .then(() => alert("Caption narasi berita berhasil disalin!"))
+                .then(() => alert("Caption dan tautan berita berhasil disalin!"))
                 .catch(() => fallbackCopyText(fullText));
         } else {
-            // Jalankan alternatif jika tidak didukung (HTTP / In-app Webview)
             fallbackCopyText(fullText);
         }
     }
 
     function fallbackCopyText(text) {
-        // Membuat elemen textarea sementara di luar layar
         const textArea = document.createElement("textarea");
         textArea.value = text;
         
-        // Mencegah gangguan visual & scrolling otomatis halaman saat difokuskan
         textArea.style.position = "fixed";
         textArea.style.top = "0";
         textArea.style.left = "0";
@@ -578,12 +586,12 @@
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                alert("Caption narasi berita berhasil disalin!");
+                alert("Caption dan tautan berita berhasil disalin!");
             } else {
                 alert("Gagal menyalin caption.");
             }
         } catch (err) {
-            alert("Gagal menyalin caption, silakan blok dan salin teks secara manual.");
+            alert("Gagal menyalin, silakan gunakan metode blok manual.");
         }
         
         document.body.removeChild(textArea);
@@ -592,7 +600,8 @@
     function copyCaptionByIndex(index) {
         const data = globalNewsData[index];
         if (data && data.Cerita) {
-            copyCaption(data.Cerita);
+            // Meneruskan narasi, link album, dan link video ke fungsi penyalin utama
+            copyCaption(data.Cerita, data.Link_Album, data.Link_Video);
         }
     }
 
