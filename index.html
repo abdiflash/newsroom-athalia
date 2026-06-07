@@ -393,6 +393,9 @@
             });
 
             renderPagination(result.totalPages, result.currentPage);
+            
+            // SINKRONISASI OTOMATIS: Cek URL jika ada parameter khusus untuk membuka popup langsung
+            checkUrlParameterAndOpenModal();
         } catch (error) {
             if (loader) loader.classList.add("hidden");
             alert("Gagal memuat data dari server Newsroom.");
@@ -463,8 +466,9 @@
             }
         }
 
+        // MODIFIKASI: Kirim judul kegiatan ke fungsi copyCaption agar link berita tersusun spesifik
         const copyBtn = document.getElementById("modalCopyBtn");
-        if(copyBtn) copyBtn.onclick = () => copyCaption(data.Cerita, data.Link_Album, data.Link_Video);
+        if(copyBtn) copyBtn.onclick = () => copyCaption(data.Cerita, data.Judul_Kegiatan, data.Link_Album, data.Link_Video);
 
         const albumBtn = document.getElementById("modalAlbumBtn");
         if(albumBtn) {
@@ -534,27 +538,40 @@
         panel.appendChild(nextBtn);
     }
 
-    // ==========================================
-    // PERBAIKAN: FUNGSI SALIN CAPTION + LINK BERITA
-    // ==========================================
-    function copyCaption(text, linkAlbum = "-", linkVideo = "-") {
+    // =========================================================================
+    // PERBAIKAN TOTAL: INTEGRASI PARAMETER DINAMIS PADA UTILITY SALIN CAPTION
+    // =========================================================================
+    function copyCaption(text, judulBerita, linkAlbum = "-", linkVideo = "-") {
         if(!text) return;
         
-        // 1. Tambahkan prefiks kota & media resmi
-        let fullText = text.startsWith("Serpong, ATHALIA NEWSROOM") ? text : `Serpong, ATHALIA NEWSROOM – ${text}`;
-
-        // 2. Susun tautan lampiran secara dinamis jika datanya valid (bukan strip "-")
-        let linkSection = "";
-        if ((linkAlbum && linkAlbum !== "-") || (linkVideo && linkVideo !== "-")) {
-            linkSection += "\n\nBaca berita selengkapnya atau lihat dokumentasi di:";
-            if (linkAlbum && linkAlbum !== "-") linkSection += `\n🔗 Album Foto: ${linkAlbum.trim()}`;
-            if (linkVideo && linkVideo !== "-") linkSection += `\n🎬 Video Kegiatan: ${linkVideo.trim()}`;
-        }
+        let fullText = text.trim();
         
-        // Gabungkan teks narasi berita dengan lampiran link
-        fullText += linkSection;
+        // 1. Validasi Header Berita Resmi
+        if (!fullText.toUpperCase().startsWith("SERPONG, ATHALIA NEWSROOM")) {
+            fullText = `SERPONG, ATHALIA NEWSROOM – ${fullText}`;
+        }
 
-        // Eksekusi penyalinan utama (Navigator API) atau Fallback (execCommand)
+        // 2. Pembuatan Link Berita Spesifik (Bekerja dinamis di Hosting Lokal maupun Produksi GitHub)
+        const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+        const spesifikNewsUrl = `${baseUrl}?berita=${encodeURIComponent(judulBerita)}`;
+
+        // 3. Gabungkan Informasi Link Berita & Dokumentasi Tambahan
+        fullText += `\n\nLink Berita Selengkapnya:\n👉 ${spesifikNewsUrl}`;
+
+        let dokumentasi = "";
+        if ((linkAlbum && linkAlbum !== "-") || (linkVideo && linkVideo !== "-")) {
+            dokumentasi += "\n\nDokumentasi Tambahan:";
+            if (linkAlbum && linkAlbum !== "-") dokumentasi += `\n🔗 Album Foto: ${linkAlbum.trim()}`;
+            if (linkVideo && linkVideo !== "-") dokumentasi += `\n🎬 Video Kegiatan: ${linkVideo.trim()}`;
+        }
+        fullText += dokumentasi;
+
+        // 4. Sisipkan Footer Sosmed jika belum tertulis manual di database
+        if (!fullText.includes("Ikuti sosial media kami:")) {
+            fullText += `\n\nIkuti sosial media kami:\nFacebook : / komunitassekolahathalia\nInstagram : / komunitassekolahathalia\nWeb : https://sekolahathalia.sch.id/\n#SekolahAthalia #SekolahDiSerpong #SekolahKristenBSD #PembelajaranAktif #PendidikanKarakter`;
+        }
+
+        // 5. Eksekusi Salin Clipboard dengan Fallback Webview
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(fullText)
                 .then(() => alert("Caption dan tautan berita berhasil disalin!"))
@@ -567,41 +584,44 @@
     function fallbackCopyText(text) {
         const textArea = document.createElement("textarea");
         textArea.value = text;
-        
         textArea.style.position = "fixed";
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.width = "2em";
-        textArea.style.height = "2em";
+        textArea.style.top = "0"; textArea.style.left = "0";
+        textArea.style.width = "2em"; textArea.style.height = "2em";
         textArea.style.padding = "0";
-        textArea.style.border = "none";
-        textArea.style.outline = "none";
-        textArea.style.boxShadow = "none";
+        textArea.style.border = "none"; textArea.style.outline = "none";
         textArea.style.background = "transparent";
-        
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
         try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                alert("Caption dan tautan berita berhasil disalin!");
-            } else {
-                alert("Gagal menyalin caption.");
-            }
+            document.execCommand('copy');
+            alert("Caption dan tautan berita berhasil disalin!");
         } catch (err) {
-            alert("Gagal menyalin, silakan gunakan metode blok manual.");
+            alert("Gagal menyalin text secara otomatis.");
         }
-        
         document.body.removeChild(textArea);
     }
 
     function copyCaptionByIndex(index) {
         const data = globalNewsData[index];
         if (data && data.Cerita) {
-            // Meneruskan narasi, link album, dan link video ke fungsi penyalin utama
-            copyCaption(data.Cerita, data.Link_Album, data.Link_Video);
+            copyCaption(data.Cerita, data.Judul_Kegiatan, data.Link_Album, data.Link_Video);
+        }
+    }
+
+    // FUNGSI BARU: Mendeteksi parameter tautan saat halaman diakses dari luar
+    function checkUrlParameterAndOpenModal() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const beritaJudul = urlParams.get('berita');
+        if (beritaJudul) {
+            // Cari berita yang judul kegiatannya cocok di database halaman saat ini
+            const targetIdx = globalNewsData.findIndex(item => item.Judul_Kegiatan === beritaJudul);
+            if (targetIdx !== -1) {
+                // Bersihkan parameter query di URL bar browser agar rapi kembali tanpa reload halaman
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Picu modal pop-up berita target langsung terbuka otomatis
+                openModal(targetIdx);
+            }
         }
     }
 
