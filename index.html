@@ -254,7 +254,6 @@
 
         grid.innerHTML = ""; pager.innerHTML = "";
         loader.classList.remove("hidden"); empty.classList.add("hidden");
-        
         const unitFilter = document.getElementById("unitFilter").value;
         const tahunFilter = document.getElementById("tahunFilter").value;
         const searchInput = document.getElementById("searchInput").value.toLowerCase();
@@ -269,10 +268,13 @@
                 return;
             }
 
+            // PROSES FILTER DATA BERITA
             let sortedData = result.data.filter(item => {
-                const itemUnit = item.unit || item.Unit || "";
-                const matchUnit = (unitFilter === "ALL") || itemUnit === unitFilter;
+                // Ambil data unit secara fleksibel
+                const itemUnit = (item.unit || item.Unit || "").toString().trim().toUpperCase();
+                const matchUnit = (unitFilter === "ALL") || itemUnit === unitFilter.toUpperCase();
                 
+                // Ambil data tanggal secara aman untuk ekstraksi tahun
                 let itemYear = "";
                 const itemTanggal = item.tanggal || item.Tanggal || "";
                 if (itemTanggal) {
@@ -282,18 +284,23 @@
                         itemYear = matchYear[1];
                     } else {
                         const parsedDate = new Date(itemTanggal);
-                        if (!isNaN(parsedDate.getTime())) itemYear = String(parsedDate.getFullYear());
+                        if (!isNaN(parsedDate.getTime())) {
+                            itemYear = String(parsedDate.getFullYear());
+                        }
                     }
                 }
-                const matchTahun = (tahunFilter === "ALL") || itemYear === tahunFilter;
+                
+                const matchTahun = (tahunFilter === "ALL") || (itemYear === tahunFilter) || (itemYear === "");
 
-                const namaKegiatan = (item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || "").toLowerCase();
-                const narasi = (item.narasiNarator || item.Cerita || item.Narasi || "").toLowerCase();
+                // Pencarian kata kunci
+                const namaKegiatan = (item.namakegiatan || item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || "").toLowerCase();
+                const narasi = (item.narasinarator || item.narasiNarator || item.Cerita || item.Narasi || "").toLowerCase();
                 const matchSearch = !searchInput || namaKegiatan.includes(searchInput) || narasi.includes(searchInput);
 
                 return matchUnit && matchTahun && matchSearch;
             });
 
+            // MENGURUTKAN DARI YANG TERBARU
             sortedData.sort((a, b) => {
                 const dateA = parseTanggalKeObject(a.tanggal || a.Tanggal).getTime();
                 const dateB = parseTanggalKeObject(b.tanggal || b.Tanggal).getTime();
@@ -307,7 +314,6 @@
             }
 
             globalNewsData = sortedData;
-            
             const totalItems = sortedData.length;
             const totalPages = Math.ceil(totalItems / itemsLimit);
             const startIndex = (currentPage - 1) * itemsLimit;
@@ -318,7 +324,7 @@
 
             paginatedData.forEach((item, relativeIndex) => {
                 const globalIndex = startIndex + relativeIndex;
-                const itemFoto = item.dokumentasiFoto || item.Link_Foto;
+                const itemFoto = item.dokumentasifoto || item.dokumentasiFoto || item.Link_Foto || "";
                 const arrPhotos = fixDriveLink(itemFoto);
                 const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
                 const mainImgUrl = arrPhotos.length > 0 ? arrPhotos[0] : defaultImg;
@@ -347,6 +353,7 @@
             await Promise.all(imagePromises);
             loader.classList.add("hidden");
 
+            // RENDER KARTU BERITA KE DALAM HTML
             cardsData.forEach(cardData => {
                 const item = cardData.item;
                 const arrPhotos = cardData.arrPhotos;
@@ -355,12 +362,12 @@
 
                 const formattedTime = formatKompasDateTime(item.tanggal || item.Tanggal);
                 const itemNilai = escapeHtmlString(item.nilai || item.Nilai || 'GENERAL');
-                const itemJudul = escapeHtmlString(item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || 'Tanpa Judul');
+                const itemJudul = escapeHtmlString(item.namakegiatan || item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || 'Tanpa Judul');
                 const itemUnit = escapeHtmlString(item.unit || item.Unit || '-');
-                const itemCerita = escapeHtmlString(item.narasiNarator || item.Cerita || item.Narasi || '');
-                const itemTA = escapeHtmlString(item.tahunAjaran || item.Tahun_Ajaran || '-');
-                const itemLinkAlbum = item.linkAlbumFolder || item.Link_Album || item.linkAlbum || "-";
-                const itemLinkVideo = item.linkVideoYoutube || item.Link_Video || item.linkVideo || "-";
+                const itemCerita = escapeHtmlString(item.narasinarator || item.narasiNarator || item.Cerita || item.Narasi || '');
+                const itemTA = escapeHtmlString(item.tahunajaran || item.tahunAjaran || item.Tahun_Ajaran || '-');
+                const itemLinkAlbum = item.linkalbumfolder || item.linkAlbumFolder || item.Link_Album || item.linkAlbum || "-";
+                const itemLinkVideo = item.linkvideoyoutube || item.linkVideoYoutube || item.Link_Video || item.linkVideo || "-";
                 
                 let controlsHtml = "";
                 if (arrPhotos.length > 1) {
@@ -371,10 +378,9 @@
                     controlsHtml = '<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10">1 FOTO</div>';
                 }
 
-                let albumHtml = (itemLinkAlbum && itemLinkAlbum !== "-") ? 
+                let albumHtml = (itemLinkAlbum && itemLinkAlbum !== "-") ?
                     '<a href="' + itemLinkAlbum + '" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>' : 
                     '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>';
-                
                 let videoHtml = (itemLinkVideo && itemLinkVideo !== "-") ? 
                     '<a href="' + itemLinkVideo + '" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>' : 
                     '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>';
@@ -426,15 +432,16 @@
         const data = globalNewsData[index];
         if(!data) return;
 
+        // Ambil data dengan penyesuaian huruf kecil dari API
         const itemNilai = escapeHtmlString(data.nilai || data.Nilai || 'GENERAL');
-        const itemJudul = escapeHtmlString(data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul');
+        const itemJudul = escapeHtmlString(data.namakegiatan || data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul');
         const itemUnit = escapeHtmlString(data.unit || data.Unit || '-');
         const itemTanggal = data.tanggal || data.Tanggal;
-        const itemTA = escapeHtmlString(data.tahunAjaran || data.Tahun_Ajaran || '-');
-        const itemCerita = escapeHtmlString(data.narasiNarator || data.Cerita || data.Narasi || '');
-        const itemLinkAlbum = data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
-        const itemLinkVideo = data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
-        const itemFoto = data.dokumentasiFoto || data.Link_Foto;
+        const itemTA = escapeHtmlString(data.tahunajaran || data.tahunAjaran || data.Tahun_Ajaran || '-');
+        const itemCerita = escapeHtmlString(data.narasinarator || data.narasiNarator || data.Cerita || data.Narasi || '');
+        const itemLinkAlbum = data.linkalbumfolder || data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
+        const itemLinkVideo = data.linkvideoyoutube || data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
+        const itemFoto = data.dokumentasifoto || data.dokumentasiFoto || data.Link_Foto || "";
 
         const modalValue = document.getElementById("modalValue");
         if(modalValue) modalValue.innerText = itemNilai;
@@ -628,10 +635,11 @@
     function copyCaptionByIndex(index) {
         const data = globalNewsData[index];
         if (data) {
-            const itemCerita = data.narasiNarator || data.Cerita || data.Narasi || '';
-            const itemJudul = data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul';
-            const itemLinkAlbum = data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
-            const itemLinkVideo = data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
+            // Ambil data dengan penyesuaian huruf kecil dari API
+            const itemCerita = data.narasinarator || data.narasiNarator || data.Cerita || data.Narasi || '';
+            const itemJudul = data.namakegiatan || data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul';
+            const itemLinkAlbum = data.linkalbumfolder || data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
+            const itemLinkVideo = data.linkvideoyoutube || data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
             copyCaption(itemCerita, itemJudul, itemLinkAlbum, itemLinkVideo);
         }
     }
@@ -642,7 +650,7 @@
         
         if (beritaSlug) {
             const targetIdx = globalNewsData.findIndex(item => {
-                const itemJudul = item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || "";
+                const itemJudul = item.namakegiatan || item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || "";
                 return createSlug(itemJudul) === beritaSlug;
             });
             if (targetIdx !== -1) {
