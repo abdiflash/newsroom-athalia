@@ -128,7 +128,6 @@
 </footer>
 
 <script>
-    // URL Web App Publik
     const API_URL = "https://script.google.com/macros/s/AKfycbzUCLNC3XE4kFm1WNm2BWa5AMORrMjXhu3b0gX40OwTLtBaNSlCvd0qtETxMQz1w8o/exec";
     
     let currentPage = 1;
@@ -200,6 +199,11 @@
         } catch(e) {
             return timestampStr;
         }
+    }
+
+    function escapeHtmlString(text) {
+        if (!text) return "";
+        return String(text).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function changeSlide(btn, direction, event) {
@@ -329,11 +333,11 @@
 
                 let imagesHtml = "";
                 if(arrPhotos.length === 0) {
-                    imagesHtml = "<img src='" + defaultImg + "' class='w-full h-full object-cover carousel-img'>";
+                    imagesHtml = '<img src="' + defaultImg + '" class="w-full h-full object-cover carousel-img">';
                 } else {
                     arrPhotos.forEach((src, idx) => {
                         let hideClass = idx > 0 ? "hidden" : "";
-                        imagesHtml += "<img src='" + src + "' class='w-full h-full object-cover carousel-img " + hideClass + "' onerror=\"this.src='" + defaultImg + "'\">";
+                        imagesHtml += '<img src="' + src + '" class="w-full h-full object-cover carousel-img ' + hideClass + '">';
                     });
                 }
 
@@ -350,65 +354,62 @@
                 const globalIndex = cardData.globalIndex;
 
                 const formattedTime = formatKompasDateTime(item.tanggal || item.Tanggal);
-                const itemNilai = item.nilai || item.Nilai || 'GENERAL';
-                const itemJudul = item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || 'Tanpa Judul';
-                const itemUnit = item.unit || item.Unit || '-';
-                const itemCerita = item.narasiNarator || item.Cerita || item.Narasi || '';
-                const itemTA = item.tahunAjaran || item.Tahun_Ajaran || '-';
+                const itemNilai = escapeHtmlString(item.nilai || item.Nilai || 'GENERAL');
+                const itemJudul = escapeHtmlString(item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || 'Tanpa Judul');
+                const itemUnit = escapeHtmlString(item.unit || item.Unit || '-');
+                const itemCerita = escapeHtmlString(item.narasiNarator || item.Cerita || item.Narasi || '');
+                const itemTA = escapeHtmlString(item.tahunAjaran || item.Tahun_Ajaran || '-');
                 const itemLinkAlbum = item.linkAlbumFolder || item.Link_Album || item.linkAlbum || "-";
                 const itemLinkVideo = item.linkVideoYoutube || item.Link_Video || item.linkVideo || "-";
                 
                 let controlsHtml = "";
                 if (arrPhotos.length > 1) {
-                    controlsHtml = "<button onclick='changeSlide(this, -1, event)' class='absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10'><i class='fa-solid fa-chevron-left'></i></button>" +
-                                   "<button onclick='changeSlide(this, 1, event)' class='absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10'><i class='fa-solid fa-chevron-right'></i></button>" +
-                                   "<div class='absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1 z-10'><i class='fa-regular fa-images'></i><span class='carousel-badge-idx'>1</span>/" + arrPhotos.length + " FOTO</div>";
+                    controlsHtml = '<button onclick="changeSlide(this, -1, event)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"><i class="fa-solid fa-chevron-left"></i></button>' +
+                                   '<button onclick="changeSlide(this, 1, event)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10"><i class="fa-solid fa-chevron-right"></i></button>' +
+                                   '<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1 z-10"><i class="fa-regular fa-images"></i><span class="carousel-badge-idx">1</span>/' + arrPhotos.length + ' FOTO</div>';
                 } else if (arrPhotos.length === 1) {
-                    controlsHtml = "<div class='absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10'>1 FOTO</div>";
+                    controlsHtml = '<div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10">1 FOTO</div>';
                 }
 
                 let albumHtml = (itemLinkAlbum && itemLinkAlbum !== "-") ? 
-                    "<a href='" + itemLinkAlbum + "' target='_blank' class='bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition'><i class='fa-solid fa-images'></i> Lihat Album</a>" : 
-                    "<span class='bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200'>No Album</span>";
+                    '<a href="' + itemLinkAlbum + '" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>' : 
+                    '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>';
                 
                 let videoHtml = (itemLinkVideo && itemLinkVideo !== "-") ? 
-                    "<a href='" + itemLinkVideo + "' target='_blank' class='bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition'><i class='fa-solid fa-video'></i> Video</a>" : 
-                    "<span class='bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200'>No Video</span>";
+                    '<a href="' + itemLinkVideo + '" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>' : 
+                    '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>';
 
                 const card = document.createElement("div");
                 card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md cursor-pointer group transition duration-300";
                 card.onclick = () => openModal(globalIndex);
                 
-                card.innerHTML = `
-                    <div class="relative bg-slate-100 h-48 w-full overflow-hidden">
-                        ${imagesHtml}
-                        ${controlsHtml}
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                            <span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">${itemNilai}</span>
-                            <h3 class="text-base font-bold text-slate-800 leading-snug mb-1 group-hover:text-blue-600 transition line-clamp-2">${itemJudul}</h3>
-                            <div class="flex flex-col gap-0.5 mb-3 text-[11px] text-slate-400 font-medium border-b border-slate-100 pb-2">
-                                <span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${itemUnit} Athalia</span>
-                                <span><i class="fa-regular fa-calendar mr-1"></i>${formattedTime}</span>
-                            </div>
-                            <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-1"><strong>Halo Athalians, - </strong> ${itemCerita}</p>
-                            <span class="text-blue-600 hover:text-blue-700 font-bold text-[11px] tracking-wide inline-block mb-4">BACA SELENGKAPNYA...</span>
-                        </div>
-                        <div class="pt-4 border-t border-slate-50 flex flex-col gap-3">
-                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                                <span><i class="fa-regular fa-calendar-days mr-1"></i> TA: ${itemTA}</span>
-                                <button onclick="event.stopPropagation(); copyCaptionByIndex(${globalIndex})" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md transition">
-                                    <i class="fa-regular fa-copy"></i> SALIN CAPTION
-                                </button>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 mt-1" onclick="event.stopPropagation()">
-                                ${albumHtml}
-                                ${videoHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
+                card.innerHTML = 
+                    '<div class="relative bg-slate-100 h-48 w-full overflow-hidden">' +
+                        imagesHtml + controlsHtml +
+                    '</div>' +
+                    '<div class="p-5 flex-1 flex flex-col justify-between">' +
+                        '<div>' +
+                            '<span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">' + itemNilai + '</span>' +
+                            '<h3 class="text-base font-bold text-slate-800 leading-snug mb-1 group-hover:text-blue-600 transition line-clamp-2">' + itemJudul + '</h3>' +
+                            '<div class="flex flex-col gap-0.5 mb-3 text-[11px] text-slate-400 font-medium border-b border-slate-100 pb-2">' +
+                                '<span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ' + itemUnit + ' Athalia</span>' +
+                                '<span><i class="fa-regular fa-calendar mr-1"></i>' + formattedTime + '</span>' +
+                            '</div>' +
+                            '<p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-1"><strong>Halo Athalians, - </strong> ' + itemCerita + '</p>' +
+                            '<span class="text-blue-600 hover:text-blue-700 font-bold text-[11px] tracking-wide inline-block mb-4">BACA SELENGKAPNYA...</span>' +
+                        '</div>' +
+                        '<div class="pt-4 border-t border-slate-50 flex flex-col gap-3">' +
+                            '<div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">' +
+                                '<span><i class="fa-regular fa-calendar-days mr-1"></i> TA: ' + itemTA + '</span>' +
+                                '<button onclick="event.stopPropagation(); copyCaptionByIndex(' + globalIndex + ')" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md transition">' +
+                                    '<i class="fa-regular fa-copy"></i> SALIN CAPTION' +
+                                '</button>' +
+                            '</div>' +
+                            '<div class="grid grid-cols-2 gap-2 mt-1" onclick="event.stopPropagation()">' +
+                                albumHtml + videoHtml +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
                 grid.appendChild(card);
             });
 
@@ -425,12 +426,12 @@
         const data = globalNewsData[index];
         if(!data) return;
 
-        const itemNilai = data.nilai || data.Nilai || 'GENERAL';
-        const itemJudul = data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul';
-        const itemUnit = data.unit || data.Unit || '-';
+        const itemNilai = escapeHtmlString(data.nilai || data.Nilai || 'GENERAL');
+        const itemJudul = escapeHtmlString(data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul');
+        const itemUnit = escapeHtmlString(data.unit || data.Unit || '-');
         const itemTanggal = data.tanggal || data.Tanggal;
-        const itemTA = data.tahunAjaran || data.Tahun_Ajaran || '-';
-        const itemCerita = data.narasiNarator || data.Cerita || data.Narasi || '';
+        const itemTA = escapeHtmlString(data.tahunAjaran || data.Tahun_Ajaran || '-');
+        const itemCerita = escapeHtmlString(data.narasiNarator || data.Cerita || data.Narasi || '');
         const itemLinkAlbum = data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
         const itemLinkVideo = data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
         const itemFoto = data.dokumentasiFoto || data.Link_Foto;
@@ -442,22 +443,22 @@
         if(modalTitle) modalTitle.innerText = itemJudul;
         
         const modalContributor = document.getElementById("modalContributor");
-        if(modalContributor) modalContributor.innerHTML = "<i class='fa-solid fa-pen-nib text-blue-600/80 mr-1'></i>Tim Publikasi " + itemUnit + " Athalia";
+        if(modalContributor) modalContributor.innerHTML = '<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ' + itemUnit + ' Athalia';
         
         const modalTime = document.getElementById("modalTime");
-        if(modalTime) modalTime.innerHTML = "<i class='fa-regular fa-calendar mr-1'></i>" + formatKompasDateTime(itemTanggal);
+        if(modalTime) modalTime.innerHTML = '<i class="fa-regular fa-calendar mr-1"></i>' + formatKompasDateTime(itemTanggal);
         
         const modalTA = document.getElementById("modalTA");
-        if(modalTA) modalTA.innerHTML = "<i class='fa-regular fa-calendar-days mr-1'></i> Tahun Ajaran: " + itemTA;
+        if(modalTA) modalTA.innerHTML = '<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ' + itemTA;
 
         const modalStory = document.getElementById("modalStory");
-        if(modalStory) modalStory.innerHTML = "<strong>SERPONG, ATHALIA NEWSROOM - </strong> " + itemCerita;
+        if(modalStory) modalStory.innerHTML = '<strong>SERPONG, ATHALIA NEWSROOM - </strong> ' + itemCerita;
 
         const wrapper = document.getElementById("modalImagesWrapper");
         if(wrapper) wrapper.innerHTML = "";
 
         const carouselBadge = document.getElementById("modalCarouselBadge");
-        if(carouselBadge) carouselBadge.innerHTML = "<i class='fa-regular fa-images'></i> <span id='modalBadgeIdx'>1</span>/<span id='modalBadgeTotal'>1</span> FOTO";
+        if(carouselBadge) carouselBadge.innerHTML = '<i class="fa-regular fa-images"></i> <span id="modalBadgeIdx">1</span>/<span id="modalBadgeTotal">1</span> FOTO';
 
         const badgeIdx = document.getElementById("modalBadgeIdx");
         if(badgeIdx) badgeIdx.innerText = "1";
@@ -466,7 +467,7 @@
         const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
         
         if (arrPhotos.length === 0) {
-            if(wrapper) wrapper.innerHTML = "<img src='" + defaultImg + "' class='w-full h-full object-cover modal-slider-img'>";
+            if(wrapper) wrapper.innerHTML = '<img src="' + defaultImg + '" class="w-full h-full object-cover modal-slider-img">';
             const prevBtn = document.getElementById("modalPrevBtn");
             if(prevBtn) prevBtn.classList.add("hidden");
             const nextBtn = document.getElementById("modalNextBtn");
@@ -475,7 +476,7 @@
         } else {
             arrPhotos.forEach((src, idx) => {
                 let hideClass = idx > 0 ? "hidden" : "";
-                if(wrapper) wrapper.innerHTML += "<img src='" + src + "' class='w-full h-full object-cover modal-slider-img " + hideClass + "' onerror=\"this.src='" + defaultImg + "'\">";
+                if(wrapper) wrapper.innerHTML += '<img src="' + src + '" class="w-full h-full object-cover modal-slider-img ' + hideClass + '">';
             });
             const badgeTotal = document.getElementById("modalBadgeTotal");
             if(badgeTotal) badgeTotal.innerText = arrPhotos.length;
@@ -491,7 +492,7 @@
                 if(nextBtn) nextBtn.classList.add("hidden");
                 if(carouselBadge) {
                     carouselBadge.classList.remove("hidden");
-                    carouselBadge.innerHTML = "<i class='fa-regular fa-images'></i> 1 FOTO";
+                    carouselBadge.innerHTML = '<i class="fa-regular fa-images"></i> 1 FOTO';
                 }
             }
         }
@@ -571,7 +572,7 @@
 
     function copyCaption(text, judulBerita, linkAlbum = "-", linkVideo = "-") {
         if(!text) return;
-        let fullText = text.trim();
+        let fullText = String(text).trim();
         
         if (!fullText.toUpperCase().startsWith("SERPONG, ATHALIA NEWSROOM")) {
             fullText = "SERPONG, ATHALIA NEWSROOM - " + fullText;
