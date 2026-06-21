@@ -59,7 +59,7 @@
             <select id="tahunFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
                 <option value="ALL">Semua Tahun</option>
                 <option value="2027">2027</option>
-                <option value="2026">2026</option>
+                <option value="2026" selected>2026</option>
                 <option value="2025">2025</option>
                 <option value="2024">2024</option>
             </select>
@@ -128,19 +128,21 @@
 </footer>
 
 <script>
+    // URL Web App Publik (Tanpa Akses Login)
     const API_URL = "https://script.google.com/macros/s/AKfycbzUCLNC3XE4kFm1WNm2BWa5AMORrMjXhu3b0gX40OwTLtBaNSlCvd0qtETxMQz1w8o/exec";
+    
     let currentPage = 1;
     const itemsLimit = 9;
     let globalNewsData = [];
 
-    // FUNGSI BARU: Untuk mengubah judul menjadi URL yang rapi (slug)
     function createSlug(text) {
+        if (!text) return "";
         return text.toString().toLowerCase()
-            .replace(/\s+/g, '-')           // Ganti spasi dengan tanda strip (-)
-            .replace(/[^\w\-]+/g, '')       // Hapus karakter khusus/simbol
-            .replace(/\-\-+/g, '-')         // Hindari tanda strip ganda
-            .replace(/^-+/, '')             // Hapus strip di awal teks
-            .replace(/-+$/, '');            // Hapus strip di akhir teks
+            .replace(/\s+/g, '-')           
+            .replace(/[^\w\-]+/g, '')       
+            .replace(/\-\-+/g, '-')         
+            .replace(/^-+/, '')             
+            .replace(/-+$/, '');            
     }
 
     function fixDriveLink(url) {
@@ -282,14 +284,15 @@
 
         grid.innerHTML = ""; pager.innerHTML = "";
         loader.classList.remove("hidden"); empty.classList.add("hidden");
-        const unit = document.getElementById("unitFilter").value;
-        const tahun = document.getElementById("tahunFilter").value;
-        const search = document.getElementById("searchInput").value;
+        
+        const unitFilter = document.getElementById("unitFilter").value;
+        const tahunFilter = document.getElementById("tahunFilter").value;
+        const searchInput = document.getElementById("searchInput").value.toLowerCase();
         const sort = "DESC"; 
 
-        const finalUrl = `${API_URL}?unit=${encodeURIComponent(unit)}&tahun=${encodeURIComponent(tahun)}&search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&page=${currentPage}&limit=${itemsLimit}`;
         try {
-            const response = await fetch(finalUrl);
+            // Mengambil semua data dari API
+            const response = await fetch(API_URL);
             const result = await response.json();
 
             if (!result.data || result.data.length === 0) {
@@ -299,25 +302,66 @@
             }
 
             let sortedData = result.data;
-            if (tahun !== "ALL") {
-                sortedData = sortedData.filter(item => {
-                    const d = parseTanggalKeObject(item.Tanggal);
-                    return d.getFullYear().toString() === tahun;
-                });
-            }
 
+            // FILTERING DATA SECARA CLIENT-SIDE (Kebal terhadap Format API Baru)
+            sortedData = sortedData.filter(item => {
+                // 1. Filter Unit
+                const itemUnit = item.unit || item.Unit || "";
+                const matchUnit = (unitFilter === "ALL") || itemUnit === unitFilter;
+                
+                // 2. Filter Tahun secara aman (Kebal format)
+                let itemYear = "";
+                const itemTanggal = item.tanggal || item.Tanggal || "";
+                if (itemTanggal) {
+                    const dateStr = String(itemTanggal).trim();
+                    const matchYear = dateStr.match(/\b(20\d{2})\b/);
+                    if (matchYear) {
+                        itemYear = matchYear[1];
+                    } else {
+                        const parsedDate = new Date(itemTanggal);
+                        if (!isNaN(parsedDate.getTime())) {
+                            itemYear = String(parsedDate.getFullYear());
+                        }
+                    }
+                }
+                const matchTahun = (tahunFilter === "ALL") || itemYear === tahunFilter;
+
+                // 3. Filter Pencarian
+                const namaKegiatan = (item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || "").toLowerCase();
+                const narasi = (item.narasiNarator || item.Cerita || item.Narasi || "").toLowerCase();
+                const matchSearch = !searchInput || namaKegiatan.includes(searchInput) || narasi.includes(searchInput);
+
+                return matchUnit && matchTahun && matchSearch;
+            });
+
+            // SORTING DATA BERDASARKAN TANGGAL
             sortedData.sort((a, b) => {
-                const dateA = parseTanggalKeObject(a.Tanggal).getTime();
-                const dateB = parseTanggalKeObject(b.Tanggal).getTime();
+                const dateA = parseTanggalKeObject(a.tanggal || a.Tanggal).getTime();
+                const dateB = parseTanggalKeObject(b.tanggal || b.Tanggal).getTime();
                 return sort === "DESC" ? dateB - dateA : dateA - dateB;
             });
 
+            if (sortedData.length === 0) {
+                loader.classList.add("hidden");
+                empty.classList.remove("hidden"); 
+                return;
+            }
+
             globalNewsData = sortedData;
+            
+            // PAGINATION LOGIC
+            const totalItems = sortedData.length;
+            const totalPages = Math.ceil(totalItems / itemsLimit);
+            const startIndex = (currentPage - 1) * itemsLimit;
+            const paginatedData = sortedData.slice(startIndex, startIndex + itemsLimit);
+
             const imagePromises = [];
             const cardsData = [];
 
-            globalNewsData.forEach((item, index) => {
-                const arrPhotos = fixDriveLink(item.Link_Foto);
+            paginatedData.forEach((item, relativeIndex) => {
+                const globalIndex = startIndex + relativeIndex;
+                const itemFoto = item.dokumentasiFoto || item.Link_Foto;
+                const arrPhotos = fixDriveLink(itemFoto);
                 const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
                 const mainImgUrl = arrPhotos.length > 0 ? arrPhotos[0] : defaultImg;
 
@@ -327,6 +371,7 @@
                     img.onload = () => resolve();
                     img.onerror = () => resolve();
                 });
+  
                 imagePromises.push(imgPromise);
 
                 let imagesHtml = "";
@@ -338,25 +383,32 @@
                     });
                 }
 
-                cardsData.push({ item, arrPhotos, imagesHtml, index });
+                cardsData.push({ item, arrPhotos, imagesHtml, globalIndex });
             });
 
             await Promise.all(imagePromises);
             loader.classList.add("hidden");
 
-            cardsData.forEach(({ item, arrPhotos, imagesHtml, index }) => {
-                const formattedTime = formatKompasDateTime(item.Tanggal);
+            cardsData.forEach(({ item, arrPhotos, imagesHtml, globalIndex }) => {
+                const formattedTime = formatKompasDateTime(item.tanggal || item.Tanggal);
+                const itemNilai = item.nilai || item.Nilai || 'GENERAL';
+                const itemJudul = item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || 'Tanpa Judul';
+                const itemUnit = item.unit || item.Unit || '-';
+                const itemCerita = item.narasiNarator || item.Cerita || item.Narasi || '';
+                const itemTA = item.tahunAjaran || item.Tahun_Ajaran || '-';
+                const itemLinkAlbum = item.linkAlbumFolder || item.Link_Album || item.linkAlbum || "-";
+                const itemLinkVideo = item.linkVideoYoutube || item.Link_Video || item.linkVideo || "-";
                 
                 const card = document.createElement("div");
                 card.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md cursor-pointer group transition duration-300";
-                card.setAttribute("data-index", index);
                 
-                card.onclick = () => openModal(index);
+                card.onclick = () => openModal(globalIndex);
                 
                 card.innerHTML = `
                     <div class="relative bg-slate-100 h-48 w-full overflow-hidden">
                         ${imagesHtml}
-                        ${arrPhotos.length > 1 ? `
+                        ${arrPhotos.length > 1 ?
+                        `
                             <button onclick="changeSlide(this, -1, event)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/70 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition z-10">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
@@ -364,9 +416,11 @@
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                             <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium flex items-center gap-1 z-10">
-                                <i class="fa-regular fa-images"></i> <span class="carousel-badge-idx">1</span>/${arrPhotos.length} FOTO
+                                <i class="fa-regular fa-images"></i> 
+                                <span class="carousel-badge-idx">1</span>/${arrPhotos.length} FOTO
                             </div>
-                        ` : arrPhotos.length === 1 ? `
+                        ` : arrPhotos.length === 1 ?
+                        `
                             <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-[10px] text-white px-2 py-1 rounded-md font-medium z-10">
                                 1 FOTO
                             </div>
@@ -374,27 +428,29 @@
                     </div>
                     <div class="p-5 flex-1 flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">${item.Nilai || 'GENERAL'}</span>
-                            <h3 class="text-base font-bold text-slate-800 leading-snug mb-1 group-hover:text-blue-600 transition line-clamp-2">${item.Judul_Kegiatan}</h3>
+                            <span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider block mb-1">${itemNilai}</span>
+                            <h3 class="text-base font-bold text-slate-800 leading-snug mb-1 group-hover:text-blue-600 transition line-clamp-2">${itemJudul}</h3>
                             
                             <div class="flex flex-col gap-0.5 mb-3 text-[11px] text-slate-400 font-medium border-b border-slate-100 pb-2">
-                                <span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${item.Unit} Athalia</span>
+                                <span class="text-slate-600 font-semibold"><i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${itemUnit} Athalia</span>
                                 <span><i class="fa-regular fa-calendar mr-1"></i>${formattedTime}</span>
                             </div>
                             
-                            <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-1"><strong>Halo Athalians, –</strong> ${item.Cerita}</p>
+                            <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-5 mb-1"><strong>Halo Athalians, –</strong> ${itemCerita}</p>
                             <span class="text-blue-600 hover:text-blue-700 font-bold text-[11px] tracking-wide inline-block mb-4">BACA SELENGKAPNYA...</span>
                         </div>
                         <div class="pt-4 border-t border-slate-50 flex flex-col gap-3">
                             <div class="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                                <span><i class="fa-regular fa-calendar-days mr-1"></i> TA: ${item.Tahun_Ajaran || '-'}</span>
-                                <button onclick="event.stopPropagation(); copyCaptionByIndex(${index})" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md transition">
+                                <span><i class="fa-regular fa-calendar-days mr-1"></i> TA: ${itemTA}</span>
+                                <button onclick="event.stopPropagation(); copyCaptionByIndex(${globalIndex})" class="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md transition">
                                     <i class="fa-regular fa-copy"></i> SALIN CAPTION
                                 </button>
                             </div>
                             <div class="grid grid-cols-2 gap-2 mt-1" onclick="event.stopPropagation()">
-                                ${item.Link_Album && item.Link_Album !== "-" ? `<a href="${item.Link_Album}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
-                                ${item.Link_Video && item.Link_Video !== "-" ? `<a href="${item.Link_Video}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
+                                ${itemLinkAlbum && itemLinkAlbum !== "-" ?
+                                `<a href="${itemLinkAlbum}" target="_blank" class="bg-slate-800 hover:bg-slate-900 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-images"></i> Lihat Album</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Album</span>'}
+                                ${itemLinkVideo && itemLinkVideo !== "-" ?
+                                `<a href="${itemLinkVideo}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white text-center text-xs py-2 font-semibold rounded-xl shadow-sm transition"><i class="fa-solid fa-video"></i> Video</a>` : '<span class="bg-slate-50 text-slate-400 text-center text-xs py-2 rounded-xl border border-dashed border-slate-200">No Video</span>'}
                             </div>
                         </div>
                     </div>
@@ -402,8 +458,8 @@
                 grid.appendChild(card);
             });
 
-            renderPagination(result.totalPages, result.currentPage);
-            checkUrlParameterAndOpenModal(); // Pengecekan slug untuk open modal
+            renderPagination(totalPages, currentPage);
+            checkUrlParameterAndOpenModal(); 
         } catch (error) {
             if (loader) loader.classList.add("hidden");
             alert("Gagal memuat data dari server Newsroom.");
@@ -414,22 +470,33 @@
         const data = globalNewsData[index];
         if(!data) return;
 
+        const itemNilai = data.nilai || data.Nilai || 'GENERAL';
+        const itemJudul = data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul';
+        const itemUnit = data.unit || data.Unit || '-';
+        const itemTanggal = data.tanggal || data.Tanggal;
+        const itemTA = data.tahunAjaran || data.Tahun_Ajaran || '-';
+        const itemCerita = data.narasiNarator || data.Cerita || data.Narasi || '';
+        const itemLinkAlbum = data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
+        const itemLinkVideo = data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
+        const itemFoto = data.dokumentasiFoto || data.Link_Foto;
+
         const modalValue = document.getElementById("modalValue");
-        if(modalValue) modalValue.innerText = data.Nilai || 'GENERAL';
+        if(modalValue) modalValue.innerText = itemNilai;
 
         const modalTitle = document.getElementById("modalTitle");
-        if(modalTitle) modalTitle.innerText = data.Judul_Kegiatan;
+        if(modalTitle) modalTitle.innerText = itemJudul;
+        
         const modalContributor = document.getElementById("modalContributor");
-        if(modalContributor) modalContributor.innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${data.Unit} Athalia`;
+        if(modalContributor) modalContributor.innerHTML = `<i class="fa-solid fa-pen-nib text-blue-600/80 mr-1"></i>Tim Publikasi ${itemUnit} Athalia`;
         
         const modalTime = document.getElementById("modalTime");
-        if(modalTime) modalTime.innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${formatKompasDateTime(data.Tanggal)}`;
+        if(modalTime) modalTime.innerHTML = `<i class="fa-regular fa-calendar mr-1"></i>${formatKompasDateTime(itemTanggal)}`;
         
         const modalTA = document.getElementById("modalTA");
-        if(modalTA) modalTA.innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${data.Tahun_Ajaran || '-'}`;
+        if(modalTA) modalTA.innerHTML = `<i class="fa-regular fa-calendar-days mr-1"></i> Tahun Ajaran: ${itemTA}`;
 
         const modalStory = document.getElementById("modalStory");
-        if(modalStory) modalStory.innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${data.Cerita}`;
+        if(modalStory) modalStory.innerHTML = `<strong>SERPONG, ATHALIA NEWSROOM –</strong> ${itemCerita}`;
 
         const wrapper = document.getElementById("modalImagesWrapper");
         if(wrapper) wrapper.innerHTML = "";
@@ -441,7 +508,8 @@
 
         const badgeIdx = document.getElementById("modalBadgeIdx");
         if(badgeIdx) badgeIdx.innerText = "1";
-        const arrPhotos = fixDriveLink(data.Link_Foto);
+        
+        const arrPhotos = fixDriveLink(itemFoto);
         const defaultImg = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600';
         
         if (arrPhotos.length === 0) {
@@ -475,13 +543,12 @@
         }
 
         const copyBtn = document.getElementById("modalCopyBtn");
-        // Update handler onclick untuk mengirim Judul_Kegiatan ke fungsi pembuat link slug
-        if(copyBtn) copyBtn.onclick = () => copyCaption(data.Cerita, data.Judul_Kegiatan, data.Link_Album, data.Link_Video);
-
+        if(copyBtn) copyBtn.onclick = () => copyCaption(itemCerita, itemJudul, itemLinkAlbum, itemLinkVideo);
+        
         const albumBtn = document.getElementById("modalAlbumBtn");
         if(albumBtn) {
-            if(data.Link_Album && data.Link_Album !== "-") {
-                albumBtn.href = data.Link_Album;
+            if(itemLinkAlbum && itemLinkAlbum !== "-") {
+                albumBtn.href = itemLinkAlbum;
                 albumBtn.classList.remove("hidden");
             } else {
                 albumBtn.classList.add("hidden");
@@ -490,8 +557,8 @@
 
         const videoBtn = document.getElementById("modalVideoBtn");
         if(videoBtn) {
-            if(data.Link_Video && data.Link_Video !== "-") {
-                videoBtn.href = data.Link_Video;
+            if(itemLinkVideo && itemLinkVideo !== "-") {
+                videoBtn.href = itemLinkVideo;
                 videoBtn.classList.remove("hidden");
             } else {
                 videoBtn.classList.add("hidden");
@@ -531,6 +598,7 @@
         prevBtn.innerHTML = '<i class="fa-solid fa-angle-left"></i>';
         if (current > 1) prevBtn.onclick = () => { currentPage--; fetchNews(); };
         panel.appendChild(prevBtn);
+        
         for (let i = 1; i <= total; i++) {
             const numBtn = document.createElement("button");
             numBtn.className = `w-8 h-8 rounded-lg border text-xs font-bold ${i === current ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`;
@@ -546,26 +614,18 @@
         panel.appendChild(nextBtn);
     }
 
-    // =========================================================================
-    // PERBAIKAN TOTAL: INTEGRASI PARAMETER DINAMIS PADA UTILITY SALIN CAPTION
-    // =========================================================================
     function copyCaption(text, judulBerita, linkAlbum = "-", linkVideo = "-") {
         if(!text) return;
-        
         let fullText = text.trim();
         
-        // 1. Validasi Header Berita Resmi
         if (!fullText.toUpperCase().startsWith("SERPONG, ATHALIA NEWSROOM")) {
             fullText = `SERPONG, ATHALIA NEWSROOM – ${fullText}`;
         }
 
-        // 2. Pembuatan Link Berita Spesifik menggunakan fungsi createSlug
         const baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
         const spesifikNewsUrl = `${baseUrl}?b=${createSlug(judulBerita)}`;
 
-        // 3. Gabungkan Informasi Link Berita & Dokumentasi Tambahan
         fullText += `\n\nLink Berita Selengkapnya:\n👉 ${spesifikNewsUrl}`;
-
         let dokumentasi = "";
         if ((linkAlbum && linkAlbum !== "-") || (linkVideo && linkVideo !== "-")) {
             dokumentasi += "\n\nDokumentasi Tambahan:";
@@ -573,13 +633,11 @@
             if (linkVideo && linkVideo !== "-") dokumentasi += `\n🎬 Video Kegiatan: ${linkVideo.trim()}`;
         }
         fullText += dokumentasi;
-
-        // 4. Sisipkan Footer Sosmed jika belum tertulis manual di database
+        
         if (!fullText.includes("Ikuti sosial media kami:")) {
             fullText += `\n\nIkuti sosial media kami:\nFacebook : / komunitassekolahathalia\nInstagram : / komunitassekolahathalia\nWeb : https://sekolahathalia.sch.id/\n#SekolahAthalia #SekolahDiSerpong #SekolahKristenBSD #PembelajaranAktif #PendidikanKarakter`;
         }
 
-        // 5. Eksekusi Salin Clipboard dengan Fallback Webview
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(fullText)
                 .then(() => alert("Caption dan tautan berita berhasil disalin!"))
@@ -612,24 +670,26 @@
 
     function copyCaptionByIndex(index) {
         const data = globalNewsData[index];
-        if (data && data.Cerita) {
-            copyCaption(data.Cerita, data.Judul_Kegiatan, data.Link_Album, data.Link_Video);
+        if (data) {
+            const itemCerita = data.narasiNarator || data.Cerita || data.Narasi || '';
+            const itemJudul = data.namaKegiatan || data.Judul_Kegiatan || data.Nama_Kegiatan || 'Tanpa Judul';
+            const itemLinkAlbum = data.linkAlbumFolder || data.Link_Album || data.linkAlbum || "-";
+            const itemLinkVideo = data.linkVideoYoutube || data.Link_Video || data.linkVideo || "-";
+            copyCaption(itemCerita, itemJudul, itemLinkAlbum, itemLinkVideo);
         }
     }
 
-    // FUNGSI BARU: Mendeteksi parameter tautan slug (?b=) saat halaman diakses dari luar
     function checkUrlParameterAndOpenModal() {
         const urlParams = new URLSearchParams(window.location.search);
-        const beritaSlug = urlParams.get('b'); // Membaca format slug baru
+        const beritaSlug = urlParams.get('b'); 
         
         if (beritaSlug) {
-            // Cari berita yang hasil konversi judulnya (slug) cocok dengan slug di URL
-            const targetIdx = globalNewsData.findIndex(item => createSlug(item.Judul_Kegiatan) === beritaSlug);
-            
+            const targetIdx = globalNewsData.findIndex(item => {
+                const itemJudul = item.namaKegiatan || item.Judul_Kegiatan || item.Nama_Kegiatan || "";
+                return createSlug(itemJudul) === beritaSlug;
+            });
             if (targetIdx !== -1) {
-                // Bersihkan parameter query di URL bar browser agar rapi kembali tanpa reload halaman
                 window.history.replaceState({}, document.title, window.location.pathname);
-                // Picu modal pop-up berita target langsung terbuka otomatis
                 openModal(targetIdx);
             }
         }
