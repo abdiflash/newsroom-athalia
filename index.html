@@ -647,7 +647,9 @@
         // --- PROSES GENERASI PILIHAN FILTER TAHUN SECARA DINAMIS ---
         const tahunFilterSelect = document.getElementById("tahunFilter");
         const currentYear = new Date().getFullYear();
-        const startYear = 2024; // Tahun rintisan arsip database awal
+        
+        // 💡 SEKARANG JADI OTOMATIS MEMBATASI PANJANG DROPDOWN
+        const startYear = currentYear - 4; // Selalu batasi maksimal hanya 4 tahun ke belakang
         const endYear = currentYear + 2; // Antisipasi input data masa depan hingga +2 tahun kedepan
         
         // Membersihkan opsi statis lama dan menyisakan pilihan "Semua Tahun"
